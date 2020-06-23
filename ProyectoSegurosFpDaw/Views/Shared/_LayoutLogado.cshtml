@@ -1,0 +1,177 @@
+﻿<!DOCTYPE html>
+<!-- PLANTILLA BASADA EN https://adminlte.io -->
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>@ViewBag.Title / SegurosFicticios / Proyecto FP DAW</title>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="~/plugins/fontawesome-free/css/all.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="~/content/adminlte/dist/css/adminlte.min.css">
+    <!-- Google Font: Source Sans Pro -->
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+    <!-- Sweet Alert  -->
+    <link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+    <link href="~/Content/SharedCSS.css" rel="stylesheet" />
+    @RenderSection("css", required: false)
+</head>
+<body class="hold-transition sidebar-mini">
+
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <!-- Left navbar links -->
+            <ul class="navbar-nav">
+                <li class="nav-item ">
+                    <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
+                </li>
+            </ul>
+        </nav>
+        <!-- /.navbar -->
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a href="@Url.Action("Index", "GestionPolizas")" class="brand-link">
+                <i class="fas fa-car-crash"></i>
+                <span class="brand-text font-weight-light ml-2"><b>Seguros</b>Ficticios</span>
+            </a>
+            <!-- Sidebar -->
+            @{
+                var usuarioActual = Session["User"] as ProyectoSegurosFpDaw.Models.Usuario;
+                if (Session["user"] != null)
+                {
+                    var rolUsuarioActual = usuarioActual.rolId;
+                    <div class="sidebar">
+                        <!-- Sidebar user panel (optional) -->
+                        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                            <div class="info col-9 mr-2">
+                                <a href="@Url.Action("Details", "Usuarios", new { id = usuarioActual.usuarioId} )" title="Detalle Usuario">
+                                    <i class="fas fa-user-circle mr-2"></i>
+                                    @usuarioActual.nombreUsuario
+                                    @usuarioActual.apellido1Usuario
+                                </a>
+                            </div>
+                            <div class="info col-3 ">
+                                <a href=" @Url.Action("loginOut", "Acceso")" title="Desconectar Sesión">
+                                    <i class="fas fa-power-off"></i>
+                                </a>
+                            </div>
+                        </div>
+                        @if (rolUsuarioActual != 2)
+                        {
+                            <!-- Sidebar Menu -->
+                            <nav class="mt-2">
+                                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                                    <li class="nav-item has-treeview">
+                                        <a href="#" class="nav-link">
+                                            <i class="nav-icon fas fa-sun "></i>
+                                            <p>
+                                                Pólizas
+                                                <i class="right fas fa-angle-left"></i>
+                                            </p>
+                                        </a>
+                                        <ul class="nav nav-treeview">
+                                            <li class="nav-item">
+                                                <a href="@Url.Action("Index", "GestionPolizas")" class="nav-link">
+                                                    <i class="fas fa-search-plus nav-icon"></i>
+                                                    <p>Gestión Pólizas</p>
+                                                </a>
+                                            </li>
+                                            @if (rolUsuarioActual == 4)
+                                            {
+                                                <li class="nav-item">
+                                                    <a href="@Url.Action("IndexNoEditable", "CondicionadoPolizas")" class="nav-link">
+                                                        <i class="fas fa-clipboard-list nav-icon"></i>
+                                                        <p>Condicionados Póliza</p>
+                                                    </a>
+                                                </li>
+                                            }
+                                            else
+                                            {
+                                                <li class="nav-item">
+                                                    <a href="@Url.Action("Index", "CondicionadoPolizas")" class="nav-link">
+                                                        <i class="fas fa-clipboard-list nav-icon"></i>
+                                                        <p>Condicionados Póliza</p>
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </li>
+                                    @if (rolUsuarioActual == 1 || rolUsuarioActual == 3)
+                                    {
+                                        <li class="nav-item">
+                                            <a href="@Url.Action("Index", "RolesPermisos")" class="nav-link">
+                                                <i class="fas fa-user-tag nav-icon"></i>
+                                                <p>Roles</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="@Url.Action("Index", "Usuarios")" class="nav-link">
+                                                <i class="fas fa-users nav-icon"></i>
+                                                <p>Usuarios</p>
+                                            </a>
+                                        </li>
+                                    }
+                                    <li class="nav-item">
+                                        <a href="@Url.Action("Index", "Clientes")" class="nav-link">
+                                            <i class="fas fa-user-tie nav-icon"></i>
+                                            <p>Clientes</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                            <!-- /.sidebar-menu -->
+                        }
+                    </div>
+                }
+            }
+            <!-- /.sidebar -->
+        </aside>
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
+
+            @RenderBody()
+        </div>
+        <!-- /.content-wrapper -->
+        <!-- Main Footer -->
+        <footer class="main-footer">
+            <!-- To the right -->
+            <div class="float-right  d-sm-inline">
+                <a href="@Url.Action("About", "Home")" class="link-black">
+                    <strong>About</strong>
+                </a>
+            </div>
+            <!-- Default to the left -->
+            <a href="@Url.Action("About", "Home")" class="link-black">
+                <strong>Proyecto Fin de Ciclo FP DAW Ilerna 2020</strong>
+            </a>
+        </footer>
+    </div>
+    <!-- ./wrapper -->
+
+
+    @if (ViewBag.mensaje != null)
+    {
+        // Gestiona mensajes enviados desde el controller
+        var mensaje = @ViewBag.mensaje as ProyectoSegurosFpDaw.Models.ItemMensaje;
+        <span>
+            @Html.Hidden("mensaje", mensaje.Mensaje.ToString())
+            @Html.Hidden("tipo", mensaje.Tipo)
+        </span>
+    }
+
+    <!-- Scripts / Librerías Js -->
+    <!-- jQuery -->
+    <script src="~/plugins/jquery/jquery.min.js"></script>
+    <!-- Bootstrap 4 -->
+    <script src="~/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="~/content/adminlte/dist/js/adminlte.min.js"></script>
+    <!-- Sweet Alert  -->
+    <script src="~/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,162 @@
+﻿@model ProyectoSegurosFpDaw.Models.Cliente
+
+@{
+    ViewBag.Title = "Información Cliente";
+
+    var usuarioActual = (ProyectoSegurosFpDaw.Models.Usuario)Session["user"];
+    var rolUsuarioActual = usuarioActual.rolId;
+}
+
+<!-- Header -->
+<section class="fixedHeader-locked">
+    <div col-sm-3>
+        <div class="card card-gray ">
+            <div class="card-header">
+                <h2 class="card-title">CLIENTES</h2>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-info">
+                <div class="card-header">
+                    <h3 class="card-title">Información Cliente</h3>
+                    <div class="card-tools">
+                    </div>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled form-inline">
+                        <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.LabelFor(m => m.nombreCliente, new { @class = "control-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-portrait"></i></span>
+                                </div>
+                                @Html.TextBoxFor(m => m.nombreCliente, new { @class = "form-control", @readonly = true })
+                            </div>
+                        </li>
+                        <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.LabelFor(m => m.apellido1Cliente, new { @class = "control-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-portrait"></i></span>
+                                </div>
+                                @Html.TextBoxFor(m => m.apellido1Cliente, new { @class = "form-control", @readonly = true })
+                            </div>
+                        </li>
+                        <li class=" col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.LabelFor(m => m.apellido2Cliente, new { @class = "control-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-portrait"></i></span>
+                                </div>
+                                @Html.TextBoxFor(m => m.apellido2Cliente, new { @class = "form-control", @readonly = true })
+                            </div>
+                        </li>
+                        <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.LabelFor(model => model.dniCliente, htmlAttributes: new { @class = "control-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                </div>
+                                @Html.TextBoxFor(model => model.dniCliente, new { @class = "form-control", @readonly = true })
+                            </div>
+                        </li>
+                        <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.LabelFor(model => model.emailCliente, htmlAttributes: new { @class = "control-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-at"></i></span>
+                                </div>
+                                @Html.TextBoxFor(model => model.emailCliente, new { @class = "form-control", @readonly = true })
+                            </div>
+                        </li>
+                        <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.LabelFor(m => m.telefonoCliente, new { @class = "control-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-mobile-alt"></i></span>
+                                </div>
+                                @Html.TextBoxFor(m => m.telefonoCliente, new { @class = "form-control", @readonly = true, @type = "number" })
+                            </div>
+                        </li>
+                        <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.LabelFor(model => model.clienteId, htmlAttributes: new { @class = "control-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-id-card-alt"></i></span>
+                                </div>
+                                @Html.TextBoxFor(model => model.clienteId, new { @class = "form-control", @type = "number", @readonly = true })
+                            </div>
+                        </li>
+                        <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.Label("Pólizas", htmlAttributes: new { @class = "control-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-sun"></i></span>
+                                </div>
+                                @{ var numeroPolizas = Model.Poliza.Count();}
+                                @Html.TextBox("polizas", numeroPolizas, new { @class = "form-control", @readonly = true, @type = "number" })
+                            </div>
+                        </li>
+                        <li class=" col-lg-4 col-xl-4 mb-3">
+
+                        </li>
+                        @*  ----------------------------------------------------------------------------------------------*@
+                        <li class=" col-xs-12  col-md-12 mb-4">
+
+                        </li>
+                        @*  ----------------------------------------------------------------------------------------------*@
+                    </ul>
+                    <div class="row">
+                        <div class="col-2 col-sm-1 row">
+                            <a href="@Url.Action("Index","Clientes")" class="btn btn-info mr-2 mb-2 ">
+                                <i class="fas fa-reply"> </i>
+                            </a>
+                        </div>
+                        <div class="col row justify-content-end">
+                            <a href="@Url.Action("BuscarPolizas", "GestionPolizas", new { dniCliente = Model.dniCliente ,fechaInicio = "01/01/2000",fechaFinal = "01/01/3000",estadoPoliza = "2" })" class="btn btn-info mr-2 mb-2 ">
+                                <i class="fas fa-eye"> </i>
+                                Ver Pólizas
+                            </a>
+                            <a href="@Url.Action("Create", "GestionPolizas", new { clienteDni = Model.dniCliente })" class="btn btn-info mr-2 mb-2 ">
+                                <i class="fas fa-plus-square"> </i>
+                                Crear Póliza
+                            </a>
+                            <a href="@Url.Action("Edit", "Clientes", new { id = Model.clienteId })" class="btn btn-info mr-2 mb-2 ">
+                                <i class="fas fa-edit"> </i>
+                                Editar Cliente
+                            </a>
+                            @{
+                                if (rolUsuarioActual != 4)
+                                {
+                                    using (Html.BeginForm("Delete", "Clientes", FormMethod.Post))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        @Html.Hidden("clienteId")
+                                        <button type="button" id="btnDelete" class="btn btn-info mr-2 mb-2 ">
+                                            <i class="fas fa-minus-square"> </i>
+                                            Eliminar Cliente
+                                        </button>
+                                    }
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+        </div>
+    </div>
+</section>
+<!-- /.content -->
+
+@section Scripts{    
+    <script src="~/Scripts/SharedScripts.js"></script>
+    <script src="~/Scripts/ClienteDetailsScript.js"></script>
+}

@@ -1,0 +1,735 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="ProyectoSegurosDbModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Cliente">
+          <Key>
+            <PropertyRef Name="clienteId" />
+          </Key>
+          <Property Name="clienteId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="nombreCliente" Type="nvarchar" MaxLength="20" />
+          <Property Name="apellido1Cliente" Type="nvarchar" MaxLength="20" />
+          <Property Name="apellido2Cliente" Type="nvarchar" MaxLength="20" />
+          <Property Name="dniCliente" Type="nvarchar" MaxLength="20" />
+          <Property Name="emailCliente" Type="nvarchar" MaxLength="50" />
+          <Property Name="telefonoCliente" Type="nvarchar" MaxLength="15" />
+          <Property Name="activo" Type="int" Nullable="false" />
+          <Property Name="fechaDesactivado" Type="datetime" />
+        </EntityType>
+        <EntityType Name="CondicionadoPoliza">
+          <Key>
+            <PropertyRef Name="condicionadoPolizaId" />
+          </Key>
+          <Property Name="condicionadoPolizaId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="tipoCondicionado" Type="nvarchar" MaxLength="50" />
+          <Property Name="garantias" Type="nvarchar" MaxLength="500" />
+          <Property Name="activo" Type="int" Nullable="false" />
+          <Property Name="fechaDesactivado" Type="datetime" />
+        </EntityType>
+        <EntityType Name="GestionPoliza">
+          <Key>
+            <PropertyRef Name="gestionPolizaId" />
+          </Key>
+          <Property Name="gestionPolizaId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="matricula" Type="nvarchar" MaxLength="10" />
+          <Property Name="marcaVehiculo" Type="nvarchar" MaxLength="20" />
+          <Property Name="modeloVehiculo" Type="nvarchar" MaxLength="20" />
+          <Property Name="fechaInicio" Type="datetime" Nullable="false" />
+          <Property Name="fechaFin" Type="datetime" Nullable="false" />
+          <Property Name="precio" Type="int" Nullable="false" />
+          <Property Name="observaciones" Type="nvarchar" MaxLength="500" />
+          <Property Name="fechaGestion" Type="datetime" Nullable="false" />
+          <Property Name="condicionadoPolizaId" Type="int" Nullable="false" />
+          <Property Name="tipoGestionId" Type="int" Nullable="false" />
+          <Property Name="polizaId" Type="int" Nullable="false" />
+          <Property Name="usuarioId" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Modulo">
+          <Key>
+            <PropertyRef Name="moduloId" />
+          </Key>
+          <Property Name="moduloId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="nombreModulo" Type="nvarchar" MaxLength="20" />
+        </EntityType>
+        <EntityType Name="Permiso">
+          <Key>
+            <PropertyRef Name="permisoId" />
+          </Key>
+          <Property Name="permisoId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="nombrePermiso" Type="nvarchar" MaxLength="50" />
+          <Property Name="moduloId" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Poliza">
+          <Key>
+            <PropertyRef Name="polizaId" />
+          </Key>
+          <Property Name="polizaId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="activo" Type="int" Nullable="false" />
+          <Property Name="fechaDesactivado" Type="datetime" />
+          <Property Name="clienteId" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Rol">
+          <Key>
+            <PropertyRef Name="rolId" />
+          </Key>
+          <Property Name="rolId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="nombreRol" Type="nvarchar" MaxLength="20" />
+          <Property Name="activo" Type="int" Nullable="false" />
+          <Property Name="fechaDesactivado" Type="datetime" />
+        </EntityType>
+        <EntityType Name="RolPermiso">
+          <Key>
+            <PropertyRef Name="rolPermisoId" />
+          </Key>
+          <Property Name="rolPermisoId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="permisoId" Type="int" Nullable="false" />
+          <Property Name="rolId" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="TipoGestion">
+          <Key>
+            <PropertyRef Name="tipoGestionId" />
+          </Key>
+          <Property Name="tipoGestionId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="nombreGestion" Type="nvarchar" MaxLength="20" />
+        </EntityType>
+        <EntityType Name="Usuario">
+          <Key>
+            <PropertyRef Name="usuarioId" />
+          </Key>
+          <Property Name="usuarioId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="nombreUsuario" Type="nvarchar" MaxLength="20" />
+          <Property Name="apellido1Usuario" Type="nvarchar" MaxLength="20" />
+          <Property Name="apellido2Usuario" Type="nvarchar" MaxLength="20" />
+          <Property Name="dniUsuario" Type="nvarchar" MaxLength="20" />
+          <Property Name="emailUsuario" Type="nvarchar" MaxLength="50" />
+          <Property Name="password" Type="nvarchar" MaxLength="100" />
+          <Property Name="activo" Type="int" Nullable="false" />
+          <Property Name="fechaAlta" Type="datetime" Nullable="false" />
+          <Property Name="fechaBaja" Type="datetime" />
+          <Property Name="rolId" Type="int" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_dbo_GestionPoliza_dbo_CondicionadoPoliza_condicionadoPolizaId">
+          <End Role="CondicionadoPoliza" Type="Self.CondicionadoPoliza" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="GestionPoliza" Type="Self.GestionPoliza" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="CondicionadoPoliza">
+              <PropertyRef Name="condicionadoPolizaId" />
+            </Principal>
+            <Dependent Role="GestionPoliza">
+              <PropertyRef Name="condicionadoPolizaId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_dbo_GestionPoliza_dbo_Poliza_polizaId">
+          <End Role="Poliza" Type="Self.Poliza" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="GestionPoliza" Type="Self.GestionPoliza" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Poliza">
+              <PropertyRef Name="polizaId" />
+            </Principal>
+            <Dependent Role="GestionPoliza">
+              <PropertyRef Name="polizaId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_dbo_GestionPoliza_dbo_TipoGestion_tipoGestionId">
+          <End Role="TipoGestion" Type="Self.TipoGestion" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="GestionPoliza" Type="Self.GestionPoliza" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TipoGestion">
+              <PropertyRef Name="tipoGestionId" />
+            </Principal>
+            <Dependent Role="GestionPoliza">
+              <PropertyRef Name="tipoGestionId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_dbo_GestionPoliza_dbo_Usuario_usuarioId">
+          <End Role="Usuario" Type="Self.Usuario" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="GestionPoliza" Type="Self.GestionPoliza" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Usuario">
+              <PropertyRef Name="usuarioId" />
+            </Principal>
+            <Dependent Role="GestionPoliza">
+              <PropertyRef Name="usuarioId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_dbo_Permiso_dbo_Modulo_moduloId">
+          <End Role="Modulo" Type="Self.Modulo" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="Permiso" Type="Self.Permiso" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Modulo">
+              <PropertyRef Name="moduloId" />
+            </Principal>
+            <Dependent Role="Permiso">
+              <PropertyRef Name="moduloId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_dbo_Poliza_dbo_Cliente_clienteId">
+          <End Role="Cliente" Type="Self.Cliente" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="Poliza" Type="Self.Poliza" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Cliente">
+              <PropertyRef Name="clienteId" />
+            </Principal>
+            <Dependent Role="Poliza">
+              <PropertyRef Name="clienteId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_dbo_RolPermiso_dbo_Permiso_permisoId">
+          <End Role="Permiso" Type="Self.Permiso" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="RolPermiso" Type="Self.RolPermiso" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Permiso">
+              <PropertyRef Name="permisoId" />
+            </Principal>
+            <Dependent Role="RolPermiso">
+              <PropertyRef Name="permisoId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_dbo_RolPermiso_dbo_Rol_rolId">
+          <End Role="Rol" Type="Self.Rol" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="RolPermiso" Type="Self.RolPermiso" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Rol">
+              <PropertyRef Name="rolId" />
+            </Principal>
+            <Dependent Role="RolPermiso">
+              <PropertyRef Name="rolId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_dbo_Usuario_dbo_Rol_rolId">
+          <End Role="Rol" Type="Self.Rol" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="Usuario" Type="Self.Usuario" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Rol">
+              <PropertyRef Name="rolId" />
+            </Principal>
+            <Dependent Role="Usuario">
+              <PropertyRef Name="rolId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="ProyectoSegurosDbModelStoreContainer">
+          <EntitySet Name="Cliente" EntityType="Self.Cliente" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="CondicionadoPoliza" EntityType="Self.CondicionadoPoliza" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="GestionPoliza" EntityType="Self.GestionPoliza" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Modulo" EntityType="Self.Modulo" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Permiso" EntityType="Self.Permiso" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Poliza" EntityType="Self.Poliza" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Rol" EntityType="Self.Rol" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="RolPermiso" EntityType="Self.RolPermiso" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TipoGestion" EntityType="Self.TipoGestion" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Usuario" EntityType="Self.Usuario" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_dbo_GestionPoliza_dbo_CondicionadoPoliza_condicionadoPolizaId" Association="Self.FK_dbo_GestionPoliza_dbo_CondicionadoPoliza_condicionadoPolizaId">
+            <End Role="CondicionadoPoliza" EntitySet="CondicionadoPoliza" />
+            <End Role="GestionPoliza" EntitySet="GestionPoliza" />
+          </AssociationSet>
+          <AssociationSet Name="FK_dbo_GestionPoliza_dbo_Poliza_polizaId" Association="Self.FK_dbo_GestionPoliza_dbo_Poliza_polizaId">
+            <End Role="Poliza" EntitySet="Poliza" />
+            <End Role="GestionPoliza" EntitySet="GestionPoliza" />
+          </AssociationSet>
+          <AssociationSet Name="FK_dbo_GestionPoliza_dbo_TipoGestion_tipoGestionId" Association="Self.FK_dbo_GestionPoliza_dbo_TipoGestion_tipoGestionId">
+            <End Role="TipoGestion" EntitySet="TipoGestion" />
+            <End Role="GestionPoliza" EntitySet="GestionPoliza" />
+          </AssociationSet>
+          <AssociationSet Name="FK_dbo_GestionPoliza_dbo_Usuario_usuarioId" Association="Self.FK_dbo_GestionPoliza_dbo_Usuario_usuarioId">
+            <End Role="Usuario" EntitySet="Usuario" />
+            <End Role="GestionPoliza" EntitySet="GestionPoliza" />
+          </AssociationSet>
+          <AssociationSet Name="FK_dbo_Permiso_dbo_Modulo_moduloId" Association="Self.FK_dbo_Permiso_dbo_Modulo_moduloId">
+            <End Role="Modulo" EntitySet="Modulo" />
+            <End Role="Permiso" EntitySet="Permiso" />
+          </AssociationSet>
+          <AssociationSet Name="FK_dbo_Poliza_dbo_Cliente_clienteId" Association="Self.FK_dbo_Poliza_dbo_Cliente_clienteId">
+            <End Role="Cliente" EntitySet="Cliente" />
+            <End Role="Poliza" EntitySet="Poliza" />
+          </AssociationSet>
+          <AssociationSet Name="FK_dbo_RolPermiso_dbo_Permiso_permisoId" Association="Self.FK_dbo_RolPermiso_dbo_Permiso_permisoId">
+            <End Role="Permiso" EntitySet="Permiso" />
+            <End Role="RolPermiso" EntitySet="RolPermiso" />
+          </AssociationSet>
+          <AssociationSet Name="FK_dbo_RolPermiso_dbo_Rol_rolId" Association="Self.FK_dbo_RolPermiso_dbo_Rol_rolId">
+            <End Role="Rol" EntitySet="Rol" />
+            <End Role="RolPermiso" EntitySet="RolPermiso" />
+          </AssociationSet>
+          <AssociationSet Name="FK_dbo_Usuario_dbo_Rol_rolId" Association="Self.FK_dbo_Usuario_dbo_Rol_rolId">
+            <End Role="Rol" EntitySet="Rol" />
+            <End Role="Usuario" EntitySet="Usuario" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="ProyectoSegurosDbModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="Cliente">
+          <Key>
+            <PropertyRef Name="clienteId" />
+          </Key>
+          <Property Name="clienteId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="nombreCliente" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="apellido1Cliente" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="apellido2Cliente" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="dniCliente" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="emailCliente" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="telefonoCliente" Type="String" MaxLength="15" FixedLength="false" Unicode="true" />
+          <Property Name="activo" Type="Int32" Nullable="false" />
+          <Property Name="fechaDesactivado" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="Poliza" Relationship="Self.FK_dbo_Poliza_dbo_Cliente_clienteId" FromRole="Cliente" ToRole="Poliza" />
+        </EntityType>
+        <EntityType Name="CondicionadoPoliza">
+          <Key>
+            <PropertyRef Name="condicionadoPolizaId" />
+          </Key>
+          <Property Name="condicionadoPolizaId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="tipoCondicionado" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="garantias" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="activo" Type="Int32" Nullable="false" />
+          <Property Name="fechaDesactivado" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="GestionPoliza" Relationship="Self.FK_dbo_GestionPoliza_dbo_CondicionadoPoliza_condicionadoPolizaId" FromRole="CondicionadoPoliza" ToRole="GestionPoliza" />
+        </EntityType>
+        <EntityType Name="GestionPoliza">
+          <Key>
+            <PropertyRef Name="gestionPolizaId" />
+          </Key>
+          <Property Name="gestionPolizaId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="matricula" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+          <Property Name="marcaVehiculo" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="modeloVehiculo" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="fechaInicio" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="fechaFin" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="precio" Type="Int32" Nullable="false" />
+          <Property Name="observaciones" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="fechaGestion" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="condicionadoPolizaId" Type="Int32" Nullable="false" />
+          <Property Name="tipoGestionId" Type="Int32" Nullable="false" />
+          <Property Name="polizaId" Type="Int32" Nullable="false" />
+          <Property Name="usuarioId" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="CondicionadoPoliza" Relationship="Self.FK_dbo_GestionPoliza_dbo_CondicionadoPoliza_condicionadoPolizaId" FromRole="GestionPoliza" ToRole="CondicionadoPoliza" />
+          <NavigationProperty Name="Poliza" Relationship="Self.FK_dbo_GestionPoliza_dbo_Poliza_polizaId" FromRole="GestionPoliza" ToRole="Poliza" />
+          <NavigationProperty Name="TipoGestion" Relationship="Self.FK_dbo_GestionPoliza_dbo_TipoGestion_tipoGestionId" FromRole="GestionPoliza" ToRole="TipoGestion" />
+          <NavigationProperty Name="Usuario" Relationship="Self.FK_dbo_GestionPoliza_dbo_Usuario_usuarioId" FromRole="GestionPoliza" ToRole="Usuario" />
+        </EntityType>
+        <EntityType Name="Modulo">
+          <Key>
+            <PropertyRef Name="moduloId" />
+          </Key>
+          <Property Name="moduloId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="nombreModulo" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Permiso" Relationship="Self.FK_dbo_Permiso_dbo_Modulo_moduloId" FromRole="Modulo" ToRole="Permiso" />
+        </EntityType>
+        <EntityType Name="Permiso">
+          <Key>
+            <PropertyRef Name="permisoId" />
+          </Key>
+          <Property Name="permisoId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="nombrePermiso" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="moduloId" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="Modulo" Relationship="Self.FK_dbo_Permiso_dbo_Modulo_moduloId" FromRole="Permiso" ToRole="Modulo" />
+          <NavigationProperty Name="RolPermiso" Relationship="Self.FK_dbo_RolPermiso_dbo_Permiso_permisoId" FromRole="Permiso" ToRole="RolPermiso" />
+        </EntityType>
+        <EntityType Name="Poliza">
+          <Key>
+            <PropertyRef Name="polizaId" />
+          </Key>
+          <Property Name="polizaId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="activo" Type="Int32" Nullable="false" />
+          <Property Name="fechaDesactivado" Type="DateTime" Precision="3" />
+          <Property Name="clienteId" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="Cliente" Relationship="Self.FK_dbo_Poliza_dbo_Cliente_clienteId" FromRole="Poliza" ToRole="Cliente" />
+          <NavigationProperty Name="GestionPoliza" Relationship="Self.FK_dbo_GestionPoliza_dbo_Poliza_polizaId" FromRole="Poliza" ToRole="GestionPoliza" />
+        </EntityType>
+        <EntityType Name="Rol">
+          <Key>
+            <PropertyRef Name="rolId" />
+          </Key>
+          <Property Name="rolId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="nombreRol" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="activo" Type="Int32" Nullable="false" />
+          <Property Name="fechaDesactivado" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="RolPermiso" Relationship="Self.FK_dbo_RolPermiso_dbo_Rol_rolId" FromRole="Rol" ToRole="RolPermiso" />
+          <NavigationProperty Name="Usuario" Relationship="Self.FK_dbo_Usuario_dbo_Rol_rolId" FromRole="Rol" ToRole="Usuario" />
+        </EntityType>
+        <EntityType Name="RolPermiso">
+          <Key>
+            <PropertyRef Name="rolPermisoId" />
+          </Key>
+          <Property Name="rolPermisoId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="permisoId" Type="Int32" Nullable="false" />
+          <Property Name="rolId" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="Permiso" Relationship="Self.FK_dbo_RolPermiso_dbo_Permiso_permisoId" FromRole="RolPermiso" ToRole="Permiso" />
+          <NavigationProperty Name="Rol" Relationship="Self.FK_dbo_RolPermiso_dbo_Rol_rolId" FromRole="RolPermiso" ToRole="Rol" />
+        </EntityType>
+        <EntityType Name="TipoGestion">
+          <Key>
+            <PropertyRef Name="tipoGestionId" />
+          </Key>
+          <Property Name="tipoGestionId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="nombreGestion" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="GestionPoliza" Relationship="Self.FK_dbo_GestionPoliza_dbo_TipoGestion_tipoGestionId" FromRole="TipoGestion" ToRole="GestionPoliza" />
+        </EntityType>
+        <EntityType Name="Usuario">
+          <Key>
+            <PropertyRef Name="usuarioId" />
+          </Key>
+          <Property Name="usuarioId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="nombreUsuario" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="apellido1Usuario" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="apellido2Usuario" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="dniUsuario" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="emailUsuario" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="password" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="activo" Type="Int32" Nullable="false" />
+          <Property Name="fechaAlta" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="fechaBaja" Type="DateTime" Precision="3" />
+          <Property Name="rolId" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="GestionPoliza" Relationship="Self.FK_dbo_GestionPoliza_dbo_Usuario_usuarioId" FromRole="Usuario" ToRole="GestionPoliza" />
+          <NavigationProperty Name="Rol" Relationship="Self.FK_dbo_Usuario_dbo_Rol_rolId" FromRole="Usuario" ToRole="Rol" />
+        </EntityType>
+        <Association Name="FK_dbo_Poliza_dbo_Cliente_clienteId">
+          <End Role="Cliente" Type="Self.Cliente" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="Poliza" Type="Self.Poliza" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Cliente">
+              <PropertyRef Name="clienteId" />
+            </Principal>
+            <Dependent Role="Poliza">
+              <PropertyRef Name="clienteId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_dbo_GestionPoliza_dbo_CondicionadoPoliza_condicionadoPolizaId">
+          <End Role="CondicionadoPoliza" Type="Self.CondicionadoPoliza" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="GestionPoliza" Type="Self.GestionPoliza" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="CondicionadoPoliza">
+              <PropertyRef Name="condicionadoPolizaId" />
+            </Principal>
+            <Dependent Role="GestionPoliza">
+              <PropertyRef Name="condicionadoPolizaId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_dbo_GestionPoliza_dbo_Poliza_polizaId">
+          <End Role="Poliza" Type="Self.Poliza" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="GestionPoliza" Type="Self.GestionPoliza" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Poliza">
+              <PropertyRef Name="polizaId" />
+            </Principal>
+            <Dependent Role="GestionPoliza">
+              <PropertyRef Name="polizaId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_dbo_GestionPoliza_dbo_TipoGestion_tipoGestionId">
+          <End Role="TipoGestion" Type="Self.TipoGestion" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="GestionPoliza" Type="Self.GestionPoliza" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TipoGestion">
+              <PropertyRef Name="tipoGestionId" />
+            </Principal>
+            <Dependent Role="GestionPoliza">
+              <PropertyRef Name="tipoGestionId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_dbo_GestionPoliza_dbo_Usuario_usuarioId">
+          <End Role="Usuario" Type="Self.Usuario" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="GestionPoliza" Type="Self.GestionPoliza" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Usuario">
+              <PropertyRef Name="usuarioId" />
+            </Principal>
+            <Dependent Role="GestionPoliza">
+              <PropertyRef Name="usuarioId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_dbo_Permiso_dbo_Modulo_moduloId">
+          <End Role="Modulo" Type="Self.Modulo" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="Permiso" Type="Self.Permiso" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Modulo">
+              <PropertyRef Name="moduloId" />
+            </Principal>
+            <Dependent Role="Permiso">
+              <PropertyRef Name="moduloId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_dbo_RolPermiso_dbo_Permiso_permisoId">
+          <End Role="Permiso" Type="Self.Permiso" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="RolPermiso" Type="Self.RolPermiso" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Permiso">
+              <PropertyRef Name="permisoId" />
+            </Principal>
+            <Dependent Role="RolPermiso">
+              <PropertyRef Name="permisoId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_dbo_RolPermiso_dbo_Rol_rolId">
+          <End Role="Rol" Type="Self.Rol" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="RolPermiso" Type="Self.RolPermiso" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Rol">
+              <PropertyRef Name="rolId" />
+            </Principal>
+            <Dependent Role="RolPermiso">
+              <PropertyRef Name="rolId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_dbo_Usuario_dbo_Rol_rolId">
+          <End Role="Rol" Type="Self.Rol" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="Usuario" Type="Self.Usuario" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Rol">
+              <PropertyRef Name="rolId" />
+            </Principal>
+            <Dependent Role="Usuario">
+              <PropertyRef Name="rolId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="ProyectoSegurosDbEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Cliente" EntityType="Self.Cliente" />
+          <EntitySet Name="CondicionadoPoliza" EntityType="Self.CondicionadoPoliza" />
+          <EntitySet Name="GestionPoliza" EntityType="Self.GestionPoliza" />
+          <EntitySet Name="Modulo" EntityType="Self.Modulo" />
+          <EntitySet Name="Permiso" EntityType="Self.Permiso" />
+          <EntitySet Name="Poliza" EntityType="Self.Poliza" />
+          <EntitySet Name="Rol" EntityType="Self.Rol" />
+          <EntitySet Name="RolPermiso" EntityType="Self.RolPermiso" />
+          <EntitySet Name="TipoGestion" EntityType="Self.TipoGestion" />
+          <EntitySet Name="Usuario" EntityType="Self.Usuario" />
+          <AssociationSet Name="FK_dbo_Poliza_dbo_Cliente_clienteId" Association="Self.FK_dbo_Poliza_dbo_Cliente_clienteId">
+            <End Role="Cliente" EntitySet="Cliente" />
+            <End Role="Poliza" EntitySet="Poliza" />
+          </AssociationSet>
+          <AssociationSet Name="FK_dbo_GestionPoliza_dbo_CondicionadoPoliza_condicionadoPolizaId" Association="Self.FK_dbo_GestionPoliza_dbo_CondicionadoPoliza_condicionadoPolizaId">
+            <End Role="CondicionadoPoliza" EntitySet="CondicionadoPoliza" />
+            <End Role="GestionPoliza" EntitySet="GestionPoliza" />
+          </AssociationSet>
+          <AssociationSet Name="FK_dbo_GestionPoliza_dbo_Poliza_polizaId" Association="Self.FK_dbo_GestionPoliza_dbo_Poliza_polizaId">
+            <End Role="Poliza" EntitySet="Poliza" />
+            <End Role="GestionPoliza" EntitySet="GestionPoliza" />
+          </AssociationSet>
+          <AssociationSet Name="FK_dbo_GestionPoliza_dbo_TipoGestion_tipoGestionId" Association="Self.FK_dbo_GestionPoliza_dbo_TipoGestion_tipoGestionId">
+            <End Role="TipoGestion" EntitySet="TipoGestion" />
+            <End Role="GestionPoliza" EntitySet="GestionPoliza" />
+          </AssociationSet>
+          <AssociationSet Name="FK_dbo_GestionPoliza_dbo_Usuario_usuarioId" Association="Self.FK_dbo_GestionPoliza_dbo_Usuario_usuarioId">
+            <End Role="Usuario" EntitySet="Usuario" />
+            <End Role="GestionPoliza" EntitySet="GestionPoliza" />
+          </AssociationSet>
+          <AssociationSet Name="FK_dbo_Permiso_dbo_Modulo_moduloId" Association="Self.FK_dbo_Permiso_dbo_Modulo_moduloId">
+            <End Role="Modulo" EntitySet="Modulo" />
+            <End Role="Permiso" EntitySet="Permiso" />
+          </AssociationSet>
+          <AssociationSet Name="FK_dbo_RolPermiso_dbo_Permiso_permisoId" Association="Self.FK_dbo_RolPermiso_dbo_Permiso_permisoId">
+            <End Role="Permiso" EntitySet="Permiso" />
+            <End Role="RolPermiso" EntitySet="RolPermiso" />
+          </AssociationSet>
+          <AssociationSet Name="FK_dbo_RolPermiso_dbo_Rol_rolId" Association="Self.FK_dbo_RolPermiso_dbo_Rol_rolId">
+            <End Role="Rol" EntitySet="Rol" />
+            <End Role="RolPermiso" EntitySet="RolPermiso" />
+          </AssociationSet>
+          <AssociationSet Name="FK_dbo_Usuario_dbo_Rol_rolId" Association="Self.FK_dbo_Usuario_dbo_Rol_rolId">
+            <End Role="Rol" EntitySet="Rol" />
+            <End Role="Usuario" EntitySet="Usuario" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="ProyectoSegurosDbModelStoreContainer" CdmEntityContainer="ProyectoSegurosDbEntities">
+          <EntitySetMapping Name="Cliente">
+            <EntityTypeMapping TypeName="ProyectoSegurosDbModel.Cliente">
+              <MappingFragment StoreEntitySet="Cliente">
+                <ScalarProperty Name="clienteId" ColumnName="clienteId" />
+                <ScalarProperty Name="nombreCliente" ColumnName="nombreCliente" />
+                <ScalarProperty Name="apellido1Cliente" ColumnName="apellido1Cliente" />
+                <ScalarProperty Name="apellido2Cliente" ColumnName="apellido2Cliente" />
+                <ScalarProperty Name="dniCliente" ColumnName="dniCliente" />
+                <ScalarProperty Name="emailCliente" ColumnName="emailCliente" />
+                <ScalarProperty Name="telefonoCliente" ColumnName="telefonoCliente" />
+                <ScalarProperty Name="activo" ColumnName="activo" />
+                <ScalarProperty Name="fechaDesactivado" ColumnName="fechaDesactivado" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="CondicionadoPoliza">
+            <EntityTypeMapping TypeName="ProyectoSegurosDbModel.CondicionadoPoliza">
+              <MappingFragment StoreEntitySet="CondicionadoPoliza">
+                <ScalarProperty Name="condicionadoPolizaId" ColumnName="condicionadoPolizaId" />
+                <ScalarProperty Name="tipoCondicionado" ColumnName="tipoCondicionado" />
+                <ScalarProperty Name="garantias" ColumnName="garantias" />
+                <ScalarProperty Name="activo" ColumnName="activo" />
+                <ScalarProperty Name="fechaDesactivado" ColumnName="fechaDesactivado" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="GestionPoliza">
+            <EntityTypeMapping TypeName="ProyectoSegurosDbModel.GestionPoliza">
+              <MappingFragment StoreEntitySet="GestionPoliza">
+                <ScalarProperty Name="gestionPolizaId" ColumnName="gestionPolizaId" />
+                <ScalarProperty Name="matricula" ColumnName="matricula" />
+                <ScalarProperty Name="marcaVehiculo" ColumnName="marcaVehiculo" />
+                <ScalarProperty Name="modeloVehiculo" ColumnName="modeloVehiculo" />
+                <ScalarProperty Name="fechaInicio" ColumnName="fechaInicio" />
+                <ScalarProperty Name="fechaFin" ColumnName="fechaFin" />
+                <ScalarProperty Name="precio" ColumnName="precio" />
+                <ScalarProperty Name="observaciones" ColumnName="observaciones" />
+                <ScalarProperty Name="fechaGestion" ColumnName="fechaGestion" />
+                <ScalarProperty Name="condicionadoPolizaId" ColumnName="condicionadoPolizaId" />
+                <ScalarProperty Name="tipoGestionId" ColumnName="tipoGestionId" />
+                <ScalarProperty Name="polizaId" ColumnName="polizaId" />
+                <ScalarProperty Name="usuarioId" ColumnName="usuarioId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Modulo">
+            <EntityTypeMapping TypeName="ProyectoSegurosDbModel.Modulo">
+              <MappingFragment StoreEntitySet="Modulo">
+                <ScalarProperty Name="moduloId" ColumnName="moduloId" />
+                <ScalarProperty Name="nombreModulo" ColumnName="nombreModulo" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Permiso">
+            <EntityTypeMapping TypeName="ProyectoSegurosDbModel.Permiso">
+              <MappingFragment StoreEntitySet="Permiso">
+                <ScalarProperty Name="permisoId" ColumnName="permisoId" />
+                <ScalarProperty Name="nombrePermiso" ColumnName="nombrePermiso" />
+                <ScalarProperty Name="moduloId" ColumnName="moduloId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Poliza">
+            <EntityTypeMapping TypeName="ProyectoSegurosDbModel.Poliza">
+              <MappingFragment StoreEntitySet="Poliza">
+                <ScalarProperty Name="polizaId" ColumnName="polizaId" />
+                <ScalarProperty Name="activo" ColumnName="activo" />
+                <ScalarProperty Name="fechaDesactivado" ColumnName="fechaDesactivado" />
+                <ScalarProperty Name="clienteId" ColumnName="clienteId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Rol">
+            <EntityTypeMapping TypeName="ProyectoSegurosDbModel.Rol">
+              <MappingFragment StoreEntitySet="Rol">
+                <ScalarProperty Name="rolId" ColumnName="rolId" />
+                <ScalarProperty Name="nombreRol" ColumnName="nombreRol" />
+                <ScalarProperty Name="activo" ColumnName="activo" />
+                <ScalarProperty Name="fechaDesactivado" ColumnName="fechaDesactivado" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="RolPermiso">
+            <EntityTypeMapping TypeName="ProyectoSegurosDbModel.RolPermiso">
+              <MappingFragment StoreEntitySet="RolPermiso">
+                <ScalarProperty Name="rolPermisoId" ColumnName="rolPermisoId" />
+                <ScalarProperty Name="permisoId" ColumnName="permisoId" />
+                <ScalarProperty Name="rolId" ColumnName="rolId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TipoGestion">
+            <EntityTypeMapping TypeName="ProyectoSegurosDbModel.TipoGestion">
+              <MappingFragment StoreEntitySet="TipoGestion">
+                <ScalarProperty Name="tipoGestionId" ColumnName="tipoGestionId" />
+                <ScalarProperty Name="nombreGestion" ColumnName="nombreGestion" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Usuario">
+            <EntityTypeMapping TypeName="ProyectoSegurosDbModel.Usuario">
+              <MappingFragment StoreEntitySet="Usuario">
+                <ScalarProperty Name="usuarioId" ColumnName="usuarioId" />
+                <ScalarProperty Name="nombreUsuario" ColumnName="nombreUsuario" />
+                <ScalarProperty Name="apellido1Usuario" ColumnName="apellido1Usuario" />
+                <ScalarProperty Name="apellido2Usuario" ColumnName="apellido2Usuario" />
+                <ScalarProperty Name="dniUsuario" ColumnName="dniUsuario" />
+                <ScalarProperty Name="emailUsuario" ColumnName="emailUsuario" />
+                <ScalarProperty Name="password" ColumnName="password" />
+                <ScalarProperty Name="activo" ColumnName="activo" />
+                <ScalarProperty Name="fechaAlta" ColumnName="fechaAlta" />
+                <ScalarProperty Name="fechaBaja" ColumnName="fechaBaja" />
+                <ScalarProperty Name="rolId" ColumnName="rolId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="false" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="Ninguno" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

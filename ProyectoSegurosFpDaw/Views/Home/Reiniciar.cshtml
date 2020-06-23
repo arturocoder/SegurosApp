@@ -1,0 +1,58 @@
+﻿
+@{
+    ViewBag.Title = "Reiniciar";
+}
+
+    <section class="content ">
+        <div class="row ml-4">
+            <div class="login-box col-xs-12 col-sm-12 col-md-9 col-lg-7 col-xl-5">
+                <div class="login-logo mt-4 ">
+                
+                </div>
+                <!-- /.login-logo -->
+                <div class="card">
+                    <div class="card-body login-card-body">
+                        <div class="row">
+                            <span class="login-logo col-12 "><i class="fas fa-user-lock fa-align-center"></i></span>
+                        </div>
+                        @if (ViewBag.msj != null)
+                        {
+                            <div class="alert alert-default-info" role="alert">
+                                @ViewBag.msj
+                            </div>
+                        }
+                        @using (Html.BeginForm("Reiniciar", "Home", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+                        {
+                            @Html.AntiForgeryToken()
+
+                            <div class="input-group mb-3">
+                                @Html.TextBox("user", null, new { @class = "form-control", @placeholder = "usuario" })
+                                <div class="input-group-append">
+                                    <div class="input-group-text">
+                                        <span class="fas fa-envelope"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="input-group mb-3">
+                                @Html.TextBox("Pass", null, new { @class = "form-control", @placeholder = "PASSWORD", @type = "password", @autocomplete = "off" })
+                                <div class="input-group-append">
+                                    <div class="input-group-text">
+                                        <span class="fas fa-lock"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <button type="submit" class="btn  btn-info btn-block">Reiniciar</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <!-- /.login-card-body -->
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-12 col-md-3 col-lg-5 col-xl-7"></div>
+        </div>
+        <!-- /.login-box -->
+    </section>
+

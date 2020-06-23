@@ -1,0 +1,9 @@
+﻿/*input text en mayúscula*/ 
+input[type="text"] {
+    text-transform: uppercase;
+    
+}
+/*Modifica el cursor del mouse en las filas de las tablas*/ 
+tr {
+    Cursor: pointer;
+}

@@ -1,0 +1,80 @@
+﻿@model ProyectoSegurosFpDaw.Models.CondicionadoPoliza
+
+@{
+    ViewBag.Title = "Condicionados Póliza";    
+}
+
+<!-- Header -->
+<section class="fixedHeader-locked">
+    <div col-sm-3>
+        <div class="card card-gray ">
+            <div class="card-header">
+                <h2 class="card-title">CONDICIONADOS DE PÓLIZA</h2>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        @if (ViewBag.listaCondicionados != null)
+        {
+            var listaCondicionados = ViewBag.listaCondicionados as IList<ProyectoSegurosFpDaw.Models.CondicionadoPoliza>;
+            if (listaCondicionados.Count > 0)
+            {
+                foreach (var item in listaCondicionados)
+                {
+                    // Variables para cambiar iconos / title / vigente /colores de card
+                    // y variar los id de cada card. 
+                    string colorCard = "";
+                    string vigente = "";
+                    string nId = item.condicionadoPolizaId.ToString();
+                    string numIdCondNav = "cond" + nId;
+                    string numIdGarantNav = "garan" + nId;
+                    string numIdCondContent = "condContent" + nId;
+                    string numIdGarantContent = "garanContent" + nId;
+                    string titleVigente = "";
+
+                    if (item.activo == 1)
+                    {
+                        colorCard = "card-info";
+                        titleVigente = ""; 
+                    }
+                    else
+                    {
+                        colorCard = "card-gray"; 
+                        vigente = "No vigente";
+                        titleVigente = "Desde " + item.fechaDesactivado;
+                    }
+                    <div class="col-12 col-sm-12 col-lg-4">
+                        <div class="card @colorCard card-tabs">
+                            <div class="card-header p-0 pt-1">
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" id="@numIdCondNav" data-toggle="pill" href="#@numIdCondContent" role="tab" aria-controls="@numIdCondContent" aria-selected="true" title="@titleVigente">Condicionado @vigente</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" id="@numIdGarantNav" data-toggle="pill" href="#@numIdGarantContent" role="tab" aria-controls="@numIdGarantContent" aria-selected="false">Garantías</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="card-body">
+                                <div class="tab-content">
+                                    <div class="tab-pane fade show active" id="@numIdCondContent" role="tabpanel" aria-labelledby="@numIdCondNav">
+                                        @Html.TextBox("tipoCondicionado" + nId, item.tipoCondicionado, new { @class = "form-control", @readonly = true, maxlength = "50" })
+                                    </div>
+                                    <div class="tab-pane fade" id="@numIdGarantContent" role="tabpanel" aria-labelledby="@numIdGarantNav">
+                                        @Html.TextArea("garantias" + nId, item.garantias, new { @class = "form-control", @readonly = true, maxlength = "500", rows = "1" })
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /.card -->
+                        </div>
+                    </div>
+                }
+            }
+        }
+    </div>
+</section>
+

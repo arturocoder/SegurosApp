@@ -1,0 +1,257 @@
+﻿@model ProyectoSegurosFpDaw.Models.GestionPoliza
+
+@{
+    ViewBag.Title = "Información Póliza";
+}
+
+<!-- Header -->
+<section class="fixedHeader-locked">
+    <div col-sm-3>
+        <div class="card card-gray ">
+            <div class="card-header">
+                <h2 class="card-title">PÓLIZAS</h2>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-info">
+                <div class="card-header">
+                    <h3 class="card-title">Información Póliza</h3>
+                    <div class="card-tools">
+                    </div>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled form-inline">
+                        <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.LabelFor(m => m.polizaId, new { @class = "control-label" })
+                            <div class="input-group">
+                                @{
+                                    // Si póliza está activa ,cambia color del campo Id
+                                    var colorPolizaActiva = "";
+                                    if (Model.Poliza.activo == 1)
+                                    {
+                                        colorPolizaActiva = "bg-gradient-success";
+                                    }
+                                    else
+                                    {
+                                        colorPolizaActiva = "bg-gradient-gray";
+
+                                    }
+
+                                }
+                                <div class="input-group-prepend ">
+                                    <span class="input-group-text @colorPolizaActiva "><i class="fas fa-sun  "></i></span>
+                                </div>
+                                @Html.TextBoxFor(m => m.polizaId, new { @class = "form-control" , @readonly = true })
+                            </div>
+                        </li>
+                        @if (Model.Poliza.Cliente.activo == 1)
+                        {
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(m => m.Poliza.Cliente.nombreCliente, new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-portrait"></i></span>
+                                    </div>
+                                    @Html.TextBoxFor(m => m.Poliza.Cliente.nombreCliente, new { @class = "form-control", @readonly = true })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(m => m.Poliza.Cliente.apellido1Cliente, new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-portrait"></i></span>
+                                    </div>
+                                    @Html.TextBoxFor(m => m.Poliza.Cliente.apellido1Cliente, new { @class = "form-control", @readonly = true })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(m => m.Poliza.Cliente.dniCliente, new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                    </div>
+                                    @Html.TextBoxFor(m => m.Poliza.Cliente.dniCliente, new { @class = "form-control", @readonly = true })
+                                </div>
+                            </li>
+                        }
+                        // Si el cliente no está activo, no muestra datos personales.
+                        else
+                        {
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(m => m.Poliza.Cliente.nombreCliente, new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-portrait"></i></span>
+                                    </div>
+                                    @Html.TextBox("nombreCliente", "CLIENTE ELIMINADO", new { @class = "form-control", @readonly = true })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(m => m.Poliza.Cliente.apellido1Cliente, new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-portrait"></i></span>
+                                    </div>
+                                    @Html.TextBox("apellido1Cliente", "CLIENTE ELIMINADO", new { @class = "form-control", @readonly = true })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(m => m.Poliza.Cliente.dniCliente, new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                    </div>
+                                    @Html.TextBox("dniCliente", "ID : " + Model.Poliza.clienteId, new { @class = "form-control", @readonly = true })
+                                </div>
+                            </li>
+                        }
+                        <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.LabelFor(model => model.fechaInicio, new { @class = "control-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-calendar-plus"></i></span>
+                                </div>
+                                @Html.TextBox("fechaInicio", Model.fechaInicio.ToShortDateString(), new { @class = "form-control", @readonly = true })
+                            </div>
+                        </li>
+                        <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.LabelFor(model => model.fechaFin, new { @class = "control-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-calendar-minus"></i></span>
+                                </div>
+                                @Html.TextBox("fechaFin", Model.fechaFin.ToShortDateString(), new { @class = "form-control", @readonly = true })
+                            </div>
+                        </li>
+                        <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.LabelFor(model => model.matricula, new { @class = "control-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-car-alt"></i></span>
+                                </div>
+                                @Html.TextBoxFor(model => model.matricula, new { @class = "form-control", @readonly = true })
+                            </div>
+                        </li>
+                        <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.LabelFor(model => model.marcaVehiculo, new { @class = "control-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-car"></i></span>
+                                </div>
+                                @Html.TextBoxFor(model => model.marcaVehiculo, new { @class = "form-control", @readonly = true })
+                            </div>
+                        </li>
+                        <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.LabelFor(model => model.modeloVehiculo, new { @class = "control-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-car"></i></span>
+                                </div>
+                                @Html.TextBoxFor(model => model.modeloVehiculo, new { @class = "form-control", @readonly = true })
+                            </div>
+                        </li>
+                        <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.LabelFor(model => model.CondicionadoPoliza.tipoCondicionado, new { @class = "control-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-list-ol"></i></span>
+                                </div>
+                                @Html.TextBoxFor(model => model.CondicionadoPoliza.tipoCondicionado, new { @class = "form-control", @readonly = true })
+                            </div>
+                        </li>
+                        <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.LabelFor(model => model.precio, new { @class = "control-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-euro-sign"></i></span>
+                                </div>
+                                @Html.TextBoxFor(model => model.precio, new { @class = "form-control", @readonly = true })
+                            </div>
+                        </li>
+                        <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.LabelFor(model => model.TipoGestion.nombreGestion, "Última Gestión", new { @class = "control-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-edit"></i></span>
+                                </div>
+                                @Html.TextBoxFor(model => model.TipoGestion.nombreGestion, new { @class = "form-control", @readonly = true })
+                            </div>
+                        </li>
+                        <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.LabelFor(model => model.fechaGestion, "Fecha de Última Gestión", new { @class = "control-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-calendar-check"></i></span>
+                                </div>
+                                @Html.TextBoxFor(model => model.fechaGestion, new { @class = "form-control", @readonly = true })
+                            </div>
+                        </li>
+                        <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                            @Html.LabelFor(model => model.observaciones, new { @class = "control-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-comment-dots"></i></span>
+                                </div>
+                                @Html.TextAreaFor(model => model.observaciones, new { @class = "form-control", @readonly = true, @rows = 1 })
+                            </div>
+                        </li>
+                        @*  ----------------------------------------------------------------------------------------------*@
+                        <li class=" col-xs-12  col-md-12 mb-4">
+
+                        </li>
+                        @*  ----------------------------------------------------------------------------------------------*@
+                    </ul>
+                    <div class="row">
+                        <div class="col-2 col-sm-1 row">
+                            <a href="@Url.Action("Index","GestionPolizas")" class="btn btn-info mr-2 mb-2">
+                                <i class="fas fa-reply"> </i>
+                            </a>
+                        </div>
+                        <div class="col row justify-content-end">
+                            <a href="@Url.Action("Details", "Clientes", new { id = Model.Poliza.clienteId })" class="btn btn-info mr-2 mb-2 ">
+                                <i class="fas fa-eye"> </i>
+                                Detalle Cliente
+                            </a>
+                            <a href="@Url.Action("Historico", "GestionPolizas", new { id = Model.polizaId })" class="btn btn-info mr-2 mb-2">
+                                <i class="fas fa-list-alt"> </i>
+                                Historial Póliza
+                            </a>
+                            @{ if (Model.Poliza.activo == 1)
+                                {
+                                    <a href="@Url.Action("Edit", "GestionPolizas", new { id = Model.polizaId })" class="btn btn-info mr-2 mb-2 ">
+                                        <i class="fas fa-edit"> </i>
+                                        Modificar Póliza
+                                    </a>
+                                    using (Html.BeginForm("Delete", "GestionPolizas", FormMethod.Post))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        @Html.Hidden("gestionPolizaId")
+                                        @Html.Hidden("motivoClx")
+                                        <button type="button" id="btnDelete" class="btn btn-info mr-2 mb-2">
+                                            <i class="fas fa-minus-square"> </i>
+                                            Cancelar Póliza
+                                        </button>
+                                    }
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+        </div>
+    </div>
+</section>
+<!-- /.content -->
+
+@section Scripts{
+    <script src="~/Scripts/SharedScripts.js"></script>
+    <script src="~/Scripts/GestionPolizasDetailsScript.js"></script>
+}

@@ -1,0 +1,64 @@
+﻿@model IEnumerable<ProyectoSegurosFpDaw.Models.Rol>
+
+@{
+    ViewBag.Title = "Roles y Permisos";
+}
+
+<!-- Header -->
+<section class="fixedHeader-locked">
+    <div col-sm-3>
+        <div class="card card-gray ">
+            <div class="card-header">
+                <h2 class="card-title">ROLES Y PERMISOS</h2>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        @* Muestra cada Rol , y de cada Rol, sus permisos.*@
+        @foreach (var item in Model)
+        {          
+            // Contador para cambiar color de cada fila de permisos.
+            var contador = 1;
+            <div class="col-12 col-sm-6 col-md-6 col-lg-3 col-xl-3">
+                <div class="card card-info collapsed-card">
+                    <div class="card-header">
+                        <h3 class="card-title">@item.nombreRol</h3>
+                        <div class="card-tools">
+                            <button type="button" id="btnColl" class="btn btn-tool" data-card-widget="collapse" data-toggle="tooltip" title="Collapse">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group row ">
+                            @foreach (var item2 in item.RolPermiso)
+                            {
+                                if (contador % 2 == 0)
+                                {
+                                    <div class="list-group-item list-group-item-light">
+                                        @item2.Permiso.nombrePermiso
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="list-group-item list-group-item-dark">
+                                        @item2.Permiso.nombrePermiso
+                                    </div>
+                                }
+                                contador++;
+                            }
+                        </div>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+            </div>
+        }
+    </div>
+</section>
+<!-- /.content -->
+

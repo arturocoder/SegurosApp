@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="bfeb224dd9c34f3da49304c4d4348f55" Name="Diagram1">
+        <EntityTypeShape EntityType="ProyectoSegurosDbModel.Cliente" Width="1.5" PointX="8.875" PointY="5.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="ProyectoSegurosDbModel.CondicionadoPoliza" Width="1.5" PointX="1.25" PointY="9.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="ProyectoSegurosDbModel.GestionPoliza" Width="1.5" PointX="3.75" PointY="5.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="ProyectoSegurosDbModel.Modulo" Width="1.5" PointX="8.75" PointY="1.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="ProyectoSegurosDbModel.Permiso" Width="1.5" PointX="6" PointY="1.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="ProyectoSegurosDbModel.Poliza" Width="1.5" PointX="6.125" PointY="5.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="ProyectoSegurosDbModel.Rol" Width="1.5" PointX="0.875" PointY="1.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="ProyectoSegurosDbModel.RolPermiso" Width="1.5" PointX="3.25" PointY="1.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="ProyectoSegurosDbModel.TipoGestion" Width="1.5" PointX="6.25" PointY="10" IsExpanded="true" />
+        <EntityTypeShape EntityType="ProyectoSegurosDbModel.Usuario" Width="1.5" PointX="0.875" PointY="5.375" IsExpanded="true" />
+        <AssociationConnector Association="ProyectoSegurosDbModel.FK_dbo_Poliza_dbo_Cliente_clienteId" ManuallyRouted="false" />
+        <AssociationConnector Association="ProyectoSegurosDbModel.FK_dbo_GestionPoliza_dbo_CondicionadoPoliza_condicionadoPolizaId" ManuallyRouted="false" />
+        <AssociationConnector Association="ProyectoSegurosDbModel.FK_dbo_GestionPoliza_dbo_Poliza_polizaId" ManuallyRouted="false" />
+        <AssociationConnector Association="ProyectoSegurosDbModel.FK_dbo_GestionPoliza_dbo_TipoGestion_tipoGestionId" ManuallyRouted="false" />
+        <AssociationConnector Association="ProyectoSegurosDbModel.FK_dbo_GestionPoliza_dbo_Usuario_usuarioId" ManuallyRouted="false" />
+        <AssociationConnector Association="ProyectoSegurosDbModel.FK_dbo_Permiso_dbo_Modulo_moduloId" ManuallyRouted="false" />
+        <AssociationConnector Association="ProyectoSegurosDbModel.FK_dbo_RolPermiso_dbo_Permiso_permisoId" ManuallyRouted="false" />
+        <AssociationConnector Association="ProyectoSegurosDbModel.FK_dbo_RolPermiso_dbo_Rol_rolId" ManuallyRouted="false" />
+        <AssociationConnector Association="ProyectoSegurosDbModel.FK_dbo_Usuario_dbo_Rol_rolId" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

@@ -1,0 +1,155 @@
+﻿@model ProyectoSegurosFpDaw.Models.CondicionadoPoliza
+
+@{
+    ViewBag.Title = "Condicionados Póliza";
+}
+
+<!-- Header -->
+<section class="fixedHeader-locked">
+    <div col-sm-3>
+        <div class="card card-gray ">
+            <div class="card-header">
+                <h2 class="card-title">CONDICIONADOS DE PÓLIZA</h2>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        @if (ViewBag.listaCondicionados != null)
+        {
+            var listaCondicionados = ViewBag.listaCondicionados as IList<ProyectoSegurosFpDaw.Models.CondicionadoPoliza>;
+            if (listaCondicionados.Count > 0)
+            {
+                foreach (var item in listaCondicionados)
+                {
+                    // Variables para cambiar iconos / title / vigente /colores de card
+                    // y variar los id de cada card. 
+                    string colorCard = "";
+                    string vigente = "";
+                    string nId = item.condicionadoPolizaId.ToString();
+                    string numIdCondNav = "cond" + nId;
+                    string numIdGarantNav = "garan" + nId;
+                    string numIdCondContent = "condContent" + nId;
+                    string numIdGarantContent = "garanContent" + nId;
+                    string iconoBorrar = "";
+                    string titleBorrar = "";
+                    string titleVigente = "";
+
+                    // Si condicionado está activo/no activo,
+                    // muestra icono de Eliminar / Recuperar y modifica color.
+                    if (item.activo == 1)
+                    {
+                        colorCard = "card-info";
+                        iconoBorrar = "fa-trash-alt";
+                        titleBorrar = "Eliminar Condicionado";
+                        titleVigente = "";
+                    }
+                    else
+                    {
+                        colorCard = "card-gray";
+                        vigente = "No vigente";
+                        iconoBorrar = "fa-trash-restore-alt";
+                        titleBorrar = "Recuperar Condicionado";
+                        titleVigente = "Desde " + item.fechaDesactivado;
+                    }
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-4">
+                        <div class="card @colorCard card-tabs">
+                            <div class="card-header p-0 pt-1">
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" id="@numIdCondNav" data-toggle="pill" href="#@numIdCondContent" role="tab" aria-controls="@numIdCondContent" aria-selected="true" title="@titleVigente">Condicionado @vigente</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" id="@numIdGarantNav" data-toggle="pill" href="#@numIdGarantContent" role="tab" aria-controls="@numIdGarantContent" aria-selected="false">Garantías</a>
+                                    </li>
+                                    @if (item.activo == 1)
+                                    {
+                                        <li class="nav-item">
+                                            <input type="hidden" name="IDcondicionado" value="@item.condicionadoPolizaId" />
+                                            <button class="btn btn-outline-light nav-link btnEditar" title="Editar Condicionado">
+                                                <i class="fas fa-pencil-alt"></i>
+                                            </button>
+                                        </li>
+                                    }
+                                    <li class="nav-item">
+                                        @using (Html.BeginForm("Delete", "CondicionadoPolizas", FormMethod.Post, new { role = "form" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="condicionadoId" value="@item.condicionadoPolizaId" />
+                                            <button class="btn btn-outline-light nav-link btnEliminar" title="@titleBorrar">
+                                                <i class="fas @iconoBorrar"></i>
+                                            </button>
+                                        }
+                                    </li>
+                                </ul>
+                            </div>
+                            @using (Html.BeginForm("Edit", "CondicionadoPolizas", FormMethod.Post, new { role = "form", id = nId }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="IDCondicionado" value="@item.condicionadoPolizaId" />
+                                <div class="card-body">
+                                    <div class="tab-content">
+                                        <div class="tab-pane fade show active" id="@numIdCondContent" role="tabpanel" aria-labelledby="@numIdCondNav">
+                                            @Html.TextBox("tipoCondicionado" + nId, item.tipoCondicionado, new { @class = "form-control", @readonly = true, maxlength = "50" })
+                                            <input hidden name="tipoCondicionado"/>
+                                        </div>
+                                        <div class="tab-pane fade" id="@numIdGarantContent" role="tabpanel" aria-labelledby="@numIdGarantNav">
+                                            @Html.TextArea("garantias" + nId, item.garantias, new { @class = "form-control", @readonly = true, maxlength = "500", rows = "1" })
+                                            <input hidden name="garantias" />
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            <!-- /.card -->
+                        </div>
+                    </div>
+                }
+            }
+        }
+    </div>
+    <div class="row">
+        <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-4">
+            <div class="card card-gray-dark card-tabs">
+                <div class="card-header p-0 pt-1">
+                    <ul class="nav nav-tabs" id="cardCrear" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="cardCrearTab" data-toggle="pill" href="#cardCrearHome" role="tab" aria-controls="cardCrearHome" aria-selected="true">Nuevo Condicionado</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="crearGarantiasTab" data-toggle="pill" href="#garantiasTabContent" role="tab" aria-controls="garantiasTabContent" aria-selected="false">Garantías</a>
+                        </li>
+                        <li class="nav-item">
+                            <button id="btnCrear" class="btn btn-outline-light nav-link" title="Crear Condicionado">
+                                <i class="fas fa-save"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                @using (Html.BeginForm("Create", "CondicionadoPolizas", FormMethod.Post, new { role = "form", id = "formCreate" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <div class="card-body">
+                        <div class="tab-content" id="cardCrearContent">
+                            <div class="tab-pane fade show active" id="cardCrearHome" role="tabpanel" aria-labelledby="cardCrearTab">
+                                @Html.EditorFor(model => model.tipoCondicionado, new { htmlAttributes = new { @class = "form-control", @placeholder = "nombre", maxlength = "50" } })
+                            </div>
+                            <div class="tab-pane fade" id="garantiasTabContent" role="tabpanel" aria-labelledby="crearGarantiasTab">
+                                @Html.EditorFor(model => model.garantias, new { htmlAttributes = new { @class = "form-control", @placeholder = "GARANTÍAS ", maxlength = "500", rows = "1" } })
+                            </div>
+                        </div>
+                    </div>
+                }
+                <!-- /.card -->
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts{
+    <script src="~/Scripts/SharedScripts.js"></script>
+    <script src="~/Scripts/CondicionadoPolizaSharedScripts.js"></script>
+    <script src="~/Scripts/CondicionadoPolizaIndexScript.js"></script>
+}

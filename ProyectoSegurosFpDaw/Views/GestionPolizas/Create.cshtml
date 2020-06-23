@@ -1,0 +1,206 @@
+﻿@model ProyectoSegurosFpDaw.Models.GestionPoliza
+
+@{
+    ViewBag.Title = "Crear Póliza";
+
+    var cliente = new ProyectoSegurosFpDaw.Models.Cliente();
+}
+
+@section css{
+    <!-- Date range Picker -->
+    <link href="~/plugins/daterangepicker/daterangepicker.css" rel="stylesheet" />
+}
+
+<!-- Header -->
+<section class="fixedHeader-locked">
+    <div col-sm-3>
+        <div class="card card-gray ">
+            <div class="card-header">
+                <h2 class="card-title">PÓLIZAS</h2>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        <div class="col-12">
+            @using (Html.BeginForm("Create", "GestionPolizas", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+            {
+                @Html.AntiForgeryToken()
+                if (ViewBag.cliente != null)
+                {
+                    cliente = ViewBag.cliente as ProyectoSegurosFpDaw.Models.Cliente;
+                    @Html.Hidden("clienteId", cliente.clienteId)
+                }
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">Crear Póliza</h3>
+                        <div class="card-tools">
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled form-inline">
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(m => m.Poliza.Cliente.nombreCliente, new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-portrait"></i></span>
+                                    </div>
+                                    @Html.TextBox("nombreCliente", cliente.nombreCliente, new { @class = "form-control", @autocomplete = "off", @readonly = true })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(m => m.Poliza.Cliente.apellido1Cliente, new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-portrait"></i></span>
+                                    </div>
+                                    @Html.TextBox("apellido1Cliente", cliente.apellido1Cliente, new { @class = "form-control", @autocomplete = "off", @readonly = true })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(m => m.Poliza.Cliente.apellido2Cliente, htmlAttributes: new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-portrait"></i></span>
+                                    </div>
+                                    @Html.TextBox("apellido2Cliente", cliente.apellido2Cliente, new { @class = "form-control", @autocomplete = "off", @readonly = true })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(m => m.Poliza.Cliente.dniCliente, new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                    </div>
+                                    @Html.TextBox("dniCliente", cliente.dniCliente, new { @class = "form-control", @autocomplete = "off", @readonly = true })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(m => m.Poliza.Cliente.emailCliente, htmlAttributes: new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-at"></i></span>
+                                    </div>
+                                    @Html.TextBox("emailCliente", cliente.emailCliente, new { @class = "form-control", @autocomplete = "off", @readonly = true })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(m => m.Poliza.Cliente.telefonoCliente, htmlAttributes: new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-mobile-alt"></i></span>
+                                    </div>
+                                    @Html.TextBox("telefonoCliente", cliente.telefonoCliente, new { @class = "form-control", @autocomplete = "off", @readonly = true })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(model => model.matricula, htmlAttributes: new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-car-alt"></i></span>
+                                    </div>
+                                    @Html.EditorFor(model => model.matricula, new { htmlAttributes = new { @class = "form-control", @autocomplete = "off", @maxlength = "10" } })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(model => model.marcaVehiculo, htmlAttributes: new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-car"></i></span>
+                                    </div>
+                                    @Html.EditorFor(model => model.marcaVehiculo, new { htmlAttributes = new { @class = "form-control", @autocomplete = "off", @maxlength = "20" } })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(model => model.modeloVehiculo, htmlAttributes: new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-car"></i></span>
+                                    </div>
+                                    @Html.EditorFor(model => model.modeloVehiculo, new { htmlAttributes = new { @class = "form-control", @autocomplete = "off", @maxlength = "20" } })
+                                </div>
+                            </li>
+                            <li class=" col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.Label("Inicio / Fin de Póliza", htmlAttributes: new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-calendar-plus"></i>
+                                        </span>
+                                    </div>
+                                    @Html.TextBox("fechaApertura", null, new { @class = "form-control float-right", @autocomplete = "off" })
+                                    @Html.Hidden("fechaInicio")
+                                    @Html.Hidden("fechaFin")
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(m => m.CondicionadoPoliza.tipoCondicionado, htmlAttributes: new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-list-ol"></i></span>
+                                    </div>
+                                    @Html.DropDownList("condicionadoPolizaId", null, htmlAttributes: new { @class = "form-control" })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(model => model.observaciones, htmlAttributes: new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-comment-dots"></i></span>
+                                    </div>
+                                    @Html.EditorFor(model => model.observaciones, new { htmlAttributes = new { @class = "form-control", @autocomplete = "off", @rows = 1, @maxlength = "500" } })
+                                </div>
+                            </li>
+                            <li class="ccol-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(model => model.precio, htmlAttributes: new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-euro-sign"></i></span>
+                                    </div>
+                                    @Html.EditorFor(model => model.precio, new { htmlAttributes = new { @class = "form-control", @autocomplete = "off" } })
+                                </div>
+                            </li>
+                            @*  ----------------------------------------------------------------------------------------------*@
+                            <li class=" col-xs-12  col-md-12 mb-4">
+
+                            </li>
+                            @*  ----------------------------------------------------------------------------------------------*@
+                        </ul>
+                        <div class="row">
+                            <div class="col-2 col-sm-1 row">
+                                <a href="@Url.Action("Index","GestionPolizas")" class="btn btn-info float-left">
+                                    <i class="fas fa-reply"> </i>
+                                </a>
+                            </div>
+                            <div class="col row justify-content-end">
+                                <a href="@Url.Action("Edit", "Clientes", new { id = cliente.clienteId })" class="btn btn-info mr-2 ">
+                                    <i class="fas fa-edit"> </i>
+                                    Editar Cliente
+                                </a>
+                                <button type="submit" class="btn btn-info float-right">
+                                    <i class="fas fa-plus-square"> </i>
+                                    Crear Póliza
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+            }
+        </div>
+    </div>
+</section>
+<!-- /.content -->
+
+@section Scripts{
+    <script src="~/plugins/moment/moment.min.js"></script>
+    <script src="~/plugins/daterangepicker/daterangepicker.js"></script>
+    <script src="~/Scripts/SharedScripts.js"></script>
+    <script src="~/Scripts/GestionPolizasSharedScripts.js"></script>
+    <script src="~/Scripts/GestionPolizasCreateScript.js"></script>
+}

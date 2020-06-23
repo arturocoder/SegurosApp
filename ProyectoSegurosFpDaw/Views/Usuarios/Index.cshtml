@@ -1,0 +1,198 @@
+﻿@model ProyectoSegurosFpDaw.Models.Usuario
+
+@{
+    ViewBag.Title = "Buscar Usuarios";
+
+    var usuarioActual = (ProyectoSegurosFpDaw.Models.Usuario)Session["user"];
+    var rolUsuarioActual = usuarioActual.rolId;
+}
+@section css{
+    <!-- Datatables -->
+    <link href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+}
+
+<!-- Header -->
+<section class="fixedHeader-locked">
+    <div col-sm-3>
+        <div class="card card-gray ">
+            <div class="card-header">
+                <h2 class="card-title">USUARIOS</h2>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        <!-- Buscar -->
+        <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12">
+            @using (Html.BeginForm("BuscarUsuarios", "Usuarios", FormMethod.Get, new { @class = "form-horizontal", role = "form" }))
+            {
+                @Html.Hidden("estadoSession", ViewBag.estadoSession as string);
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">Buscar Usuarios</h3>
+                        <div class="card-tools">
+                            <button type="button" id="btnColl" class="btn btn-tool" data-card-widget="collapse" data-toggle="tooltip" title="Collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled form-inline">
+                            <li class=" col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3 ">
+                                @Html.LabelFor(m => m.nombreUsuario, new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-portrait"></i></span>
+                                    </div>
+                                    @Html.TextBoxFor(m => m.nombreUsuario, new { @class = "form-control campos1", @maxlength = "20" })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(m => m.apellido1Usuario, new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-portrait"></i></span>
+                                    </div>
+                                    @Html.TextBoxFor(m => m.apellido1Usuario, new { @class = "form-control campos1", @maxlength = "20" })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3 ">
+                                @Html.LabelFor(model => model.dniUsuario, htmlAttributes: new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                    </div>
+                                    @Html.EditorFor(model => model.dniUsuario, new { htmlAttributes = new { @class = "form-control campos2", @maxlength = "20" } })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3 ">
+                                @Html.LabelFor(model => model.emailUsuario, htmlAttributes: new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-at"></i></span>
+                                    </div>
+                                    @Html.EditorFor(model => model.emailUsuario, new { htmlAttributes = new { @class = "form-control campos2", @maxlength = "50" } })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3 ">
+                                @Html.Label("Rol", htmlAttributes: new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-users"></i></span>
+                                    </div>
+                                    @Html.DropDownList("rolId", null, htmlAttributes: new { @class = "form-control" })
+                                </div>
+                            </li>
+                            <li class=" col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3 ">
+
+                            </li>
+                            @*  ----------------------------------------------------------------------------------------------*@
+                            <li class=" col-xs-12  col-md-12 mb-4">
+
+                            </li>
+                            @*  ----------------------------------------------------------------------------------------------*@
+                        </ul>
+                        <div class="row">
+                            <div class="col-6 col-sm-6 col-md-6">
+                                @{ if (rolUsuarioActual == 1)
+                                    {
+                                        <a href="@Url.Action("Create", "Usuarios")" class="btn btn-info float-left">
+                                            <i class="fas fa-plus-square"> </i>
+                                            Crear Usuario
+                                        </a>
+                                    }
+                                }
+                            </div>
+                            <div class="col-6 col-sm-6 col-md-6">
+                                <button type="submit" class="btn btn-info float-right">
+                                    <i class="fas fa-search"> </i>
+                                    Buscar Usuarios
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+            }
+        </div>
+        <!-- /.Buscar -->
+
+        <!-- Resultados -->
+        @{
+            if (ViewBag.estadoSession == "2")
+            {
+                <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">Lista de Usuarios</h3>
+                            <div class="card-tools">
+                                <button type="button" id="btnCollR" class="btn btn-tool" data-card-widget="collapse" data-toggle="tooltip" title="Collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <table id="tableResultados" class="table table-bordered table-hover " style="width:100%">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>@Html.LabelFor(model => model.nombreUsuario)</th>
+                                        <th>@Html.LabelFor(model => model.apellido1Usuario)</th>
+                                        <th>@Html.LabelFor(model => model.apellido2Usuario)</th>
+                                        <th>@Html.LabelFor(model => model.rolId)</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{ if (ViewBag.usuariosCoincidentes != null)
+                                        {
+                                            var listaUsuarios = ViewBag.usuariosCoincidentes as IList<ProyectoSegurosFpDaw.Models.Usuario>;
+                                            foreach (var item in listaUsuarios)
+                                            {
+                                                <tr>
+                                                    <td title="ID : @item.usuarioId">@item.nombreUsuario</td>
+                                                    <td>@item.apellido1Usuario</td>
+                                                    <td>@item.apellido2Usuario</td>
+                                                    <td>@item.Rol.nombreRol</td>
+                                                    <td>
+                                                        @Url.Action("Details", "Usuarios", new { id = item.usuarioId })
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td>No hay datos coincidentes</td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+                </div>
+            }
+        }
+        <!-- /.Resultados -->
+    </div>
+</section>
+<!-- /.content -->
+
+@section Scripts{
+    <script src="~/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>   
+    <script src="~/Scripts/SharedScripts.js"></script>
+    <script src="~/Scripts/UsuarioSharedScripts.js"></script>
+    <script src="~/Scripts/UsuarioIndexScript.js"></script>
+}

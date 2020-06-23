@@ -1,0 +1,121 @@
+﻿@model ProyectoSegurosFpDaw.Models.Cliente
+
+@{
+    ViewBag.Title = "Editar Cliente";   
+}
+
+<!-- Header -->
+<section class="fixedHeader-locked">
+    <div col-sm-3>
+        <div class="card card-gray ">
+            <div class="card-header">
+                <h2 class="card-title">CLIENTES</h2>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        <div class="col-12">
+            @using (Html.BeginForm("Edit", "Clientes", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(model => model.clienteId)
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">Editar Cliente</h3>
+                        <div class="card-tools">
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled form-inline">
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(m => m.nombreCliente, new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-portrait"></i></span>
+                                    </div>
+                                    @Html.TextBoxFor(m => m.nombreCliente, new { @class = "form-control", @maxlength = "20" })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(m => m.apellido1Cliente, new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-portrait"></i></span>
+                                    </div>
+                                    @Html.TextBoxFor(m => m.apellido1Cliente, new { @class = "form-control", @maxlength = "20" })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(m => m.apellido2Cliente, new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-portrait"></i></span>
+                                    </div>
+                                    @Html.TextBoxFor(m => m.apellido2Cliente, new { @class = "form-control", @maxlength = "20" })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(model => model.dniCliente, htmlAttributes: new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                    </div>
+                                    @Html.EditorFor(model => model.dniCliente, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(model => model.emailCliente, htmlAttributes: new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-at"></i></span>
+                                    </div>
+                                    @Html.EditorFor(model => model.emailCliente, new { htmlAttributes = new { @class = "form-control", @maxlength = "50" } })
+                                </div>
+                            </li>
+                            <li class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-4 mb-3">
+                                @Html.LabelFor(model => model.telefonoCliente, htmlAttributes: new { @class = "control-label" })
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-mobile-alt"></i></span>
+                                    </div>
+                                    @Html.EditorFor(model => model.telefonoCliente, new { htmlAttributes = new { @class = "form-control", @type = "number" } })
+                                </div>
+                            </li>
+                            @*  ----------------------------------------------------------------------------------------------*@
+                            <li class=" col-xs-12  col-md-12 mb-4">
+
+                            </li>
+                            @*  ----------------------------------------------------------------------------------------------*@
+                        </ul>
+                        <div class="row">
+                            <div class="col-6 col-sm-6 col-md-6">
+                                <a href="@Url.Action("Details","Clientes",new { id=Model.clienteId })" class="btn btn-info float-left">
+                                    <i class="fas fa-reply"> </i>
+                                </a>
+                            </div>
+                            <div class="col-6 col-sm-6 col-md-6">
+                                <button type="submit" class="btn btn-info float-right">
+                                    <i class="fas fa-save"> </i>
+                                    Guardar 
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+            }
+        </div>
+    </div>
+</section>
+<!-- /.content -->
+
+@section Scripts{
+    <script src="~/Scripts/SharedScripts.js"></script>
+    <script src="~/Scripts/ClienteSharedScripts.js"></script>
+    <script src="~/Scripts/ClienteEditScript.js"></script>   
+}
