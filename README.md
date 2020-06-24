@@ -17,6 +17,10 @@ Tecnologías y herramientas utilizadas en el proyecto:
 
 [Demo visual del proyecto](https://drive.google.com/file/d/1rc4POrd8vz5r5pg_6xSaaKIkXrI846v6/view?usp=sharing)
 
-Arturo Marín
+Esta aplicación fue entregada como proyecto de fin de ciclo DAW en Mayo del 2020.
 
-Junio 2020
+Pendiente de realizar mejoras, refactorizar por casos de uso, mover lógica de negocio al modelo...
+
+Autor del proyecto: Arturo Marín.
+
+
