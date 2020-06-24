@@ -19,7 +19,7 @@ Tecnologías y herramientas utilizadas en el proyecto:
 
 Esta aplicación fue entregada como proyecto de fin de ciclo DAW en Mayo del 2020.
 
-Pendiente de realizar mejoras, refactorizar por casos de uso, mover lógica de negocio al modelo...
+Pendiente de realizar mejoras, refactorizar por casos de uso, mover lógica de negocio al modelo, eliminar librerías adjuntas a AdminLte no utilizadas...
 
 Autor del proyecto: Arturo Marín.
 
