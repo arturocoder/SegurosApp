@@ -8,6 +8,8 @@ using System.Web.Mvc;
 namespace ProyectoSegurosFpDaw.Filtros
 {
     // Filtro para autorizar el uso de los métodos elegidos al  usuario
+    // Basado en : https://www.youtube.com/watch?v=uMU6hhic0WU 
+    // Autor original : hdeleon.net
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class AutorizarUsuarioAttribute : AuthorizeAttribute
     {
