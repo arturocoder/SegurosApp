@@ -2,6 +2,7 @@
 ## Aplicación de gestión de seguros.
 ### Proyecto final del CFGS Desarrollo de aplicaciones web.
 Esta aplicación fue entregada como proyecto de fin de ciclo DAW en Mayo del 2020.
+#### [Demo visual del proyecto](https://drive.google.com/file/d/1rc4POrd8vz5r5pg_6xSaaKIkXrI846v6/view?usp=sharing)
 #### Objetivos propuestos
 La aplicación web tiene como propósito general ser una herramienta de gestión de seguros de vehículos a motor, en concreto matriculados en España. Está orientada a compañías de seguros que deseen optimizar la gestión del área administrativa y comercial de la empresa. Del mismo modo, también es posible su utilización por empresas externalizadas del sector, como centros de atención al cliente o call centers orientados a la comercialización de seguros. 
 
@@ -44,7 +45,7 @@ Los objetivos específicos se enmarcan dentro de cuatro áreas:
 - Ejecutar archivo Sql de creación de un procedure para reiniciar BBDD: Cuatro_ProcedureReiniciarbbdd
 
 
-#### [Demo visual del proyecto](https://drive.google.com/file/d/1rc4POrd8vz5r5pg_6xSaaKIkXrI846v6/view?usp=sharing)
+
 
 
 
