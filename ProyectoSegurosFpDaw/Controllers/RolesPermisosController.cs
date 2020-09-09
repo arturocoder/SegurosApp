@@ -3,13 +3,14 @@ using System.Linq;
 using System.Web.Mvc;
 using ProyectoSegurosFpDaw.Filtros;
 using ProyectoSegurosFpDaw.Models;
+using ProyectoSegurosFpDaw.Persistance;
 
-namespace ProyectoSegurosFpDaw.Controllers  
+namespace ProyectoSegurosFpDaw.Controllers
 {
     [RequireHttps]
     public class RolesPermisosController : Controller
     {
-        private ProyectoSegurosDbEntities db = new ProyectoSegurosDbEntities();
+        private ProyectoSegurosDbEntities context = new ProyectoSegurosDbEntities();
 
         #region Actions
 
@@ -20,10 +21,10 @@ namespace ProyectoSegurosFpDaw.Controllers
         [AutorizarUsuario(permisoId: 11)]
         [HttpGet]
         public ActionResult Index()
-        {
-            // Envía una lista de roles ,con los roles permisos. 
-            var roles = db.Rol.Include(r => r.RolPermiso).ToList();                        
-            return View(roles);        
+        {            
+            var unitOfWork = new UnitOfWork(context);
+            var roles = unitOfWork.Roles.GetRolesWithRolesPermisos();
+            return View(roles);
         }
         #endregion
 
@@ -32,7 +33,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                context.Dispose();
             }
             base.Dispose(disposing);
         }
