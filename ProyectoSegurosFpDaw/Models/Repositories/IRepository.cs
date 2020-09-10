@@ -18,6 +18,8 @@ namespace ProyectoSegurosFpDaw.Models.Repositories
         void Add(TEntity entity);
         void AddRange(IEnumerable<TEntity> entities);
 
+        bool Any(Expression<Func<TEntity, bool>> predicate);
+
         void Remove(TEntity entity);
         void RemoveRange(IEnumerable<TEntity> entities);
     }

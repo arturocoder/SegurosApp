@@ -6,12 +6,7 @@ using System.Threading.Tasks;
 
 namespace ProyectoSegurosFpDaw.Models.Repositories
 {
-    public interface IUnitOfWork 
+    public interface IAccesoRepository
     {
-        IRolRepository Roles { get; }
-        ICondicionadoPolizaRepository CondicionadoPoliza { get; }
-
-        int Save();
-        
     }
 }

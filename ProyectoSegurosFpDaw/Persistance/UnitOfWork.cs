@@ -16,15 +16,18 @@ namespace ProyectoSegurosFpDaw.Persistance
         {
             _context = context;
             Roles = new RolRepository(_context);
+            CondicionadoPoliza = new CondicionadoPolizaRepository(_context);
+            
         }
 
         public IRolRepository Roles { get; private set; }
-
+        public ICondicionadoPolizaRepository CondicionadoPoliza { get; set; }
 
         public int Save()
         {
             return _context.SaveChanges();
         }
+        
         
     }
 }

@@ -8,6 +8,7 @@ using System.Web.Mvc;
 using Microsoft.Ajax.Utilities;
 using ProyectoSegurosFpDaw.Filtros;
 using ProyectoSegurosFpDaw.Models;
+using ProyectoSegurosFpDaw.Persistance;
 
 namespace ProyectoSegurosFpDaw.Controllers
 {
@@ -15,7 +16,7 @@ namespace ProyectoSegurosFpDaw.Controllers
     public class CondicionadoPolizasController : Controller
     {
         // Instancia de la BBDD.
-        private ProyectoSegurosDbEntities db = new ProyectoSegurosDbEntities();       
+        private ProyectoSegurosDbEntities context = new ProyectoSegurosDbEntities();       
 
         #region Actions
 
@@ -33,7 +34,9 @@ namespace ProyectoSegurosFpDaw.Controllers
             {
                 ViewBag.mensaje = TempData["mensaje"];
             }
-            ViewBag.listaCondicionados = db.CondicionadoPoliza.ToList();
+            var unitOfWork = new UnitOfWork(context);           
+            ViewBag.listaCondicionados = unitOfWork.CondicionadoPoliza.GetAll();
+
             return View();
         }
 
@@ -50,7 +53,9 @@ namespace ProyectoSegurosFpDaw.Controllers
             {
                 ViewBag.mensaje = TempData["mensaje"];
             }
-            ViewBag.listaCondicionados = db.CondicionadoPoliza.ToList();
+            var unitOfWork = new UnitOfWork(context);
+            ViewBag.listaCondicionados = unitOfWork.CondicionadoPoliza.GetAll();
+         
             return View();
         }       
 
@@ -92,11 +97,11 @@ namespace ProyectoSegurosFpDaw.Controllers
                     }
                     
                     // Activo = 1 => Condicionado vigente // 0 => no vigente.
-                    condicionadoPoliza.activo = 1; 
+                    condicionadoPoliza.activo = 1;                   
+                    var unitOfWork = new UnitOfWork(context);
+                    unitOfWork.CondicionadoPoliza.Add(condicionadoPoliza);
+                    unitOfWork.Save();     
                     
-                    // Guarda el nuevo registro en la BBDD.
-                    db.CondicionadoPoliza.Add(condicionadoPoliza);
-                    db.SaveChanges();                   
                     TempData["mensaje"] = ItemMensaje.SuccessCrear(CondicionadoPoliza.GetNombreModelo(), condicionadoPoliza.tipoCondicionado);                 
                     return RedirectToAction("Index");
                 }
@@ -121,15 +126,16 @@ namespace ProyectoSegurosFpDaw.Controllers
         [AutorizarUsuario(permisoId: 23)]
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
-        public ActionResult EditPost(int? IDcondicionado)
+        public ActionResult EditPost(int IDcondicionado)
         {
-            if (IDcondicionado == null)
-            {             
-                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(CondicionadoPoliza.GetNombreModelo());
-                return RedirectToAction("Index");
-            }
-           
-            CondicionadoPoliza condicionadoPoliza = db.CondicionadoPoliza.Find(IDcondicionado);
+            //if (IDcondicionado == null)
+            //{             
+            //    TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(CondicionadoPoliza.GetNombreModelo());
+            //    return RedirectToAction("Index");
+            //}
+            UnitOfWork unitOfWork = new UnitOfWork(context);
+            var condicionadoPoliza = unitOfWork.CondicionadoPoliza.Get(IDcondicionado);
+
             if (condicionadoPoliza == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(CondicionadoPoliza.GetNombreModelo());
@@ -164,7 +170,8 @@ namespace ProyectoSegurosFpDaw.Controllers
                     }                                    
 
                     // Actualiza registro en la BBDD.
-                    db.SaveChanges();
+                    unitOfWork.Save();
+
                     TempData["mensaje"] = ItemMensaje.SuccessEditar(CondicionadoPoliza.GetNombreModelo(), condicionadoPoliza.tipoCondicionado);
                     return RedirectToAction("Index");
                 }
@@ -193,8 +200,9 @@ namespace ProyectoSegurosFpDaw.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int condicionadoId)
         {
+            UnitOfWork unitOfWork = new UnitOfWork(context);
+            CondicionadoPoliza condicionadoPoliza = unitOfWork.CondicionadoPoliza.Get(condicionadoId);
 
-            CondicionadoPoliza condicionadoPoliza = db.CondicionadoPoliza.Find(condicionadoId);
             if (condicionadoPoliza == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDesactivarActivar(CondicionadoPoliza.GetNombreModelo());
@@ -207,8 +215,8 @@ namespace ProyectoSegurosFpDaw.Controllers
 
                 // Obtiene los polizasId de las pólizas que coinciden que estén activas y que tengan alguna gestiónPóliza con el condicionadoId.
                 var polizasCoincidentes =
-                     from gestiones in db.GestionPoliza
-                     join polizas in db.Poliza on gestiones.polizaId equals polizas.polizaId
+                     from gestiones in context.GestionPoliza
+                     join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
                      where gestiones.condicionadoPolizaId == condicionadoPoliza.condicionadoPolizaId && polizas.activo ==1
                      select new { Poliza = polizas.polizaId };
 
@@ -220,7 +228,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                     foreach (var item in polizasCoincidentes.Distinct())
                     {
                         // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
-                        var ultimaGestion = db.GestionPoliza.Include(c => c.Poliza)
+                        var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza)
                             .Where(c=> c.polizaId == item.Poliza )
                             .OrderByDescending(c => c.gestionPolizaId)
                             .FirstOrDefault();                            
@@ -247,8 +255,10 @@ namespace ProyectoSegurosFpDaw.Controllers
                     condicionadoPoliza.fechaDesactivado = hoy;
                     condicionadoPoliza.activo = 0;
                     // Actualiza registro en la BBDD
-                    db.Entry(condicionadoPoliza).State = EntityState.Modified;
-                    db.SaveChanges();
+                    //context.Entry(condicionadoPoliza).State = EntityState.Modified;
+                    //context.SaveChanges();
+                    unitOfWork.Save();
+
                     TempData["mensaje"] = ItemMensaje.SuccessDesactivar(CondicionadoPoliza.GetNombreModelo(),condicionadoPoliza.tipoCondicionado);
                     return RedirectToAction("Index");
                 }
@@ -265,8 +275,9 @@ namespace ProyectoSegurosFpDaw.Controllers
                 {                    
                     condicionadoPoliza.fechaDesactivado = null;
                     condicionadoPoliza.activo = 1;
-                    db.Entry(condicionadoPoliza).State = EntityState.Modified;
-                    db.SaveChanges();
+                    //context.Entry(condicionadoPoliza).State = EntityState.Modified;
+                    //context.SaveChanges();
+                    unitOfWork.Save();
                     TempData["mensaje"] = ItemMensaje.SuccessActivar(CondicionadoPoliza.GetNombreModelo(), condicionadoPoliza.tipoCondicionado);
                     return RedirectToAction("Index");
                 }
@@ -296,8 +307,9 @@ namespace ProyectoSegurosFpDaw.Controllers
         {
             var respuesta = 1;
             var condicionado = nombreCondicionado.Trim().ToUpperInvariant();
-            var condicionadoCoincidente = db.CondicionadoPoliza
+            var condicionadoCoincidente = context.CondicionadoPoliza
                    .Where(c => c.tipoCondicionado == condicionado).FirstOrDefault();
+
 
             if (condicionadoCoincidente != null)
             {
@@ -313,7 +325,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                context.Dispose();
             }
             base.Dispose(disposing);
         }

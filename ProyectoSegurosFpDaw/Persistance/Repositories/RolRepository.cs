@@ -10,6 +10,12 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
 {
     public class RolRepository : Repository<Rol>, IRolRepository
     {
+        public ProyectoSegurosDbEntities ProyectoSegurosContext
+        {
+            get { return Context as ProyectoSegurosDbEntities; }
+        }
+
+
         public RolRepository(ProyectoSegurosDbEntities context) : base(context)
         {
         }
@@ -21,9 +27,5 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
                 .ToList();
         }
 
-        public ProyectoSegurosDbEntities ProyectoSegurosContext
-        {
-            get { return Context as ProyectoSegurosDbEntities; }
-        }
     }
 }

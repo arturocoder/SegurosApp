@@ -29,6 +29,11 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
 
         }
 
+        public bool Any(Expression<Func<TEntity, bool>> predicate)
+        {
+            return Context.Set<TEntity>().Any(predicate);
+        }
+
         public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate)
         {
             return Context.Set<TEntity>().Where(predicate);
