@@ -23,7 +23,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         public ActionResult Index()
         {            
             var unitOfWork = new UnitOfWork(context);
-            var roles = unitOfWork.Roles.GetRolesWithRolesPermisos();
+            var roles = unitOfWork.Rol.GetRolesWithRolesPermisos();
             return View(roles);
         }
         #endregion

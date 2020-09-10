@@ -8,8 +8,10 @@ namespace ProyectoSegurosFpDaw.Models.Repositories
 {
     public interface IUnitOfWork 
     {
-        IRolRepository Roles { get; }
+        IRolRepository Rol { get; }
         ICondicionadoPolizaRepository CondicionadoPoliza { get; }
+        IUsuarioRepository Usuario { get; }
+
 
         int Save();
         

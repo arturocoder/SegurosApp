@@ -201,7 +201,7 @@
       <DependentUpon>ProyectoSegurosModel.edmx</DependentUpon>
     </Compile>
     <Compile Include="Models\ReinicioBBDD.cs" />
-    <Compile Include="Models\Repositories\IAccesoRepository.cs" />
+    <Compile Include="Models\Repositories\IUsuarioRepository.cs" />
     <Compile Include="Models\Repositories\ICondicionadoPolizaRepository.cs" />
     <Compile Include="Models\Repositories\IRepository.cs" />
     <Compile Include="Models\Repositories\IRolRepository.cs" />
@@ -221,6 +221,7 @@
     <Compile Include="Persistance\Repositories\CondicionadoPolizaRepository.cs" />
     <Compile Include="Persistance\Repositories\Repository.cs" />
     <Compile Include="Persistance\Repositories\RolRepository.cs" />
+    <Compile Include="Persistance\Repositories\UsuarioRepository.cs" />
     <Compile Include="Persistance\UnitOfWork.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

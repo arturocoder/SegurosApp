@@ -9,5 +9,7 @@ namespace ProyectoSegurosFpDaw.Models.Repositories
     public interface IRolRepository:IRepository<Rol>
     {
         IEnumerable<Rol> GetRolesWithRolesPermisos();
+        IEnumerable<Rol> GetRolesOrderByName();
+
     }
 }

@@ -8,6 +8,7 @@ using System.Web.Mvc;
 using Microsoft.Ajax.Utilities;
 using ProyectoSegurosFpDaw.Filtros;
 using ProyectoSegurosFpDaw.Models;
+using ProyectoSegurosFpDaw.Persistance;
 
 namespace ProyectoSegurosFpDaw.Controllers
 {
@@ -15,7 +16,7 @@ namespace ProyectoSegurosFpDaw.Controllers
     public class UsuariosController : Controller
     {
         // Instancia de la BBDD
-        private ProyectoSegurosDbEntities db = new ProyectoSegurosDbEntities();
+        private ProyectoSegurosDbEntities context = new ProyectoSegurosDbEntities();
 
         #region Actions        
 
@@ -90,7 +91,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             // busca coincidencias en la BBDD, 
             // envía la lista de usuarios activos (activo==1) coincidentes a la acción Index.
             // rolId == 0 => Todos los roles.
-
+            var unitOfWork = new UnitOfWork(context);
             try
             {
                 // Rol (resto de campos vacíos).
@@ -99,20 +100,12 @@ namespace ProyectoSegurosFpDaw.Controllers
                     // Todos los roles == todos los usuarios activos.
                     if (rolId == "0")
                     {
-                        var UsuariosCoincidentes = db.Usuario
-                           .Include(c => c.Rol)
-                           .Where(c => c.activo == 1)
-                           .ToList();
-                        TempData["usuariosCoincidentes"] = UsuariosCoincidentes;
+                        TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRoles();
                         return RedirectToAction("Index");
                     }
                     else
                     {
-                        var UsuariosCoincidentes = db.Usuario
-                           .Include(c => c.Rol)
-                           .Where(c => c.activo == 1 && c.rolId == rolID)
-                           .ToList();
-                        TempData["usuariosCoincidentes"] = UsuariosCoincidentes;
+                        TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesByRol(rolID);
                         return RedirectToAction("Index");
                     }
                 }
@@ -124,21 +117,12 @@ namespace ProyectoSegurosFpDaw.Controllers
                         // Todos los roles
                         if (rolId == "0")
                         {
-                            var UsuariosCoincidentes = db.Usuario
-                               .Include(c => c.Rol)
-                               .Where(c => c.activo == 1 && c.nombreUsuario == nombreUsuario && c.apellido1Usuario == apellido1Usuario)
-                               .ToList();
-                            TempData["usuariosCoincidentes"] = UsuariosCoincidentes;
+                            TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesByNombreApellido(nombreUsuario, apellido1Usuario);
                             return RedirectToAction("Index");
-
                         }
                         else
                         {
-                            var UsuariosCoincidentes = db.Usuario
-                            .Include(c => c.Rol)
-                            .Where(c => c.activo == 1 && c.nombreUsuario == nombreUsuario && c.apellido1Usuario == apellido1Usuario && c.rolId == rolID)
-                            .ToList();
-                            TempData["usuariosCoincidentes"] = UsuariosCoincidentes;
+                            TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesByNombreApellidoRol(nombreUsuario, apellido1Usuario, rolID);
                             return RedirectToAction("Index");
                         }
                     }
@@ -148,19 +132,12 @@ namespace ProyectoSegurosFpDaw.Controllers
                         // Todos los roles.
                         if (rolId == "0")
                         {
-                            var UsuariosCoincidentes = db.Usuario
-                               .Include(c => c.Rol)
-                               .Where(c => c.activo == 1 && c.nombreUsuario == nombreUsuario)
-                               .ToList();
-                            TempData["usuariosCoincidentes"] = UsuariosCoincidentes;
+                            TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesByNombre(nombreUsuario);
                             return RedirectToAction("Index");
                         }
                         else
                         {
-                            var UsuariosCoincidentes = db.Usuario
-                           .Include(c => c.Rol)
-                           .Where(c => c.activo == 1 && c.nombreUsuario == nombreUsuario && c.rolId == rolID).ToList();
-                            TempData["usuariosCoincidentes"] = UsuariosCoincidentes;
+                            TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesByNombreRol(nombreUsuario, rolID);
                             return RedirectToAction("Index");
                         }
                     }
@@ -170,20 +147,13 @@ namespace ProyectoSegurosFpDaw.Controllers
                         // Todos los roles.
                         if (rolId == "0")
                         {
-                            var UsuariosCoincidentes = db.Usuario
-                               .Include(c => c.Rol)
-                               .Where(c => c.activo == 1 && c.apellido1Usuario == apellido1Usuario)
-                               .ToList();
-                            TempData["usuariosCoincidentes"] = UsuariosCoincidentes;
+                            TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesByApellido(apellido1Usuario);
                             return RedirectToAction("Index");
 
                         }
                         else
                         {
-                            var UsuariosCoincidentes = db.Usuario
-                           .Include(c => c.Rol)
-                           .Where(c => c.activo == 1 && c.apellido1Usuario == apellido1Usuario && c.rolId == rolID).ToList();
-                            TempData["usuariosCoincidentes"] = UsuariosCoincidentes;
+                            TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesByApellidoRol(apellido1Usuario, rolID);
                             return RedirectToAction("Index");
                         }
                     }
@@ -193,31 +163,24 @@ namespace ProyectoSegurosFpDaw.Controllers
                         // Todos los roles.
                         if (rolId == "0")
                         {
-                            var UsuariosCoincidentes = db.Usuario
-                               .Include(c => c.Rol)
-                               .Where(c => c.activo == 1 && c.dniUsuario == dniUsuario)
-                               .ToList();
+                            var usuariosCoincidentes = unitOfWork.Usuario.GetUsuariosActivosWithRolesByDni(dniUsuario);
 
                             // Si no hay coincidencia en cliente activo, busca en clientes no activos,
                             // y envía mensaje si hay coincidencia.
-                            if (UsuariosCoincidentes.Count == 0)
+                            if (usuariosCoincidentes.Any() == false)
                             {
-                                var usuarioNoActivo = db.Usuario
-                                 .Where(c => c.activo == 0 && c.dniUsuario == dniUsuario).FirstOrDefault();
+                                var usuarioNoActivo = unitOfWork.Usuario.GetUsuariosNoActivosWithRolesByDni(dniUsuario).FirstOrDefault();
                                 if (usuarioNoActivo != null)
                                 {
                                     TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Usuario.GetNombreModelo(), usuarioNoActivo.usuarioId);
                                 }
                             }
-                            TempData["usuariosCoincidentes"] = UsuariosCoincidentes;
+                            TempData["usuariosCoincidentes"] = usuariosCoincidentes;
                             return RedirectToAction("Index");
                         }
                         else
                         {
-                            var UsuariosCoincidentes = db.Usuario
-                            .Include(c => c.Rol)
-                            .Where(c => c.activo == 1 && c.dniUsuario == dniUsuario && c.rolId == rolID).ToList();
-                            TempData["usuariosCoincidentes"] = UsuariosCoincidentes;
+                            TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesByDniRol(dniUsuario, rolID);
                             return RedirectToAction("Index");
                         }
                     }
@@ -227,28 +190,25 @@ namespace ProyectoSegurosFpDaw.Controllers
                         //Todos los roles.
                         if (rolId == "0")
                         {
-                            var UsuariosCoincidentes = db.Usuario
-                               .Include(c => c.Rol)
-                               .Where(c => c.activo == 1 && c.emailUsuario == emailUsuario)
-                               .ToList();
-                            if (UsuariosCoincidentes.Count == 0)
-                            {
-                                var usuarioNoActivo = db.Usuario
-                                 .Where(c => c.activo == 0 && c.emailUsuario == emailUsuario).FirstOrDefault();
+                            var usuariosCoincidentes = unitOfWork.Usuario.GetUsuariosActivosWithRolesByEmail(emailUsuario);
+
+                            if (usuariosCoincidentes.Any() == false)
+                            {                                
+                                var usuarioNoActivo = unitOfWork.Usuario.GetUsuariosNoActivosWithRolesByEmail(emailUsuario).FirstOrDefault();
                                 if (usuarioNoActivo != null)
                                 {
                                     TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Usuario.GetNombreModelo(), usuarioNoActivo.usuarioId);
                                 }
                             }
-                            TempData["usuariosCoincidentes"] = UsuariosCoincidentes;
+                            TempData["usuariosCoincidentes"] = usuariosCoincidentes;
                             return RedirectToAction("Index");
                         }
                         else
                         {
-                            var UsuariosCoincidentes = db.Usuario
+                            var UsuariosCoincidentes = context.Usuario
                            .Include(c => c.Rol)
                            .Where(c => c.activo == 1 && c.emailUsuario == emailUsuario && c.rolId == rolID).ToList();
-                            TempData["usuariosCoincidentes"] = UsuariosCoincidentes;
+                            TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesByEmailRol(emailUsuario,rolID);
                             return RedirectToAction("Index");
                         }
                     }
@@ -279,7 +239,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDetails(Usuario.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            Usuario usuario = db.Usuario
+            Usuario usuario = context.Usuario
                 .Include(c => c.Rol)
                 .Where(w => w.usuarioId == id && w.activo == 1)
                 .SingleOrDefault();
@@ -299,7 +259,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         [AutorizarUsuario(permisoId: 1)]
         public ActionResult Create()
         {
-            ViewBag.rolId = new SelectList(db.Rol, "rolId", "nombreRol");
+            ViewBag.rolId = new SelectList(context.Rol, "rolId", "nombreRol");
             return View();
         }
 
@@ -346,13 +306,13 @@ namespace ProyectoSegurosFpDaw.Controllers
                     if (VerificarDniDuplicadoBack(usuario.dniUsuario) == 1)
                     {
                         ViewBag.mensaje = ItemMensaje.ErrorRegistroDuplicadoCrear(Usuario.GetNombreModelo(), "NIF/NIE", null);
-                        ViewBag.rolId = new SelectList(db.Rol, "rolId", "nombreRol");
+                        ViewBag.rolId = new SelectList(context.Rol, "rolId", "nombreRol");
                         return View(usuario);
                     }
                     if (VerificarEmailDuplicadoBack(usuario.emailUsuario) == 1)
                     {
                         ViewBag.mensaje = ItemMensaje.ErrorRegistroDuplicadoCrear(Usuario.GetNombreModelo(), "Email", null);
-                        ViewBag.rolId = new SelectList(db.Rol, "rolId", "nombreRol");
+                        ViewBag.rolId = new SelectList(context.Rol, "rolId", "nombreRol");
                         return View(usuario);
                     }
 
@@ -366,15 +326,15 @@ namespace ProyectoSegurosFpDaw.Controllers
                     usuario.password = pswEncriptada;
 
                     // Guarda el registro en la BBDD.
-                    db.Usuario.Add(usuario);
-                    db.SaveChanges();
+                    context.Usuario.Add(usuario);
+                    context.SaveChanges();
                     TempData["mensaje"] = ItemMensaje.SuccessCrear(Usuario.GetNombreModelo(), usuario.dniUsuario);
                     return RedirectToAction("Index");
                 }
                 catch (Exception ex)
                 {
                     ViewBag.mensaje = ItemMensaje.ErrorExcepcionCrear(Usuario.GetNombreModelo(), ex.GetType().ToString());
-                    ViewBag.rolId = new SelectList(db.Rol, "rolId", "nombreRol");
+                    ViewBag.rolId = new SelectList(context.Rol, "rolId", "nombreRol");
                     return View(usuario);
                 }
             }
@@ -396,7 +356,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Usuario.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            Usuario usuario = db.Usuario
+            Usuario usuario = context.Usuario
                 .Include(c => c.Rol)
                 .Where(w => w.usuarioId == id && w.activo == 1)
                 .SingleOrDefault();
@@ -405,7 +365,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Usuario.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            ViewBag.rolId = new SelectList(db.Rol, "rolId", "nombreRol", usuario.rolId);
+            ViewBag.rolId = new SelectList(context.Rol, "rolId", "nombreRol", usuario.rolId);
             return View(usuario);
         }
 
@@ -425,7 +385,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Usuario.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            Usuario usuario = db.Usuario.Where(c => c.activo == 1 && c.usuarioId == id).FirstOrDefault();
+            Usuario usuario = context.Usuario.Where(c => c.activo == 1 && c.usuarioId == id).FirstOrDefault();
             if (usuario == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Usuario.GetNombreModelo());
@@ -450,14 +410,14 @@ namespace ProyectoSegurosFpDaw.Controllers
                     if (ComprobarUnicoAdministrador() == true)
                     {
                         // Comprueba si el usuario a editar tiene un rol administrador .
-                        var usuarioEstadoPrevio = db.Usuario.AsNoTracking()
+                        var usuarioEstadoPrevio = context.Usuario.AsNoTracking()
                             .Where(c => c.usuarioId == usuario.usuarioId && c.rolId == 1).FirstOrDefault();
 
                         // Comprueba si está cambiando el rol a otro diferente de administrador.
                         if (usuarioEstadoPrevio != null && usuarioEstadoPrevio.rolId != usuario.rolId)
                         {
                             ViewBag.mensaje = ItemMensaje.ErrorEditarDesactivarUnicoAdministrador(Usuario.GetNombreModelo());
-                            ViewBag.rolId = new SelectList(db.Rol, "rolId", "nombreRol", usuario.rolId);
+                            ViewBag.rolId = new SelectList(context.Rol, "rolId", "nombreRol", usuario.rolId);
                             return View(usuario);
                         }
 
@@ -484,18 +444,18 @@ namespace ProyectoSegurosFpDaw.Controllers
                     usuario.password = pswEncriptada;
 
                     // Guarda las modificaciones en la BBDD.
-                    db.SaveChanges();
+                    context.SaveChanges();
                     TempData["mensaje"] = ItemMensaje.SuccessEditar(Usuario.GetNombreModelo(), usuario.apellido1Usuario);
                     return RedirectToAction("Index");
                 }
                 ViewBag.mensaje = ItemMensaje.ErrorDatosNoValidosEditar(Usuario.GetNombreModelo());
-                ViewBag.rolId = new SelectList(db.Rol, "rolId", "nombreRol", usuario.rolId);
+                ViewBag.rolId = new SelectList(context.Rol, "rolId", "nombreRol", usuario.rolId);
                 return View(usuario);
             }
             catch (Exception ex)
             {
                 ViewBag.mensaje = ItemMensaje.ErrorExcepcionEditar(Usuario.GetNombreModelo(), ex.GetType().ToString());
-                ViewBag.rolId = new SelectList(db.Rol, "rolId", "nombreRol", usuario.rolId);
+                ViewBag.rolId = new SelectList(context.Rol, "rolId", "nombreRol", usuario.rolId);
                 return View(usuario);
             }
         }
@@ -517,7 +477,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int usuarioId)
         {
-            Usuario usuario = db.Usuario.Where(c => c.activo == 1 && c.usuarioId == usuarioId).FirstOrDefault();
+            Usuario usuario = context.Usuario.Where(c => c.activo == 1 && c.usuarioId == usuarioId).FirstOrDefault();
             if (usuario == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDesactivar(Usuario.GetNombreModelo());
@@ -528,7 +488,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             // si solo hay un usuario administrador , no se permite eliminarlo.          
             if (usuario.rolId == 1)
             {
-                var numeroAdmones = db.Usuario.Where(c => c.rolId == 1 && c.activo == 1).Count();
+                var numeroAdmones = context.Usuario.Where(c => c.rolId == 1 && c.activo == 1).Count();
                 if (numeroAdmones == 1)
                 {
                     ViewBag.mensaje = ItemMensaje.ErrorEditarDesactivarUnicoAdministrador(Usuario.GetNombreModelo());
@@ -547,8 +507,8 @@ namespace ProyectoSegurosFpDaw.Controllers
                 usuario.activo = 0;
 
                 // Actualiza el registro en la BBDD.
-                db.Entry(usuario).State = EntityState.Modified;
-                db.SaveChanges();
+                context.Entry(usuario).State = EntityState.Modified;
+                context.SaveChanges();
                 TempData["mensaje"] = ItemMensaje.SuccessDesactivar(Usuario.GetNombreModelo(), usuario.apellido1Usuario);
                 return RedirectToAction("Index");
             }
@@ -583,7 +543,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             var respuestaJson = 1;
             var nif = dni.Trim().ToUpperInvariant();
-            var usuarioCoincidente = db.Usuario
+            var usuarioCoincidente = context.Usuario
                    .Where(c => c.dniUsuario == dni).FirstOrDefault();
 
             if (usuarioCoincidente != null)
@@ -610,7 +570,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         {
             var respuestaJson = 1;
             var nif = dni.Trim().ToUpperInvariant();
-            var usuarioCoincidente = db.Usuario
+            var usuarioCoincidente = context.Usuario
                    .Where(c => c.dniUsuario == dni).FirstOrDefault();
             if (usuarioCoincidente != null)
             {
@@ -643,7 +603,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             var respuestaJson = 1;
             var mail = email.Trim().ToUpperInvariant();
-            var usuarioCoincidente = db.Usuario
+            var usuarioCoincidente = context.Usuario
                    .Where(c => c.emailUsuario == mail).FirstOrDefault();
             if (usuarioCoincidente != null)
             {
@@ -669,7 +629,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         {
             var respuesta = 1;
             var mail = email.Trim().ToUpperInvariant();
-            var usuarioCoincidente = db.Usuario
+            var usuarioCoincidente = context.Usuario
                    .Where(c => c.emailUsuario == mail).FirstOrDefault();
             if (usuarioCoincidente != null)
             {
@@ -691,7 +651,10 @@ namespace ProyectoSegurosFpDaw.Controllers
         {
             var roles = new List<SelectListItem>();
             roles.Add(new SelectListItem { Value = "0", Text = "TODOS" });
-            var rolesT = db.Rol.Where(p => p.activo == 1).OrderBy(p => p.nombreRol);
+
+            var unitOfWork = new UnitOfWork(context);
+            var rolesT = unitOfWork.Rol.GetRolesOrderByName();
+
             foreach (var item in rolesT)
             {
                 roles.Add(new SelectListItem { Value = item.rolId.ToString(CultureInfo.GetCultureInfo("es-ES")), Text = item.nombreRol });
@@ -708,7 +671,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         /// </returns>
         private bool ComprobarUnicoAdministrador()
         {
-            var numeroAdmones = db.Usuario.Where(c => c.rolId == 1 && c.activo == 1).Count();
+            var numeroAdmones = context.Usuario.Where(c => c.rolId == 1 && c.activo == 1).Count();
             if (numeroAdmones == 1) { return true; } else { return false; }
 
         }
@@ -717,7 +680,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                context.Dispose();
             }
             base.Dispose(disposing);
         }
