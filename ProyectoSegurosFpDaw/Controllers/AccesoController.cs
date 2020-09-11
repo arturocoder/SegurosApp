@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Web.Mvc;
+using ProyectoSegurosFpDaw.BLL;
 using ProyectoSegurosFpDaw.Models;
 using ProyectoSegurosFpDaw.Persistance;
 
@@ -9,7 +10,15 @@ namespace ProyectoSegurosFpDaw.Controllers
     [RequireHttps]
     public class AccesoController : Controller
     {
-        private ProyectoSegurosDbEntities context = new ProyectoSegurosDbEntities();
+        private ProyectoSegurosDbEntities context;       
+        private UsuarioBLL usuarioBll;
+        
+        public AccesoController()
+        {
+            context = new ProyectoSegurosDbEntities();
+            usuarioBll = new UsuarioBLL(context);            
+        }
+        
 
         [HttpGet]
         public ActionResult Login()
@@ -26,7 +35,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             {                
                 var unitOfWork = new UnitOfWork(context);
                 string encriptedPassword = Encriptacion.GetSHA256(Pass);
-                var usuarioAutenticado = unitOfWork.Usuario.GetAuthenticatedUsuario(User, encriptedPassword);
+                var usuarioAutenticado = usuarioBll.GetAuthenticatedUsuario(User, encriptedPassword);
 
                 if (usuarioAutenticado == null)
                 {

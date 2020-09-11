@@ -156,6 +156,7 @@
     <Compile Include="Controllers\CondicionadoPolizasController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\GestionPolizasController.cs" />
+    <Compile Include="Controllers\Helpers\UsuarioControllerHelper.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\RolesPermisosController.cs" />
     <Compile Include="Models\ItemMensaje.cs" />

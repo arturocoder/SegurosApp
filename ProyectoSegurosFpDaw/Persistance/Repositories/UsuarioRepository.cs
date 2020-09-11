@@ -19,13 +19,6 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
         {
         }
 
-
-        public Usuario GetAuthenticatedUsuario(string email, string password)
-        {
-            return ProyectoSegurosContext.Usuario
-                       .Where(c => c.emailUsuario == email.Trim() && c.password == password)
-                       .FirstOrDefault();
-        }
         public Usuario GetUsuarioActivoWhere(Expression<Func<Usuario, bool>> predicate)
         {
             return ProyectoSegurosContext.Usuario                          

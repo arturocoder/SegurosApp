@@ -28,6 +28,21 @@ namespace ProyectoSegurosFpDaw.BLL
             }
             return false;
 
-        }       
+        } 
+        public bool AnyUsuarioWithEmail(string email)
+        {
+            return unitOfWork.Usuario.Any(c => c.emailUsuario == email);
+        }
+        public bool AnyUsuarioWithDni(string dni)
+        {
+            return unitOfWork.Usuario.Any(c => c.dniUsuario == dni);
+        }
+
+        public Usuario GetAuthenticatedUsuario(string email, string password)
+        {
+            return unitOfWork.Usuario
+                       .SingleOrDefault(c => c.emailUsuario == email.Trim() && c.password == password);
+                       
+        }
     }
 }

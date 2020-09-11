@@ -17,8 +17,7 @@ namespace ProyectoSegurosFpDaw.Persistance
             _context = context;
             Rol = new RolRepository(_context);
             CondicionadoPoliza = new CondicionadoPolizaRepository(_context);
-            Usuario = new UsuarioRepository(_context);
-            
+            Usuario = new UsuarioRepository(_context);           
             
         }
 

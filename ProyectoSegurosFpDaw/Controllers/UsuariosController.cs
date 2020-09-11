@@ -7,6 +7,7 @@ using System.Linq;
 using System.Web.Mvc;
 using Microsoft.Ajax.Utilities;
 using ProyectoSegurosFpDaw.BLL;
+using ProyectoSegurosFpDaw.Controllers.Helpers;
 using ProyectoSegurosFpDaw.Filtros;
 using ProyectoSegurosFpDaw.Models;
 using ProyectoSegurosFpDaw.Persistance;
@@ -20,11 +21,13 @@ namespace ProyectoSegurosFpDaw.Controllers
         private ProyectoSegurosDbEntities context;
         private UnitOfWork unitOfWork;
         private UsuarioBLL usuarioBll;
+        private UsuarioControllerHelper helper;
         public UsuariosController()
         {
             context = new ProyectoSegurosDbEntities();
             unitOfWork = new UnitOfWork(context);
             usuarioBll = new UsuarioBLL(context);
+            helper = new UsuarioControllerHelper();
         }
 
         #region Actions        
@@ -57,7 +60,8 @@ namespace ProyectoSegurosFpDaw.Controllers
                 var usuariosCoincidentes = TempData["usuariosCoincidentes"];
                 ViewBag.usuariosCoincidentes = usuariosCoincidentes;
             }
-            ViewBag.rolId = GetSelectListRolConOpcionTodos();
+            var roles = unitOfWork.Rol.GetAll().OrderBy(c=>c.nombreRol);
+            ViewBag.rolId  = helper.GetSelectListRolConOpcionTodos(roles);
             ViewBag.estadoSession = estadoSession;
             return View();
         }
@@ -263,7 +267,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         [AutorizarUsuario(permisoId: 1)]
         public ActionResult Create()
         {
-            ViewBag.rolId = new SelectList(unitOfWork.Rol.GetAll(), "rolId", "nombreRol");
+            ViewBag.rolId = new SelectList(unitOfWork.Rol.GetAll().OrderBy(c=>c.nombreRol), "rolId", "nombreRol");
             return View();
         }
 
@@ -307,13 +311,15 @@ namespace ProyectoSegurosFpDaw.Controllers
                     usuario.dniUsuario = usuario.dniUsuario.Trim().ToUpperInvariant();
                     usuario.emailUsuario = usuario.emailUsuario.Trim().ToUpperInvariant();
 
-                    if (VerificarDniDuplicadoBack(usuario.dniUsuario) == 1)
+                    //if (VerificarDniDuplicadoBack(usuario.dniUsuario) == 1)
+                    if (usuarioBll.AnyUsuarioWithDni(usuario.dniUsuario))
                     {
                         ViewBag.mensaje = ItemMensaje.ErrorRegistroDuplicadoCrear(Usuario.GetNombreModelo(), "NIF/NIE", null);
                         ViewBag.rolId = new SelectList(unitOfWork.Rol.GetAll(), "rolId", "nombreRol");
                         return View(usuario);
                     }
-                    if (VerificarEmailDuplicadoBack(usuario.emailUsuario) == 1)
+                    //if (VerificarEmailDuplicadoBack(usuario.emailUsuario) == 1)
+                    if(usuarioBll.AnyUsuarioWithEmail(usuario.emailUsuario))
                     {
                         ViewBag.mensaje = ItemMensaje.ErrorRegistroDuplicadoCrear(Usuario.GetNombreModelo(), "Email", null);
                         ViewBag.rolId = new SelectList(unitOfWork.Rol.GetAll(), "rolId", "nombreRol");
@@ -563,31 +569,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             return Json(respuestaJson, JsonRequestBehavior.AllowGet);
         }
 
-        /// <summary>
-        /// Comprueba si el NIF / NIE introducido
-        /// existe en Usuario.  
-        /// </summary>
-        /// <param name="dni">NIF/NIE usuario</param>
-        /// <returns> 
-        /// 1 => hay coincidencia.
-        /// 0 => no hay coincidencia.
-        /// </returns>
-        private int VerificarDniDuplicadoBack(string dni)
-        {
-            var respuestaJson = 1;
-            var nif = dni.Trim().ToUpperInvariant();
-            var usuarioCoincidente = context.Usuario
-                   .Where(c => c.dniUsuario == dni).FirstOrDefault();
-            if (usuarioCoincidente != null)
-            {
-                respuestaJson = 1;
-            }
-            else
-            {
-                respuestaJson = 0;
-            }
-            return respuestaJson;
-        }
+       
 
 
         /// <summary>
@@ -622,31 +604,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             return Json(respuestaJson, JsonRequestBehavior.AllowGet);
         }
 
-        /// <summary>
-        /// Comprueba si el email introducido
-        /// existe en Usuario.  
-        /// </summary>
-        /// <param name="dni">email usuario</param>
-        /// <returns> 
-        /// 1 => hay coincidencia.
-        /// 0 => no hay coincidencia.
-        /// </returns>
-        private int VerificarEmailDuplicadoBack(string email)
-        {
-            var respuesta = 1;
-            var mail = email.Trim().ToUpperInvariant();
-            var usuarioCoincidente = context.Usuario
-                   .Where(c => c.emailUsuario == mail).FirstOrDefault();
-            if (usuarioCoincidente != null)
-            {
-                respuesta = 1;
-            }
-            else
-            {
-                respuesta = 0;
-            }
-            return respuesta;
-        }
+       
 
         /// <summary>
         /// Añade al selectList de Roles , la opción con valor 0 y texto Todos
@@ -658,29 +616,14 @@ namespace ProyectoSegurosFpDaw.Controllers
             var roles = new List<SelectListItem>();
             roles.Add(new SelectListItem { Value = "0", Text = "TODOS" });
 
-            var rolesT = unitOfWork.Rol.GetRolesOrderByName();
+            var rolesT = unitOfWork.Rol.GetAll().OrderBy(c=>c.nombreRol);
 
             foreach (var item in rolesT)
             {
                 roles.Add(new SelectListItem { Value = item.rolId.ToString(CultureInfo.GetCultureInfo("es-ES")), Text = item.nombreRol });
             }
             return roles;
-        }
-
-        /// <summary>
-        /// Comprueba si solo existe un unico usuario con rol Administrador en la BBDD.
-        /// </summary>
-        /// <returns>
-        /// true=> solo hay un usuario con rol Administrador
-        /// false=> hay más de un usuario con rol Administrador
-        /// </returns>
-        private bool ComprobarUnicoAdministrador()
-        {
-            
-            var numeroAdmones = context.Usuario.Where(c => c.rolId == 1 && c.activo == 1).Count();
-            if (numeroAdmones == 1) { return true; } else { return false; }
-
-        }
+        }       
 
         protected override void Dispose(bool disposing)
         {

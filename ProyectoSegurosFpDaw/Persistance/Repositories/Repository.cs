@@ -51,6 +51,8 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
 
         }
 
+       
+
         public void Remove(TEntity entity)
         {
             Context.Set<TEntity>().Remove(entity);
