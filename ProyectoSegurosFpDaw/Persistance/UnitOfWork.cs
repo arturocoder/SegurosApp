@@ -27,7 +27,7 @@ namespace ProyectoSegurosFpDaw.Persistance
         public IUsuarioRepository Usuario { get; set; }
 
 
-        public int Save()
+        public int SaveChanges()
         {
             return _context.SaveChanges();
         }

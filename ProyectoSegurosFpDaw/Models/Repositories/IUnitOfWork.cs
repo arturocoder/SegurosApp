@@ -13,7 +13,7 @@ namespace ProyectoSegurosFpDaw.Models.Repositories
         IUsuarioRepository Usuario { get; }
 
 
-        int Save();
+        int SaveChanges();
         
     }
 }

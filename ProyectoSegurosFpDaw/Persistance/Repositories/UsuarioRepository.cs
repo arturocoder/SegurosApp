@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Web;
 
 namespace ProyectoSegurosFpDaw.Persistance.Repositories
@@ -34,100 +35,23 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
                       .Where(c => c.activo == 1)
                       .ToList();
         }
+        
 
-        public IEnumerable<Usuario> GetUsuariosActivosWithRolesByRol(int rolId)
+        public IEnumerable<Usuario> GetUsuariosActivosWithRolesWhere(Expression<Func<Usuario, bool>> predicate)
         {
             return ProyectoSegurosContext.Usuario
-                        .Include(c => c.Rol)
-                        .Where(c => c.activo == 1 && c.rolId == rolId)
-                        .ToList();
+                          .Include(c => c.Rol)
+                          .Where(c => c.activo==1)
+                          .Where(predicate)
+                          .ToList();
         }
-        public IEnumerable<Usuario> GetUsuariosActivosWithRolesByNombre(string nombre)
+        public IEnumerable<Usuario> GetUsuariosNoActivosWithRolesWhere(Expression<Func<Usuario, bool>> predicate)
         {
             return ProyectoSegurosContext.Usuario
-                               .Include(c => c.Rol)
-                               .Where(c => c.activo == 1 && c.nombreUsuario == nombre)
-                               .ToList();
-        }
-        public IEnumerable<Usuario> GetUsuariosActivosWithRolesByNombreRol(string nombre, int rolId)
-        {
-            return ProyectoSegurosContext.Usuario
-                           .Include(c => c.Rol)
-                           .Where(c => c.activo == 1 && c.nombreUsuario == nombre && c.rolId == rolId).ToList();
-        }
-        public IEnumerable<Usuario> GetUsuariosActivosWithRolesByApellido(string apellido1)
-        {
-            return ProyectoSegurosContext.Usuario
-                               .Include(c => c.Rol)
-                               .Where(c => c.activo == 1 && c.apellido1Usuario == apellido1)
-                               .ToList();
-        }
-        public IEnumerable<Usuario> GetUsuariosActivosWithRolesByApellidoRol(string apellido1, int rolId)
-        {
-            return ProyectoSegurosContext.Usuario
-                           .Include(c => c.Rol)
-                           .Where(c => c.activo == 1 && c.apellido1Usuario == apellido1 && c.rolId == rolId).ToList();
-        }
-
-        public IEnumerable<Usuario> GetUsuariosActivosWithRolesByNombreApellido(string nombre, string apellido1)
-        {
-            return ProyectoSegurosContext.Usuario
-                               .Include(c => c.Rol)
-                               .Where(c => c.activo == 1 && c.nombreUsuario == nombre && c.apellido1Usuario == apellido1)
-                               .ToList();
-        }
-
-        public IEnumerable<Usuario> GetUsuariosActivosWithRolesByNombreApellidoRol(string nombre, string apellido1, int rolId)
-        {
-            return ProyectoSegurosContext.Usuario
-                            .Include(c => c.Rol)
-                            .Where(c => c.activo == 1 && c.nombreUsuario == nombre && c.apellido1Usuario == apellido1 && c.rolId == rolId)
-                            .ToList();
-        }
-
-        public IEnumerable<Usuario> GetUsuariosActivosWithRolesByDni(string dni)
-        {
-            return ProyectoSegurosContext.Usuario
-                               .Include(c => c.Rol)
-                               .Where(c => c.activo == 1 && c.dniUsuario == dni)
-                               .ToList();
-        }
-
-        public IEnumerable<Usuario> GetUsuariosNoActivosWithRolesByDni(string dni)
-        {
-            return ProyectoSegurosContext.Usuario
-                               .Include(c => c.Rol)
-                               .Where(c => c.activo == 0 && c.dniUsuario == dni)
-                               .ToList();
-        }
-
-        public IEnumerable<Usuario> GetUsuariosActivosWithRolesByDniRol(string dni, int rolId)
-        {
-            return ProyectoSegurosContext.Usuario
-                            .Include(c => c.Rol)
-                            .Where(c => c.activo == 1 && c.dniUsuario == dni && c.rolId == rolId).ToList();
-        }
-
-        public IEnumerable<Usuario> GetUsuariosActivosWithRolesByEmail(string email)
-        {
-            return ProyectoSegurosContext.Usuario
-                               .Include(c => c.Rol)
-                               .Where(c => c.activo == 1 && c.emailUsuario == email)
-                               .ToList();
-        }
-        public IEnumerable<Usuario> GetUsuariosNoActivosWithRolesByEmail(string email)
-        {
-            return ProyectoSegurosContext.Usuario
-                               .Include(c => c.Rol)
-                               .Where(c => c.activo == 0 && c.emailUsuario == email)
-                               .ToList();
-        }
-
-        public IEnumerable<Usuario> GetUsuariosActivosWithRolesByEmailRol(string email, int rolId)
-        {
-            return ProyectoSegurosContext.Usuario
-                           .Include(c => c.Rol)
-                           .Where(c => c.activo == 1 && c.emailUsuario == email && c.rolId == rolId).ToList();
+                          .Include(c => c.Rol)
+                          .Where(c => c.activo == 0)
+                          .Where(predicate)
+                          .ToList();
         }
     }
 }

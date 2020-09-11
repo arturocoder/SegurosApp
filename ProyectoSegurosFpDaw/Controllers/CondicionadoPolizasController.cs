@@ -100,7 +100,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                     condicionadoPoliza.activo = 1;                   
                     var unitOfWork = new UnitOfWork(context);
                     unitOfWork.CondicionadoPoliza.Add(condicionadoPoliza);
-                    unitOfWork.Save();     
+                    unitOfWork.SaveChanges();     
                     
                     TempData["mensaje"] = ItemMensaje.SuccessCrear(CondicionadoPoliza.GetNombreModelo(), condicionadoPoliza.tipoCondicionado);                 
                     return RedirectToAction("Index");
@@ -170,7 +170,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                     }                                    
 
                     // Actualiza registro en la BBDD.
-                    unitOfWork.Save();
+                    unitOfWork.SaveChanges();
 
                     TempData["mensaje"] = ItemMensaje.SuccessEditar(CondicionadoPoliza.GetNombreModelo(), condicionadoPoliza.tipoCondicionado);
                     return RedirectToAction("Index");
@@ -257,7 +257,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                     // Actualiza registro en la BBDD
                     //context.Entry(condicionadoPoliza).State = EntityState.Modified;
                     //context.SaveChanges();
-                    unitOfWork.Save();
+                    unitOfWork.SaveChanges();
 
                     TempData["mensaje"] = ItemMensaje.SuccessDesactivar(CondicionadoPoliza.GetNombreModelo(),condicionadoPoliza.tipoCondicionado);
                     return RedirectToAction("Index");
@@ -277,7 +277,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                     condicionadoPoliza.activo = 1;
                     //context.Entry(condicionadoPoliza).State = EntityState.Modified;
                     //context.SaveChanges();
-                    unitOfWork.Save();
+                    unitOfWork.SaveChanges();
                     TempData["mensaje"] = ItemMensaje.SuccessActivar(CondicionadoPoliza.GetNombreModelo(), condicionadoPoliza.tipoCondicionado);
                     return RedirectToAction("Index");
                 }
