@@ -11,12 +11,11 @@ namespace ProyectoSegurosFpDaw.Controllers
     public class AccesoController : Controller
     {
         private ProyectoSegurosDbEntities context;       
-        private UsuarioBLL usuarioBll;
-        
+        private AccesoBLL accessoBLL;        
         public AccesoController()
         {
             context = new ProyectoSegurosDbEntities();
-            usuarioBll = new UsuarioBLL(context);            
+            accessoBLL = new AccesoBLL(context);            
         }
         
 
@@ -33,9 +32,8 @@ namespace ProyectoSegurosFpDaw.Controllers
             // Encripta la password para poder compararla con la almacenada en BBDD.
             try
             {                
-                var unitOfWork = new UnitOfWork(context);
-                string encriptedPassword = Encriptacion.GetSHA256(Pass);
-                var usuarioAutenticado = usuarioBll.GetAuthenticatedUsuario(User, encriptedPassword);
+                var unitOfWork = new UnitOfWork(context);                
+                var usuarioAutenticado = accessoBLL.GetAuthenticatedUsuario(User, Pass);
 
                 if (usuarioAutenticado == null)
                 {
