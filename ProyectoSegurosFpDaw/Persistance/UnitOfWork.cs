@@ -11,7 +11,7 @@ namespace ProyectoSegurosFpDaw.Persistance
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ProyectoSegurosDbEntities _context;
-
+            
         public UnitOfWork(ProyectoSegurosDbEntities context)
         {
             _context = context;

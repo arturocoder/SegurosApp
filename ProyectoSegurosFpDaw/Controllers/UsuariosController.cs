@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Web.Mvc;
 using Microsoft.Ajax.Utilities;
+using ProyectoSegurosFpDaw.BLL;
 using ProyectoSegurosFpDaw.Filtros;
 using ProyectoSegurosFpDaw.Models;
 using ProyectoSegurosFpDaw.Persistance;
@@ -15,8 +16,16 @@ namespace ProyectoSegurosFpDaw.Controllers
     [RequireHttps]
     public class UsuariosController : Controller
     {
-        // Instancia de la BBDD
-        private ProyectoSegurosDbEntities context = new ProyectoSegurosDbEntities();
+      
+        private ProyectoSegurosDbEntities context;
+        private UnitOfWork unitOfWork;
+        private UsuarioBLL usuarioBll;
+        public UsuariosController()
+        {
+            context = new ProyectoSegurosDbEntities();
+            unitOfWork = new UnitOfWork(context);
+            usuarioBll = new UsuarioBLL(context);
+        }
 
         #region Actions        
 
@@ -91,7 +100,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             // busca coincidencias en la BBDD, 
             // envía la lista de usuarios activos (activo==1) coincidentes a la acción Index.
             // rolId == 0 => Todos los roles.
-            var unitOfWork = new UnitOfWork(context);
+            
             try
             {
                 // Rol (resto de campos vacíos).
@@ -236,14 +245,13 @@ namespace ProyectoSegurosFpDaw.Controllers
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDetails(Usuario.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            var unitOfWork = new UnitOfWork(context);
             var usuario = unitOfWork.Usuario.GetUsuarioActivoWhere(c => c.usuarioId == id);
-
             if (usuario == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDetails(Usuario.GetNombreModelo());
                 return RedirectToAction("Index");
             }
+
             return View(usuario);
         }
 
@@ -255,9 +263,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         [AutorizarUsuario(permisoId: 1)]
         public ActionResult Create()
         {
-            var unitOfWork = new UnitOfWork(context);            
             ViewBag.rolId = new SelectList(unitOfWork.Rol.GetAll(), "rolId", "nombreRol");
-
             return View();
         }
 
@@ -283,7 +289,6 @@ namespace ProyectoSegurosFpDaw.Controllers
 
             if (ModelState.IsValid)
             {
-                var unitOfWork = new UnitOfWork(context);
                 try
                 {
                     // Validaciones y formato de parámetros.
@@ -357,7 +362,6 @@ namespace ProyectoSegurosFpDaw.Controllers
                 return RedirectToAction("Index");
             }
 
-            var unitOfWork = new UnitOfWork(context);
             var usuario = unitOfWork.Usuario.GetUsuarioActivoWhere(c => c.usuarioId == id);
             if (usuario == null)
             {
@@ -386,7 +390,6 @@ namespace ProyectoSegurosFpDaw.Controllers
                 return RedirectToAction("Index");
             }
 
-            var unitOfWork = new UnitOfWork(context);
             var usuario = unitOfWork.Usuario.GetUsuarioActivoWhere(c => c.usuarioId == id);
             if (usuario == null)
             {
@@ -409,7 +412,8 @@ namespace ProyectoSegurosFpDaw.Controllers
                     }
 
                     // Si solo hay un usuario con rol Administrador en la BBDD.
-                    if (ComprobarUnicoAdministrador() == true)
+                    //if (ComprobarUnicoAdministrador() == true)
+                    if(usuarioBll.IsThereJustOneUsuarioActivoWithRolAdministrador()==true)
                     {
                         // Comprueba si el usuario a editar tiene un rol administrador .                      
                         var usuarioEstadoPrevio = unitOfWork.Usuario.SingleOrDefaultNoTracking(c => c.usuarioId == usuario.usuarioId && c.rolId == 1);
@@ -478,7 +482,6 @@ namespace ProyectoSegurosFpDaw.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int usuarioId)
         {
-            var unitOfWork = new UnitOfWork(context);
             var usuario = unitOfWork.Usuario.GetUsuarioActivoWhere(c => c.usuarioId == usuarioId);
             if (usuario == null)
             {
@@ -655,7 +658,6 @@ namespace ProyectoSegurosFpDaw.Controllers
             var roles = new List<SelectListItem>();
             roles.Add(new SelectListItem { Value = "0", Text = "TODOS" });
 
-            var unitOfWork = new UnitOfWork(context);
             var rolesT = unitOfWork.Rol.GetRolesOrderByName();
 
             foreach (var item in rolesT)
@@ -687,6 +689,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 context.Dispose();
             }
             base.Dispose(disposing);
+            
         }
         #endregion
 
