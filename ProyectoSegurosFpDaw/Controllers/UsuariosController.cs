@@ -237,7 +237,8 @@ namespace ProyectoSegurosFpDaw.Controllers
                 return RedirectToAction("Index");
             }
             var unitOfWork = new UnitOfWork(context);
-            var usuario = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.usuarioId == id).SingleOrDefault();
+            var usuario = unitOfWork.Usuario.GetUsuarioActivoWhere(c => c.usuarioId == id);
+
             if (usuario == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDetails(Usuario.GetNombreModelo());
@@ -357,7 +358,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
 
             var unitOfWork = new UnitOfWork(context);
-            var usuario = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.usuarioId == id).SingleOrDefault();            
+            var usuario = unitOfWork.Usuario.GetUsuarioActivoWhere(c => c.usuarioId == id);
             if (usuario == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Usuario.GetNombreModelo());
@@ -385,7 +386,8 @@ namespace ProyectoSegurosFpDaw.Controllers
                 return RedirectToAction("Index");
             }
 
-            Usuario usuario = context.Usuario.Where(c => c.activo == 1 && c.usuarioId == id).FirstOrDefault();
+            var unitOfWork = new UnitOfWork(context);
+            var usuario = unitOfWork.Usuario.GetUsuarioActivoWhere(c => c.usuarioId == id);
             if (usuario == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Usuario.GetNombreModelo());
@@ -409,9 +411,8 @@ namespace ProyectoSegurosFpDaw.Controllers
                     // Si solo hay un usuario con rol Administrador en la BBDD.
                     if (ComprobarUnicoAdministrador() == true)
                     {
-                        // Comprueba si el usuario a editar tiene un rol administrador .
-                        var usuarioEstadoPrevio = context.Usuario.AsNoTracking()
-                            .Where(c => c.usuarioId == usuario.usuarioId && c.rolId == 1).FirstOrDefault();
+                        // Comprueba si el usuario a editar tiene un rol administrador .                      
+                        var usuarioEstadoPrevio = unitOfWork.Usuario.SingleOrDefaultNoTracking(c => c.usuarioId == usuario.usuarioId && c.rolId == 1);
 
                         // Comprueba si está cambiando el rol a otro diferente de administrador.
                         if (usuarioEstadoPrevio != null && usuarioEstadoPrevio.rolId != usuario.rolId)
@@ -444,7 +445,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                     usuario.password = pswEncriptada;
 
                     // Guarda las modificaciones en la BBDD.
-                    context.SaveChanges();
+                    unitOfWork.SaveChanges();
                     TempData["mensaje"] = ItemMensaje.SuccessEditar(Usuario.GetNombreModelo(), usuario.apellido1Usuario);
                     return RedirectToAction("Index");
                 }
@@ -477,7 +478,8 @@ namespace ProyectoSegurosFpDaw.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int usuarioId)
         {
-            Usuario usuario = context.Usuario.Where(c => c.activo == 1 && c.usuarioId == usuarioId).FirstOrDefault();
+            var unitOfWork = new UnitOfWork(context);
+            var usuario = unitOfWork.Usuario.GetUsuarioActivoWhere(c => c.usuarioId == usuarioId);
             if (usuario == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDesactivar(Usuario.GetNombreModelo());
@@ -507,8 +509,9 @@ namespace ProyectoSegurosFpDaw.Controllers
                 usuario.activo = 0;
 
                 // Actualiza el registro en la BBDD.
-                context.Entry(usuario).State = EntityState.Modified;
-                context.SaveChanges();
+                //context.Entry(usuario).State = EntityState.Modified;
+                //context.SaveChanges();
+                unitOfWork.SaveChanges();
                 TempData["mensaje"] = ItemMensaje.SuccessDesactivar(Usuario.GetNombreModelo(), usuario.apellido1Usuario);
                 return RedirectToAction("Index");
             }
@@ -671,6 +674,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         /// </returns>
         private bool ComprobarUnicoAdministrador()
         {
+            
             var numeroAdmones = context.Usuario.Where(c => c.rolId == 1 && c.activo == 1).Count();
             if (numeroAdmones == 1) { return true; } else { return false; }
 

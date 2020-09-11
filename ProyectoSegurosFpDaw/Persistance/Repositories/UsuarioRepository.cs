@@ -26,6 +26,13 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
                        .Where(c => c.emailUsuario == email.Trim() && c.password == password)
                        .FirstOrDefault();
         }
+        public Usuario GetUsuarioActivoWhere(Expression<Func<Usuario, bool>> predicate)
+        {
+            return ProyectoSegurosContext.Usuario                          
+                          .Where(c => c.activo == 1)
+                          .Where(predicate)
+                          .SingleOrDefault();
+        }
 
         public IEnumerable<Usuario> GetUsuariosActivosWithRoles()
         {
@@ -53,5 +60,6 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
                           .Where(predicate)
                           .ToList();
         }
+
     }
 }

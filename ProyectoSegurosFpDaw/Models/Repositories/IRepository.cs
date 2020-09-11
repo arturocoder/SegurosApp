@@ -14,6 +14,8 @@ namespace ProyectoSegurosFpDaw.Models.Repositories
         IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate);
        
         TEntity SingleOrDefault(Expression<Func<TEntity, bool>> predicate);
+        TEntity SingleOrDefaultNoTracking(Expression<Func<TEntity, bool>> predicate);
+
 
         void Add(TEntity entity);
         void AddRange(IEnumerable<TEntity> entities);

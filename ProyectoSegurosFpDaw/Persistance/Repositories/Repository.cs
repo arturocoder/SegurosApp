@@ -65,5 +65,13 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
         {
             return Context.Set<TEntity>().SingleOrDefault(predicate);
         }
+
+        public TEntity SingleOrDefaultNoTracking(Expression<Func<TEntity, bool>> predicate)
+        {
+            return Context.Set<TEntity>()
+                .AsNoTracking()
+                .SingleOrDefault(predicate);
+
+        }
     }
 }
