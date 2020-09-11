@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Web.Mvc;
 using Microsoft.Ajax.Utilities;
+using ProyectoSegurosFpDaw.BLL;
 using ProyectoSegurosFpDaw.Filtros;
 using ProyectoSegurosFpDaw.Models;
 using ProyectoSegurosFpDaw.Persistance;
@@ -16,8 +17,19 @@ namespace ProyectoSegurosFpDaw.Controllers
     public class CondicionadoPolizasController : Controller
     {
         // Instancia de la BBDD.
-        private ProyectoSegurosDbEntities context = new ProyectoSegurosDbEntities();       
+      
+        private ProyectoSegurosDbEntities context;
+        private UnitOfWork unitOfWork;
+        private CondicionadoPolizaBLL condicionadoPolizaBLL;
 
+
+        public CondicionadoPolizasController()
+        {
+            context = new ProyectoSegurosDbEntities();
+            unitOfWork = new UnitOfWork(context); 
+            condicionadoPolizaBLL= new CondicionadoPolizaBLL(context);
+
+        }
         #region Actions
 
         /// <summary>
@@ -33,8 +45,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             if (TempData.ContainsKey("mensaje"))
             {
                 ViewBag.mensaje = TempData["mensaje"];
-            }
-            var unitOfWork = new UnitOfWork(context);           
+            }                      
             ViewBag.listaCondicionados = unitOfWork.CondicionadoPoliza.GetAll();
 
             return View();
@@ -52,8 +63,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             if (TempData.ContainsKey("mensaje"))
             {
                 ViewBag.mensaje = TempData["mensaje"];
-            }
-            var unitOfWork = new UnitOfWork(context);
+            }            
             ViewBag.listaCondicionados = unitOfWork.CondicionadoPoliza.GetAll();
          
             return View();
@@ -90,15 +100,16 @@ namespace ProyectoSegurosFpDaw.Controllers
                     condicionadoPoliza.tipoCondicionado = condicionadoPoliza.tipoCondicionado.Trim().ToUpperInvariant();
                     condicionadoPoliza.garantias = condicionadoPoliza.garantias.Trim();
                                       
-                    if (VerificarCondicionadoDuplicado(condicionadoPoliza.tipoCondicionado) == 1)
+                    //if (VerificarCondicionadoDuplicado(condicionadoPoliza.tipoCondicionado) == 1)
+                    if(condicionadoPolizaBLL.AnyCondicionadoWithTipoCondicionado(condicionadoPoliza.tipoCondicionado))
                     {                       
                         TempData["mensaje"] = ItemMensaje.ErrorRegistroDuplicadoCrear(CondicionadoPoliza.GetNombreModelo(), "tipo de condicionado",null);
                         return RedirectToAction("Index");
                     }
                     
                     // Activo = 1 => Condicionado vigente // 0 => no vigente.
-                    condicionadoPoliza.activo = 1;                   
-                    var unitOfWork = new UnitOfWork(context);
+                    condicionadoPoliza.activo = 1;                 
+                    
                     unitOfWork.CondicionadoPoliza.Add(condicionadoPoliza);
                     unitOfWork.SaveChanges();     
                     
@@ -128,14 +139,8 @@ namespace ProyectoSegurosFpDaw.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult EditPost(int IDcondicionado)
         {
-            //if (IDcondicionado == null)
-            //{             
-            //    TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(CondicionadoPoliza.GetNombreModelo());
-            //    return RedirectToAction("Index");
-            //}
-            UnitOfWork unitOfWork = new UnitOfWork(context);
+           
             var condicionadoPoliza = unitOfWork.CondicionadoPoliza.Get(IDcondicionado);
-
             if (condicionadoPoliza == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(CondicionadoPoliza.GetNombreModelo());
@@ -161,8 +166,9 @@ namespace ProyectoSegurosFpDaw.Controllers
                                        
                     // Si se ha modificado el tipoCondicionado (nombre).
                     if (condicionadoPoliza.tipoCondicionado != nombreCondicionadoAntiguo)
-                    {                                              
-                        if (VerificarCondicionadoDuplicado(condicionadoPoliza.tipoCondicionado) == 1)
+                    {
+                        //if (VerificarCondicionadoDuplicado(condicionadoPoliza.tipoCondicionado) == 1)
+                        if (condicionadoPolizaBLL.AnyCondicionadoWithTipoCondicionado(condicionadoPoliza.tipoCondicionado))
                         {
                             TempData["mensaje"] = ItemMensaje.ErrorRegistroDuplicadoEditar(CondicionadoPoliza.GetNombreModelo(), "tipo de condicionado", null);
                             return RedirectToAction("Index");
@@ -200,14 +206,13 @@ namespace ProyectoSegurosFpDaw.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int condicionadoId)
         {
-            UnitOfWork unitOfWork = new UnitOfWork(context);
             CondicionadoPoliza condicionadoPoliza = unitOfWork.CondicionadoPoliza.Get(condicionadoId);
-
             if (condicionadoPoliza == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDesactivarActivar(CondicionadoPoliza.GetNombreModelo());
                 return RedirectToAction("Index");
             }
+
             //Si condicionado está activo, lo desactiva.
             if (condicionadoPoliza.activo == 1)
             {
@@ -293,34 +298,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         #endregion
 
         #region Métodos
-
-        /// <summary>
-        /// Comprueba que el nombre del Condicionado (tipoCondicionado)
-        /// no exista en la BBDD
-        /// </summary>
-        /// <param name="nombreCondicionado">tipoCondicionado</param>
-        /// <returns>  
-        /// 1 => tipoCondicionado ya existe en la BBDD.
-        /// 0 => tipoCondicionado  no existe en BBDD.
-        /// </returns>
-        private int VerificarCondicionadoDuplicado(string nombreCondicionado)
-        {
-            var respuesta = 1;
-            var condicionado = nombreCondicionado.Trim().ToUpperInvariant();
-            var condicionadoCoincidente = context.CondicionadoPoliza
-                   .Where(c => c.tipoCondicionado == condicionado).FirstOrDefault();
-
-
-            if (condicionadoCoincidente != null)
-            {
-                respuesta = 1;
-            }
-            else
-            {
-                respuesta = 0;
-            }
-            return respuesta;
-        }
+       
         protected override void Dispose(bool disposing)
         {
             if (disposing)

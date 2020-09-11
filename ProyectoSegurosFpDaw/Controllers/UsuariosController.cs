@@ -60,7 +60,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 var usuariosCoincidentes = TempData["usuariosCoincidentes"];
                 ViewBag.usuariosCoincidentes = usuariosCoincidentes;
             }
-            var roles = unitOfWork.Rol.GetAll().OrderBy(c=>c.nombreRol);
+            var roles = unitOfWork.Rol.GetAll();
             ViewBag.rolId  = helper.GetSelectListRolConOpcionTodos(roles);
             ViewBag.estadoSession = estadoSession;
             return View();
@@ -606,24 +606,7 @@ namespace ProyectoSegurosFpDaw.Controllers
 
        
 
-        /// <summary>
-        /// Añade al selectList de Roles , la opción con valor 0 y texto Todos
-        /// para poder seleccionar Todos en el DropDown list de la Vista
-        /// </summary>
-        /// <returns> retorna un List<SelectListItem> </returns>
-        private List<SelectListItem> GetSelectListRolConOpcionTodos()
-        {
-            var roles = new List<SelectListItem>();
-            roles.Add(new SelectListItem { Value = "0", Text = "TODOS" });
-
-            var rolesT = unitOfWork.Rol.GetAll().OrderBy(c=>c.nombreRol);
-
-            foreach (var item in rolesT)
-            {
-                roles.Add(new SelectListItem { Value = item.rolId.ToString(CultureInfo.GetCultureInfo("es-ES")), Text = item.nombreRol });
-            }
-            return roles;
-        }       
+          
 
         protected override void Dispose(bool disposing)
         {

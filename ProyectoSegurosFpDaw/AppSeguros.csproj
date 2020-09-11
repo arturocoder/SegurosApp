@@ -150,6 +150,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="BLL\CondicionadoPolizaBLL.cs" />
     <Compile Include="BLL\UsuarioBLL.cs" />
     <Compile Include="Controllers\AccesoController.cs" />
     <Compile Include="Controllers\ClientesController.cs" />
