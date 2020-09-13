@@ -26,7 +26,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         {
             context = new ProyectoSegurosDbEntities();
             unitOfWork = new UnitOfWork(context);
-            usuarioBll = new UsuarioBLL(context);
+            usuarioBll = new UsuarioBLL(unitOfWork);
             helper = new UsuarioControllerHelper();
         }
 

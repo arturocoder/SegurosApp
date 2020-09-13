@@ -13,13 +13,13 @@ namespace ProyectoSegurosFpDaw.BLL
     public class AccesoBLL
     {
        
-        private UnitOfWork unitOfWork;
+        private UnitOfWork unitOfWork;        
 
-        public AccesoBLL(ProyectoSegurosDbEntities context)
+        public AccesoBLL(UnitOfWork unitOfWork)
         {
-            unitOfWork = new UnitOfWork(context);
-        }        
-      
+            this.unitOfWork = unitOfWork;
+        }
+
 
         public Usuario GetAuthenticatedUsuario(string email, string password)
         {

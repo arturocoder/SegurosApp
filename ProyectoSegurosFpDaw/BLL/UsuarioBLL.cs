@@ -11,11 +11,11 @@ namespace ProyectoSegurosFpDaw.BLL
     public class UsuarioBLL 
     {
         
-        private UnitOfWork unitOfWork;
+        private UnitOfWork unitOfWork;        
 
-        public UsuarioBLL(ProyectoSegurosDbEntities context)
-        {            
-            unitOfWork = new UnitOfWork(context);
+        public UsuarioBLL(UnitOfWork unitOfWork)
+        {
+            this.unitOfWork = unitOfWork;
         }
 
         public bool IsThereJustOneUsuarioActivoWithRolAdministrador()
@@ -37,12 +37,6 @@ namespace ProyectoSegurosFpDaw.BLL
         {
             return unitOfWork.Usuario.Any(c => c.dniUsuario == dni);
         }
-
-        public Usuario GetAuthenticatedUsuario(string email, string password)
-        {
-            return unitOfWork.Usuario
-                       .SingleOrDefault(c => c.emailUsuario == email.Trim() && c.password == password);
-                       
-        }
+        
     }
 }

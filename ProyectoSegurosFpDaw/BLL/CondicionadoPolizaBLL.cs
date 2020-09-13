@@ -10,11 +10,12 @@ namespace ProyectoSegurosFpDaw.BLL
     public class CondicionadoPolizaBLL
     {
         private UnitOfWork unitOfWork;
-
-        public CondicionadoPolizaBLL(ProyectoSegurosDbEntities context)
+       
+        public CondicionadoPolizaBLL(UnitOfWork unitOfWork)
         {
-            unitOfWork = new UnitOfWork(context);
+            this.unitOfWork =  unitOfWork;
         }
+
 
         public bool AnyCondicionadoWithTipoCondicionado(string tipoCondicionado)
         {

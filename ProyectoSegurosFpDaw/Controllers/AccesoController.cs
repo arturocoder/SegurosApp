@@ -10,12 +10,15 @@ namespace ProyectoSegurosFpDaw.Controllers
     [RequireHttps]
     public class AccesoController : Controller
     {
-        private ProyectoSegurosDbEntities context;       
-        private AccesoBLL accessoBLL;        
+        private ProyectoSegurosDbEntities context;
+        private UnitOfWork unitOfWork;
+        private AccesoBLL accessoBLL; 
+        
         public AccesoController()
         {
             context = new ProyectoSegurosDbEntities();
-            accessoBLL = new AccesoBLL(context);            
+            unitOfWork = new UnitOfWork(context);
+            accessoBLL = new AccesoBLL(unitOfWork);            
         }
         
 

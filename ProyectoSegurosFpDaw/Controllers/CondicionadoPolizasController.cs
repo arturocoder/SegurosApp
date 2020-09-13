@@ -27,8 +27,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         {
             context = new ProyectoSegurosDbEntities();
             unitOfWork = new UnitOfWork(context); 
-            condicionadoPolizaBLL= new CondicionadoPolizaBLL(context);
-
+            condicionadoPolizaBLL = new CondicionadoPolizaBLL(unitOfWork);
         }
         #region Actions
 
@@ -100,7 +99,6 @@ namespace ProyectoSegurosFpDaw.Controllers
                     condicionadoPoliza.tipoCondicionado = condicionadoPoliza.tipoCondicionado.Trim().ToUpperInvariant();
                     condicionadoPoliza.garantias = condicionadoPoliza.garantias.Trim();
                                       
-                    //if (VerificarCondicionadoDuplicado(condicionadoPoliza.tipoCondicionado) == 1)
                     if(condicionadoPolizaBLL.AnyCondicionadoWithTipoCondicionado(condicionadoPoliza.tipoCondicionado))
                     {                       
                         TempData["mensaje"] = ItemMensaje.ErrorRegistroDuplicadoCrear(CondicionadoPoliza.GetNombreModelo(), "tipo de condicionado",null);
