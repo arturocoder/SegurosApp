@@ -14,7 +14,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         private UnitOfWork unitOfWork;
         private AccesoBLL accessoBLL; 
         
-        public AccesoController()
+        public AccesoController() 
         {
             context = new ProyectoSegurosDbEntities();
             unitOfWork = new UnitOfWork(context);
@@ -31,8 +31,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Login(string User, string Pass)
-        {
-            // Encripta la password para poder compararla con la almacenada en BBDD.
+        {            
             try
             {                
                 var unitOfWork = new UnitOfWork(context);                
