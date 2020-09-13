@@ -10,8 +10,13 @@ namespace ProyectoSegurosFpDaw.Controllers
     [RequireHttps]
     public class RolesPermisosController : Controller
     {
-        private ProyectoSegurosDbEntities context = new ProyectoSegurosDbEntities();
-
+        private ProyectoSegurosDbEntities context;
+        private UnitOfWork unitOfWork;
+        public RolesPermisosController()
+        {
+            context = new ProyectoSegurosDbEntities();
+            unitOfWork = new UnitOfWork(context);
+        }
         #region Actions
 
         /// <summary>
@@ -22,7 +27,6 @@ namespace ProyectoSegurosFpDaw.Controllers
         [HttpGet]
         public ActionResult Index()
         {            
-            var unitOfWork = new UnitOfWork(context);
             var roles = unitOfWork.Rol.GetRolesWithRolesPermisos();
             return View(roles);
         }

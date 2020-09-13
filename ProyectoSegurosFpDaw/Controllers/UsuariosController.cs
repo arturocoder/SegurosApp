@@ -453,9 +453,9 @@ namespace ProyectoSegurosFpDaw.Controllers
                     var psw = usuario.password.Trim();
                     var pswEncriptada = Encriptacion.GetSHA256(psw);
                     usuario.password = pswEncriptada;
-
-                    // Guarda las modificaciones en la BBDD.
+                    unitOfWork.Usuario.Update(usuario);
                     unitOfWork.SaveChanges();
+
                     TempData["mensaje"] = ItemMensaje.SuccessEditar(Usuario.GetNombreModelo(), usuario.apellido1Usuario);
                     return RedirectToAction("Index");
                 }
@@ -520,7 +520,9 @@ namespace ProyectoSegurosFpDaw.Controllers
                 // Actualiza el registro en la BBDD.
                 //context.Entry(usuario).State = EntityState.Modified;
                 //context.SaveChanges();
+                unitOfWork.Usuario.Update(usuario);
                 unitOfWork.SaveChanges();
+
                 TempData["mensaje"] = ItemMensaje.SuccessDesactivar(Usuario.GetNombreModelo(), usuario.apellido1Usuario);
                 return RedirectToAction("Index");
             }
@@ -534,7 +536,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             return RedirectToAction("Index");
         }
         #endregion
-        #region Métodos
+        #region Métodos JSON
 
         /// <summary>
         /// Comprueba a través de llamada Ajax desde la vista, 
@@ -553,11 +555,10 @@ namespace ProyectoSegurosFpDaw.Controllers
             {
                 throw new ArgumentException("");
             }
-            var respuestaJson = 1;
             var nif = dni.Trim().ToUpperInvariant();
-            var usuarioCoincidente = context.Usuario
-                   .Where(c => c.dniUsuario == dni).FirstOrDefault();
+            Usuario usuarioCoincidente = unitOfWork.Usuario.SingleOrDefault(c=>c.dniUsuario==nif);
 
+            var respuestaJson = 1;
             if (usuarioCoincidente != null)
             {
                 respuestaJson = 1;
@@ -589,10 +590,10 @@ namespace ProyectoSegurosFpDaw.Controllers
             {
                 throw new ArgumentException("");
             }
-            var respuestaJson = 1;
             var mail = email.Trim().ToUpperInvariant();
-            var usuarioCoincidente = context.Usuario
-                   .Where(c => c.emailUsuario == mail).FirstOrDefault();
+            Usuario usuarioCoincidente = unitOfWork.Usuario.SingleOrDefault(c => c.emailUsuario == mail);
+
+            var respuestaJson = 1;
             if (usuarioCoincidente != null)
             {
                 respuestaJson = 1;

@@ -173,9 +173,8 @@ namespace ProyectoSegurosFpDaw.Controllers
                             TempData["mensaje"] = ItemMensaje.ErrorRegistroDuplicadoEditar(CondicionadoPoliza.GetNombreModelo(), "tipo de condicionado", null);
                             return RedirectToAction("Index");
                         }
-                    }                                    
-
-                    // Actualiza registro en la BBDD.
+                    }
+                    unitOfWork.CondicionadoPoliza.Update(condicionadoPoliza);                   
                     unitOfWork.SaveChanges();
 
                     TempData["mensaje"] = ItemMensaje.SuccessEditar(CondicionadoPoliza.GetNombreModelo(), condicionadoPoliza.tipoCondicionado);
@@ -255,13 +254,11 @@ namespace ProyectoSegurosFpDaw.Controllers
                 }
                 try
                 {
-                    // Guarda la fecha de hoy como fecha de baja.
+                    
                     DateTime hoy = DateTime.Now;
                     condicionadoPoliza.fechaDesactivado = hoy;
-                    condicionadoPoliza.activo = 0;
-                    // Actualiza registro en la BBDD
-                    //context.Entry(condicionadoPoliza).State = EntityState.Modified;
-                    //context.SaveChanges();
+                    condicionadoPoliza.activo = 0;                    
+                    unitOfWork.CondicionadoPoliza.Update(condicionadoPoliza);
                     unitOfWork.SaveChanges();
 
                     TempData["mensaje"] = ItemMensaje.SuccessDesactivar(CondicionadoPoliza.GetNombreModelo(),condicionadoPoliza.tipoCondicionado);
@@ -279,10 +276,10 @@ namespace ProyectoSegurosFpDaw.Controllers
                 try
                 {                    
                     condicionadoPoliza.fechaDesactivado = null;
-                    condicionadoPoliza.activo = 1;
-                    //context.Entry(condicionadoPoliza).State = EntityState.Modified;
-                    //context.SaveChanges();
+                    condicionadoPoliza.activo = 1;                    
+                    unitOfWork.CondicionadoPoliza.Update(condicionadoPoliza);
                     unitOfWork.SaveChanges();
+
                     TempData["mensaje"] = ItemMensaje.SuccessActivar(CondicionadoPoliza.GetNombreModelo(), condicionadoPoliza.tipoCondicionado);
                     return RedirectToAction("Index");
                 }

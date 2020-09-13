@@ -75,5 +75,11 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
                 .SingleOrDefault(predicate);
 
         }
+
+        public void Update(TEntity entity)
+        {
+            Context.Set<TEntity>().Attach(entity);
+            Context.Entry(entity).State = EntityState.Modified;
+        }
     }
 }
