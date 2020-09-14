@@ -21,7 +21,7 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
 
         public Usuario GetUsuarioActivoWhere(Expression<Func<Usuario, bool>> predicate)
         {
-            return ProyectoSegurosContext.Usuario                          
+            return ProyectoSegurosContext.Usuario
                           .Where(c => c.activo == 1)
                           .Where(predicate)
                           .SingleOrDefault();

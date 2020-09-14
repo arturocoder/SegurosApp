@@ -1,4 +1,5 @@
-﻿using ProyectoSegurosFpDaw.Models;
+﻿using Microsoft.Ajax.Utilities;
+using ProyectoSegurosFpDaw.Models;
 using ProyectoSegurosFpDaw.Persistance;
 using System;
 using System.Collections.Generic;
@@ -36,6 +37,20 @@ namespace ProyectoSegurosFpDaw.BLL
         public bool AnyUsuarioWithDni(string dni)
         {
             return unitOfWork.Usuario.Any(c => c.dniUsuario == dni);
+        }
+        public bool FormatFields(Usuario usuario)
+        {
+            if (usuario == null)
+            {
+                return false;
+            }
+            if (usuario.nombreUsuario.IsNullOrWhiteSpace() || usuario.apellido1Usuario.IsNullOrWhiteSpace()
+                       || usuario.apellido2Usuario.IsNullOrWhiteSpace() || usuario.dniUsuario.IsNullOrWhiteSpace()
+                       || usuario.emailUsuario.IsNullOrWhiteSpace() || usuario.password.IsNullOrWhiteSpace())
+            {
+                return false;
+            }
+            return true;
         }
         
     }

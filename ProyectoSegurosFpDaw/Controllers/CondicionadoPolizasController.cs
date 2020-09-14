@@ -103,9 +103,8 @@ namespace ProyectoSegurosFpDaw.Controllers
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(CondicionadoPoliza.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            string tipoCondicionadoAntiguo = condicionadoPoliza.tipoCondicionado;
 
-            // Intenta actualizar el condicionado con los datos enviados en el formulario post 
+            string tipoCondicionadoAntiguo = condicionadoPoliza.tipoCondicionado;            
             if (TryUpdateModel(condicionadoPoliza, "", new string[] { "tipoCondicionado", "garantias" }) == false)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(CondicionadoPoliza.GetNombreModelo());
