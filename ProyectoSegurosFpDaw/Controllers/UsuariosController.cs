@@ -17,7 +17,7 @@ namespace ProyectoSegurosFpDaw.Controllers
     [RequireHttps]
     public class UsuariosController : Controller
     {
-      
+
         private ProyectoSegurosDbEntities context;
         private UnitOfWork unitOfWork;
         private UsuarioBLL usuarioBll;
@@ -61,7 +61,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 ViewBag.usuariosCoincidentes = usuariosCoincidentes;
             }
             var roles = unitOfWork.Rol.GetAll();
-            ViewBag.rolId  = helper.GetSelectListRolConOpcionTodos(roles);
+            ViewBag.rolId = helper.GetSelectListRolConOpcionTodos(roles);
             ViewBag.estadoSession = estadoSession;
             return View();
         }
@@ -104,7 +104,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             // busca coincidencias en la BBDD, 
             // envía la lista de usuarios activos (activo==1) coincidentes a la acción Index.
             // rolId == 0 => Todos los roles.
-            
+
             try
             {
                 // Rol (resto de campos vacíos).
@@ -235,11 +235,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
         }
 
-        /// <summary>
-        /// GET: Muestra la información de un usuario.
-        /// </summary>
-        /// <param name="id">usuario Id</param>
-        /// <returns>Vista de la información del usuario</returns>
+
         [HttpGet]
         [AutorizarUsuario(permisoId: 4)]
         public ActionResult Details(int? id)
@@ -259,98 +255,48 @@ namespace ProyectoSegurosFpDaw.Controllers
             return View(usuario);
         }
 
-        /// <summary>
-        /// GET: formulario para crear un nuevo usuario.
-        /// </summary>
-        /// <returns>Vista con formulario para crear usuario</returns>
         [HttpGet]
         [AutorizarUsuario(permisoId: 1)]
         public ActionResult Create()
         {
-            ViewBag.rolId = new SelectList(unitOfWork.Rol.GetAll().OrderBy(c=>c.nombreRol), "rolId", "nombreRol");
+            ViewBag.rolId = new SelectList(unitOfWork.Rol.GetAll().OrderBy(c => c.nombreRol), "rolId", "nombreRol");
             return View();
         }
 
-        /// <summary>
-        /// POST:  crea un nuevo usuario.
-        /// </summary>
-        /// <param name="usuario">usuario con :nombre, apellido1 apellido2,NIF/NIE,email
-        /// ,password,rolId</param>
-        /// <returns>
-        /// Ok => Guarda registro en BBDD y redirecciona a Index con mensaje de success.
-        /// Error => redirecciona a Index / Create con mensaje de error.
-        /// </returns>
         [AutorizarUsuario(permisoId: 1)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "nombreUsuario,apellido1Usuario,apellido2Usuario,dniUsuario,emailUsuario,password,rolId")] Usuario usuario)
         {
-            if (usuario == null)
+            if (ModelState.IsValid == false || usuarioBll.FieldsFormat(usuario) == false)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Usuario.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-
-            if (ModelState.IsValid)
+            if (usuarioBll.AnyUsuarioWithDni(usuario.dniUsuario))
             {
-                try
-                {
-                    // Validaciones y formato de parámetros.
-                    if (usuario.nombreUsuario.IsNullOrWhiteSpace() || usuario.apellido1Usuario.IsNullOrWhiteSpace()
-                        || usuario.apellido2Usuario.IsNullOrWhiteSpace()
-                        || usuario.dniUsuario.IsNullOrWhiteSpace() || usuario.emailUsuario.IsNullOrWhiteSpace()
-                        || usuario.password.IsNullOrWhiteSpace())
-                    {
-                        TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Usuario.GetNombreModelo());
-                        return RedirectToAction("Index");
-                    }
-
-                    usuario.nombreUsuario = usuario.nombreUsuario.Trim().ToUpperInvariant();
-                    usuario.apellido1Usuario = usuario.apellido1Usuario.Trim().ToUpperInvariant();
-                    usuario.apellido2Usuario = usuario.apellido2Usuario.Trim().ToUpperInvariant();
-                    usuario.dniUsuario = usuario.dniUsuario.Trim().ToUpperInvariant();
-                    usuario.emailUsuario = usuario.emailUsuario.Trim().ToUpperInvariant();
-
-                    //if (VerificarDniDuplicadoBack(usuario.dniUsuario) == 1)
-                    if (usuarioBll.AnyUsuarioWithDni(usuario.dniUsuario))
-                    {
-                        ViewBag.mensaje = ItemMensaje.ErrorRegistroDuplicadoCrear(Usuario.GetNombreModelo(), "NIF/NIE", null);
-                        ViewBag.rolId = new SelectList(unitOfWork.Rol.GetAll(), "rolId", "nombreRol");
-                        return View(usuario);
-                    }
-                    //if (VerificarEmailDuplicadoBack(usuario.emailUsuario) == 1)
-                    if(usuarioBll.AnyUsuarioWithEmail(usuario.emailUsuario))
-                    {
-                        ViewBag.mensaje = ItemMensaje.ErrorRegistroDuplicadoCrear(Usuario.GetNombreModelo(), "Email", null);
-                        ViewBag.rolId = new SelectList(unitOfWork.Rol.GetAll(), "rolId", "nombreRol");
-                        return View(usuario);
-                    }
-
-                    // Guarda la fecha de hoy como fecha de alta.
-                    DateTime hoy = DateTime.Now;
-                    usuario.fechaAlta = hoy;
-                    usuario.activo = 1;
-                    // Encripta la password.
-                    var psw = usuario.password.Trim();
-                    var pswEncriptada = Encriptacion.GetSHA256(psw);
-                    usuario.password = pswEncriptada;
-
-                    // Guarda el registro en la BBDD.
-                    unitOfWork.Usuario.Add(usuario);
-                    unitOfWork.SaveChanges();
-                    
-                    TempData["mensaje"] = ItemMensaje.SuccessCrear(Usuario.GetNombreModelo(), usuario.dniUsuario);
-                    return RedirectToAction("Index");
-                }
-                catch (Exception ex)
-                {
-                    ViewBag.mensaje = ItemMensaje.ErrorExcepcionCrear(Usuario.GetNombreModelo(), ex.GetType().ToString());
-                    ViewBag.rolId = new SelectList(unitOfWork.Rol.GetAll(), "rolId", "nombreRol");
-                    return View(usuario);
-                }
+                ViewBag.mensaje = ItemMensaje.ErrorRegistroDuplicadoCrear(Usuario.GetNombreModelo(), "NIF/NIE", null);
+                ViewBag.rolId = new SelectList(unitOfWork.Rol.GetAll(), "rolId", "nombreRol");
+                return View(usuario);
             }
-            TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Usuario.GetNombreModelo());
-            return RedirectToAction("Index");
+            if (usuarioBll.AnyUsuarioWithEmail(usuario.emailUsuario))
+            {
+                ViewBag.mensaje = ItemMensaje.ErrorRegistroDuplicadoCrear(Usuario.GetNombreModelo(), "Email", null);
+                ViewBag.rolId = new SelectList(unitOfWork.Rol.GetAll(), "rolId", "nombreRol");
+                return View(usuario);
+            }
+            try
+            {
+                usuarioBll.CreateNewUsuario(usuario);
+                TempData["mensaje"] = ItemMensaje.SuccessCrear(Usuario.GetNombreModelo(), usuario.dniUsuario);
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                ViewBag.mensaje = ItemMensaje.ErrorExcepcionCrear(Usuario.GetNombreModelo(), ex.GetType().ToString());
+                ViewBag.rolId = new SelectList(unitOfWork.Rol.GetAll(), "rolId", "nombreRol");
+                return View(usuario);
+            }
         }
 
         /// <summary>
@@ -395,73 +341,36 @@ namespace ProyectoSegurosFpDaw.Controllers
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Usuario.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-
             var usuario = unitOfWork.Usuario.GetUsuarioActivoWhere(c => c.usuarioId == id);
             if (usuario == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Usuario.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-
-            try
+            if (TryUpdateModel(usuario, "", new string[] { "nombreUsuario", "apellido1Usuario", "apellido2Usuario", "emailUsuario", "password", "rolId" }) == false)
             {
-                // Intenta actualizar el usuario con los datos enviados desde el formulario.
-                if (TryUpdateModel(usuario, "", new string[] { "nombreUsuario", "apellido1Usuario", "apellido2Usuario", "emailUsuario", "password", "rolId" }))
-                {
-                    // Validaciones y formato de párametros.
-                    if (usuario.nombreUsuario.IsNullOrWhiteSpace() || usuario.apellido1Usuario.IsNullOrWhiteSpace()
-                        || usuario.apellido2Usuario.IsNullOrWhiteSpace() || usuario.dniUsuario.IsNullOrWhiteSpace()
-                        || usuario.emailUsuario.IsNullOrWhiteSpace() || usuario.password.IsNullOrWhiteSpace())
-                    {
-                        TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Usuario.GetNombreModelo());
-                        return RedirectToAction("Index");
-                    }
-
-                    // Si solo hay un usuario con rol Administrador en la BBDD.
-                    //if (ComprobarUnicoAdministrador() == true)
-                    if(usuarioBll.IsThereJustOneUsuarioActivoWithRolAdministrador()==true)
-                    {
-                        // Comprueba si el usuario a editar tiene un rol administrador .                      
-                        var usuarioEstadoPrevio = unitOfWork.Usuario.SingleOrDefaultNoTracking(c => c.usuarioId == usuario.usuarioId && c.rolId == 1);
-
-                        // Comprueba si está cambiando el rol a otro diferente de administrador.
-                        if (usuarioEstadoPrevio != null && usuarioEstadoPrevio.rolId != usuario.rolId)
-                        {
-                            ViewBag.mensaje = ItemMensaje.ErrorEditarDesactivarUnicoAdministrador(Usuario.GetNombreModelo());
-                            ViewBag.rolId = new SelectList(context.Rol, "rolId", "nombreRol", usuario.rolId);
-                            return View(usuario);
-                        }
-
-                    }
-                    // Si se va a modificar rol a No operativo.                   
-                    if (usuario.rolId == 2)
-                    {
-                        // Guarda la fecha de hoy como fecha de baja.
-                        DateTime hoy = DateTime.Now;
-                        usuario.fechaBaja = hoy;
-                    }
-                    else
-                    {
-                        usuario.fechaBaja = null;
-                    }
-
-                    usuario.nombreUsuario = usuario.nombreUsuario.Trim().ToUpperInvariant();
-                    usuario.apellido1Usuario = usuario.apellido1Usuario.Trim().ToUpperInvariant();
-                    usuario.apellido2Usuario = usuario.apellido2Usuario.Trim().ToUpperInvariant();
-                    usuario.emailUsuario = usuario.emailUsuario.Trim().ToUpperInvariant();
-                    // Encripta la password.
-                    var psw = usuario.password.Trim();
-                    var pswEncriptada = Encriptacion.GetSHA256(psw);
-                    usuario.password = pswEncriptada;
-                    unitOfWork.Usuario.Update(usuario);
-                    unitOfWork.SaveChanges();
-
-                    TempData["mensaje"] = ItemMensaje.SuccessEditar(Usuario.GetNombreModelo(), usuario.apellido1Usuario);
-                    return RedirectToAction("Index");
-                }
                 ViewBag.mensaje = ItemMensaje.ErrorDatosNoValidosEditar(Usuario.GetNombreModelo());
                 ViewBag.rolId = new SelectList(context.Rol, "rolId", "nombreRol", usuario.rolId);
                 return View(usuario);
+            }
+            if (usuarioBll.FieldsFormat(usuario) == false)
+            {
+                ViewBag.mensaje = ItemMensaje.ErrorDatosNoValidosEditar(Usuario.GetNombreModelo());
+                ViewBag.rolId = new SelectList(context.Rol, "rolId", "nombreRol", usuario.rolId);
+                return View(usuario);
+            }
+            if (usuarioBll.ValidateChangingRolAdministrador(usuario) == false)
+            {
+                ViewBag.mensaje = ItemMensaje.ErrorEditarDesactivarUnicoAdministrador(Usuario.GetNombreModelo());
+                ViewBag.rolId = new SelectList(context.Rol, "rolId", "nombreRol", usuario.rolId);
+                return View(usuario);
+            }           
+            try
+            {
+                usuarioBll.UpdateUsuario(usuario);
+                TempData["mensaje"] = ItemMensaje.SuccessEditar(Usuario.GetNombreModelo(), usuario.apellido1Usuario);
+                return RedirectToAction("Index");
+
             }
             catch (Exception ex)
             {
@@ -556,7 +465,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 throw new ArgumentException("");
             }
             var nif = dni.Trim().ToUpperInvariant();
-            Usuario usuarioCoincidente = unitOfWork.Usuario.SingleOrDefault(c=>c.dniUsuario==nif);
+            Usuario usuarioCoincidente = unitOfWork.Usuario.SingleOrDefault(c => c.dniUsuario == nif);
 
             var respuestaJson = 1;
             if (usuarioCoincidente != null)
@@ -570,7 +479,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             return Json(respuestaJson, JsonRequestBehavior.AllowGet);
         }
 
-       
+
 
 
         /// <summary>
@@ -605,9 +514,9 @@ namespace ProyectoSegurosFpDaw.Controllers
             return Json(respuestaJson, JsonRequestBehavior.AllowGet);
         }
 
-       
 
-          
+
+
 
         protected override void Dispose(bool disposing)
         {
@@ -616,7 +525,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 context.Dispose();
             }
             base.Dispose(disposing);
-            
+
         }
         #endregion
 

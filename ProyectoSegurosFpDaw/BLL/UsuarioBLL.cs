@@ -18,6 +18,23 @@ namespace ProyectoSegurosFpDaw.BLL
         {
             this.unitOfWork = unitOfWork;
         }
+        public bool ValidateChangingRolAdministrador(Usuario usuario)
+        {
+
+            var numeroAdmones = unitOfWork.Usuario.Find(c => c.rolId == 1 && c.activo == 1).Count();
+            if (numeroAdmones == 1)
+            {
+                // Comprueba si el usuario a editar tiene un rol administrador .                      
+                var usuarioEstadoPrevio = unitOfWork.Usuario.SingleOrDefaultNoTracking(c => c.usuarioId == usuario.usuarioId && c.rolId == 1);
+                // Comprueba si está cambiando el rol a otro diferente de administrador.
+                if (usuarioEstadoPrevio != null && usuarioEstadoPrevio.rolId != usuario.rolId)
+                {
+                    return false;
+                }               
+            }
+            return true;
+
+        }
 
         public bool IsThereJustOneUsuarioActivoWithRolAdministrador()
         {
@@ -37,8 +54,23 @@ namespace ProyectoSegurosFpDaw.BLL
         public bool AnyUsuarioWithDni(string dni)
         {
             return unitOfWork.Usuario.Any(c => c.dniUsuario == dni);
+        }                    
+        public bool FieldsFormat(Usuario usuario)
+        {
+            if (IsValidFormat(usuario) == false)
+            {
+                return false;
+            }
+            usuario.nombreUsuario = usuario.nombreUsuario.Trim().ToUpperInvariant();
+            usuario.apellido1Usuario = usuario.apellido1Usuario.Trim().ToUpperInvariant();
+            usuario.apellido2Usuario = usuario.apellido2Usuario.Trim().ToUpperInvariant();
+            usuario.dniUsuario = usuario.dniUsuario.Trim().ToUpperInvariant();
+            usuario.emailUsuario = usuario.emailUsuario.Trim().ToUpperInvariant();
+            usuario.password = usuario.password.Trim();
+            return true;
         }
-        public bool FormatFields(Usuario usuario)
+
+        private bool IsValidFormat(Usuario usuario)
         {
             if (usuario == null)
             {
@@ -51,6 +83,33 @@ namespace ProyectoSegurosFpDaw.BLL
                 return false;
             }
             return true;
+
+        }
+
+        public void CreateNewUsuario(Usuario usuario)
+        {
+            usuario.fechaAlta = DateTime.Now;
+            usuario.activo = 1;
+            usuario.password = Encriptacion.GetSHA256(usuario.password);
+            unitOfWork.Usuario.Add(usuario);
+            unitOfWork.SaveChanges();
+        }
+        public void UpdateUsuario(Usuario usuario)
+        {                         
+            // Si se va a modificar rol a No operativo.   
+            if (usuario.rolId == 2)
+            {
+                // Guarda la fecha de hoy como fecha de baja.
+                DateTime hoy = DateTime.Now;
+                usuario.fechaBaja = hoy;
+            }
+            else
+            {
+                usuario.fechaBaja = null;
+            }            
+            usuario.password = Encriptacion.GetSHA256(usuario.password);
+            unitOfWork.Usuario.Update(usuario);
+            unitOfWork.SaveChanges();
         }
         
     }

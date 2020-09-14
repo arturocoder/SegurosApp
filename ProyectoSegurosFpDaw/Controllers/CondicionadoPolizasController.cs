@@ -15,13 +15,10 @@ namespace ProyectoSegurosFpDaw.Controllers
 {
     [RequireHttps]
     public class CondicionadoPolizasController : Controller
-    {
-        // Instancia de la BBDD.
-
+    {      
         private ProyectoSegurosDbEntities context;
         private UnitOfWork unitOfWork;
         private CondicionadoPolizaBLL condicionadoPolizaBLL;
-
 
         public CondicionadoPolizasController()
         {
@@ -30,11 +27,11 @@ namespace ProyectoSegurosFpDaw.Controllers
             condicionadoPolizaBLL = new CondicionadoPolizaBLL(unitOfWork);
         }
         #region Actions
-      
+
         [AutorizarUsuario(permisoId: 23)]
         [HttpGet]
         public ActionResult Index()
-        {           
+        {
             if (TempData.ContainsKey("mensaje"))
             {
                 ViewBag.mensaje = TempData["mensaje"];
@@ -43,7 +40,7 @@ namespace ProyectoSegurosFpDaw.Controllers
 
             return View();
         }
-        
+
         [AutorizarUsuario(permisoId: 22)]
         [HttpGet]
         public ActionResult IndexNoEditable()
@@ -56,22 +53,17 @@ namespace ProyectoSegurosFpDaw.Controllers
 
             return View();
         }
-        
+
         [AutorizarUsuario(permisoId: 23)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "tipoCondicionado,garantias")] CondicionadoPoliza condicionadoPoliza)
         {
-            if (ModelState.IsValid == false)
+            if (ModelState.IsValid == false || condicionadoPolizaBLL.FieldsFormat(condicionadoPoliza) == false)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(CondicionadoPoliza.GetNombreModelo());
                 return RedirectToAction("Index");
-            }
-            if (condicionadoPolizaBLL.FormatFields(condicionadoPoliza) == false)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(CondicionadoPoliza.GetNombreModelo());
-                return RedirectToAction("Index");
-            }
+            }           
             if (condicionadoPolizaBLL.AnyCondicionadoWithTipoCondicionado(condicionadoPoliza.tipoCondicionado))
             {
                 TempData["mensaje"] = ItemMensaje.ErrorRegistroDuplicadoCrear(CondicionadoPoliza.GetNombreModelo(), "tipo de condicionado", null);
@@ -79,9 +71,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             try
             {
-                condicionadoPoliza.activo = 1;
-                unitOfWork.CondicionadoPoliza.Add(condicionadoPoliza);
-                unitOfWork.SaveChanges();
+                condicionadoPolizaBLL.CreateNewCondicionadoPoliza(condicionadoPoliza);
                 TempData["mensaje"] = ItemMensaje.SuccessCrear(CondicionadoPoliza.GetNombreModelo(), condicionadoPoliza.tipoCondicionado);
                 return RedirectToAction("Index");
             }
@@ -91,37 +81,30 @@ namespace ProyectoSegurosFpDaw.Controllers
                 return RedirectToAction("Index");
             }
         }
-        
+
         [AutorizarUsuario(permisoId: 23)]
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
         public ActionResult EditPost(int IDcondicionado)
         {
-            CondicionadoPoliza condicionadoPoliza = unitOfWork.CondicionadoPoliza.Get(IDcondicionado);
-            if (condicionadoPoliza == null)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(CondicionadoPoliza.GetNombreModelo());
-                return RedirectToAction("Index");
-            }
+            CondicionadoPoliza condicionadoPoliza = unitOfWork.CondicionadoPoliza.Get(IDcondicionado);           
+            string tipoCondicionadoAntiguo = condicionadoPoliza.tipoCondicionado;        
 
-            string tipoCondicionadoAntiguo = condicionadoPoliza.tipoCondicionado;            
-            if (TryUpdateModel(condicionadoPoliza, "", new string[] { "tipoCondicionado", "garantias" }) == false)
+            if (condicionadoPoliza == null || TryUpdateModel(condicionadoPoliza, "", new string[] { "tipoCondicionado", "garantias" }) == false)
+            {
+                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(CondicionadoPoliza.GetNombreModelo());
+                return RedirectToAction("Index");
+            }            
+            if (condicionadoPolizaBLL.FieldsFormat(condicionadoPoliza) == false)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(CondicionadoPoliza.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            if (condicionadoPolizaBLL.FormatFields(condicionadoPoliza) == false)
+            if (condicionadoPoliza.tipoCondicionado != tipoCondicionadoAntiguo
+                && condicionadoPolizaBLL.AnyCondicionadoWithTipoCondicionado(condicionadoPoliza.tipoCondicionado))
             {
-                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(CondicionadoPoliza.GetNombreModelo());
+                TempData["mensaje"] = ItemMensaje.ErrorRegistroDuplicadoEditar(CondicionadoPoliza.GetNombreModelo(), "tipo de condicionado", null);
                 return RedirectToAction("Index");
-            }
-            if (condicionadoPoliza.tipoCondicionado != tipoCondicionadoAntiguo)
-            {
-                if (condicionadoPolizaBLL.AnyCondicionadoWithTipoCondicionado(condicionadoPoliza.tipoCondicionado))
-                {
-                    TempData["mensaje"] = ItemMensaje.ErrorRegistroDuplicadoEditar(CondicionadoPoliza.GetNombreModelo(), "tipo de condicionado", null);
-                    return RedirectToAction("Index");
-                }
             }
             try
             {

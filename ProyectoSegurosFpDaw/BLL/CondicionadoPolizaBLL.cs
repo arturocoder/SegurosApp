@@ -22,7 +22,7 @@ namespace ProyectoSegurosFpDaw.BLL
         {
             return unitOfWork.CondicionadoPoliza.Any(c => c.tipoCondicionado == tipoCondicionado);
         }
-        private bool IsValid(CondicionadoPoliza condicionadoPoliza)
+        private bool IsValidFormat(CondicionadoPoliza condicionadoPoliza)
         {
             if(condicionadoPoliza == null)
             {
@@ -34,15 +34,22 @@ namespace ProyectoSegurosFpDaw.BLL
             }            
             return true;
         }
-        public bool FormatFields(CondicionadoPoliza condicionadoPoliza)
+        public bool FieldsFormat(CondicionadoPoliza condicionadoPoliza)
         {
-            if (IsValid(condicionadoPoliza) == false)
+            if (IsValidFormat(condicionadoPoliza) == false)
             {
                 return false;
             }
             condicionadoPoliza.tipoCondicionado = condicionadoPoliza.tipoCondicionado.Trim().ToUpperInvariant();
             condicionadoPoliza.garantias = condicionadoPoliza.garantias.Trim();
             return true;
+        }
+
+        public void CreateNewCondicionadoPoliza(CondicionadoPoliza condicionadoPoliza)
+        {
+            condicionadoPoliza.activo = 1;
+            unitOfWork.CondicionadoPoliza.Add(condicionadoPoliza);
+            unitOfWork.SaveChanges();
         }
     }
 }
