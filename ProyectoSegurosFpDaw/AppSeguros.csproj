@@ -151,6 +151,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="BLL\AccesoBLL.cs" />
+    <Compile Include="BLL\ClienteBLL.cs" />
     <Compile Include="BLL\CondicionadoPolizaBLL.cs" />
     <Compile Include="BLL\Encriptacion.cs" />
     <Compile Include="BLL\UsuarioBLL.cs" />
@@ -205,6 +206,7 @@
       <DependentUpon>ProyectoSegurosModel.edmx</DependentUpon>
     </Compile>
     <Compile Include="Models\ReinicioBBDD.cs" />
+    <Compile Include="Models\Repositories\IClienteRepository.cs" />
     <Compile Include="Models\Repositories\IUsuarioRepository.cs" />
     <Compile Include="Models\Repositories\ICondicionadoPolizaRepository.cs" />
     <Compile Include="Models\Repositories\IRepository.cs" />
@@ -222,6 +224,7 @@
     <Compile Include="Models\Usuario.cs">
       <DependentUpon>ProyectoSegurosModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="Persistance\Repositories\ClienteRepository.cs" />
     <Compile Include="Persistance\Repositories\CondicionadoPolizaRepository.cs" />
     <Compile Include="Persistance\Repositories\Repository.cs" />
     <Compile Include="Persistance\Repositories\RolRepository.cs" />

@@ -238,14 +238,9 @@ namespace ProyectoSegurosFpDaw.Controllers
 
         [HttpGet]
         [AutorizarUsuario(permisoId: 4)]
-        public ActionResult Details(int? id)
-        {
-            if (id == null)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDetails(Usuario.GetNombreModelo());
-                return RedirectToAction("Index");
-            }
-            var usuario = unitOfWork.Usuario.GetUsuarioActivoWhere(c => c.usuarioId == id);
+        public ActionResult Details(int id)
+        {           
+            var usuario = unitOfWork.Usuario.GetUsuarioActivo(id);
             if (usuario == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDetails(Usuario.GetNombreModelo());
@@ -306,15 +301,10 @@ namespace ProyectoSegurosFpDaw.Controllers
         /// <returns>Vista con formulario para editar un usuario</returns>
         [HttpGet]
         [AutorizarUsuario(permisoId: 2)]
-        public ActionResult Edit(int? id)
-        {
-            if (id == null)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Usuario.GetNombreModelo());
-                return RedirectToAction("Index");
-            }
+        public ActionResult Edit(int id)
+        {          
 
-            var usuario = unitOfWork.Usuario.GetUsuarioActivoWhere(c => c.usuarioId == id);
+            var usuario = unitOfWork.Usuario.GetUsuarioActivo(id);
             if (usuario == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Usuario.GetNombreModelo());
@@ -334,14 +324,9 @@ namespace ProyectoSegurosFpDaw.Controllers
         [AutorizarUsuario(permisoId: 2)]
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
-        public ActionResult EditPost(int? id)
-        {
-            if (id == null)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Usuario.GetNombreModelo());
-                return RedirectToAction("Index");
-            }
-            var usuario = unitOfWork.Usuario.GetUsuarioActivoWhere(c => c.usuarioId == id);
+        public ActionResult EditPost(int id)
+        {            
+            var usuario = unitOfWork.Usuario.GetUsuarioActivo(id);
             if (usuario == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Usuario.GetNombreModelo());
@@ -396,7 +381,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int usuarioId)
         {
-            var usuario = unitOfWork.Usuario.GetUsuarioActivoWhere(c => c.usuarioId == usuarioId);
+            var usuario = unitOfWork.Usuario.GetUsuarioActivo(usuarioId);
             if (usuario == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDesactivar(Usuario.GetNombreModelo());
@@ -408,7 +393,6 @@ namespace ProyectoSegurosFpDaw.Controllers
                 return View("Details", usuario);
 
             }
-
             try
             {
                 usuarioBll.DeleteUsuario(usuario);

@@ -8,17 +8,26 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using Microsoft.Ajax.Utilities;
+using ProyectoSegurosFpDaw.BLL;
 using ProyectoSegurosFpDaw.Filtros;
 using ProyectoSegurosFpDaw.Models;
+using ProyectoSegurosFpDaw.Persistance;
 
 namespace ProyectoSegurosFpDaw.Controllers
 {
     [RequireHttps]
     public class ClientesController : Controller
     {
-        // Instancia de la BBDD
-        private ProyectoSegurosDbEntities db = new ProyectoSegurosDbEntities();
+        private ProyectoSegurosDbEntities context;
+        private UnitOfWork unitOfWork;
+        private ClienteBLL clienteBll;
 
+        public ClientesController()
+        {
+            context = new ProyectoSegurosDbEntities();
+            unitOfWork = new UnitOfWork(context);
+            clienteBll = new ClienteBLL(unitOfWork);
+        }
         #region Actions
 
         /// <summary>
@@ -93,7 +102,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 // ClienteId. 
                 if (clienteId.Length > 0)
                 {
-                    var ClientesCoincidentes = db.Cliente
+                    var ClientesCoincidentes = context.Cliente
                                .Where(c => c.activo == 1 && c.clienteId == clienteID)
                                .ToList();
 
@@ -101,7 +110,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                     // y envía mensaje si hay coincidencia.
                     if (ClientesCoincidentes.Count == 0)
                     {
-                        var clienteNoActivo = db.Cliente
+                        var clienteNoActivo = context.Cliente
                          .Where(c => c.activo == 0 && c.clienteId == clienteID).FirstOrDefault();
                         if (clienteNoActivo != null)
                         {
@@ -114,12 +123,12 @@ namespace ProyectoSegurosFpDaw.Controllers
                 // NIF/NIE. 
                 else if (dniCliente.Length > 0)
                 {
-                    var ClientesCoincidentes = db.Cliente
+                    var ClientesCoincidentes = context.Cliente
                        .Where(c => c.activo == 1 && c.dniCliente == dniCliente)
                        .ToList();
                     if (ClientesCoincidentes.Count == 0)
                     {
-                        var clienteNoActivo = db.Cliente
+                        var clienteNoActivo = context.Cliente
                          .Where(c => c.activo == 0 && c.dniCliente == dniCliente).FirstOrDefault();
                         if (clienteNoActivo != null)
                         {
@@ -132,7 +141,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 // Email.
                 else if (emailCliente.Length > 0)
                 {
-                    var ClientesCoincidentes = db.Cliente
+                    var ClientesCoincidentes = context.Cliente
                         .Where(c => c.activo == 1 && c.emailCliente == emailCliente)
                         .ToList();
                     TempData["clientesCoincidentes"] = ClientesCoincidentes;
@@ -141,7 +150,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 // Teléfono.
                 else if (telefonoCliente.Length > 0)
                 {
-                    var ClientesCoincidentes = db.Cliente
+                    var ClientesCoincidentes = context.Cliente
                         .Where(c => c.activo == 1 && c.telefonoCliente == telefonoCliente)
                         .ToList();
                     TempData["clientesCoincidentes"] = ClientesCoincidentes;
@@ -150,7 +159,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 // Si todos los campos vacíos, devuelve todos los clientes activos.
                 else
                 {
-                    var ClientesCoincidentes = db.Cliente
+                    var ClientesCoincidentes = context.Cliente
                         .Where(c => c.activo == 1)
                         .ToList();
                     TempData["clientesCoincidentes"] = ClientesCoincidentes;
@@ -159,30 +168,23 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             catch (Exception ex)
             {
-                TempData["mensaje"] = ItemMensaje.ErrorExcepcionBuscar(Cliente.GetNombreModelo(),ex.GetType().ToString());
+                TempData["mensaje"] = ItemMensaje.ErrorExcepcionBuscar(Cliente.GetNombreModelo(), ex.GetType().ToString());
                 return RedirectToAction("Index");
             }
         }
 
-        /// <summary>
-        /// GET: Muestra la información de un cliente.
-        /// </summary>
-        /// <param name="id">cliente Id</param>
-        /// <returns>Vista de la información del cliente</returns>
+
         [AutorizarUsuario(permisoId: 9)]
         [HttpGet]
-        public ActionResult Details(int? id)
+        public ActionResult Details(int id)
         {
-            if (id == null)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDetails(Cliente.GetNombreModelo());
-                return RedirectToAction("Index");
-            }
+
             if (TempData.ContainsKey("mensaje"))
             {
                 ViewBag.mensaje = TempData["mensaje"];
             }
-            Cliente cliente = db.Cliente.Where(c => c.clienteId == id).FirstOrDefault();
+
+            Cliente cliente = unitOfWork.Cliente.SingleOrDefault(c => c.clienteId == id);
             if (cliente == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDetails(Cliente.GetNombreModelo());
@@ -190,21 +192,16 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             if (cliente.activo == 0)
             {
-                TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Cliente.GetNombreModelo(),cliente.clienteId);
+                TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Cliente.GetNombreModelo(), cliente.clienteId);
                 return RedirectToAction("Index");
             }
             return View(cliente);
         }
 
-        /// <summary>
-        /// GET: formulario para crear un nuevo Cliente.
-        /// </summary>
-        /// <returns>Vista con formulario para crear Cliente.</returns>
         [AutorizarUsuario(permisoId: 6)]
         [HttpGet]
         public ActionResult Create()
         {
-            //Comprueba que haya mensajes enviado desde otra action 
             if (TempData.ContainsKey("mensaje"))
             {
                 ViewBag.mensaje = TempData["mensaje"];
@@ -225,53 +222,29 @@ namespace ProyectoSegurosFpDaw.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "nombreCliente,apellido1Cliente,apellido2Cliente,dniCliente,emailCliente,telefonoCliente")] Cliente cliente)
         {
-            if (cliente == null)
+            if (ModelState.IsValid == false || clienteBll.FieldsFormat(cliente) == false)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Cliente.GetNombreModelo());
                 return RedirectToAction("Index");
+
             }
-            if (ModelState.IsValid)
+            if (clienteBll.AnyClienteWithDni(cliente.dniCliente))
             {
-                try
-                {
-                    // Validaciones y formato de parámetros.
-                    if (cliente.nombreCliente.IsNullOrWhiteSpace() || cliente.apellido1Cliente.IsNullOrWhiteSpace()
-                        || cliente.apellido2Cliente.IsNullOrWhiteSpace() || cliente.dniCliente.IsNullOrWhiteSpace()
-                        || cliente.emailCliente.IsNullOrWhiteSpace() || cliente.telefonoCliente.IsNullOrWhiteSpace())
-                    {
-                        TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Cliente.GetNombreModelo());
-                        return RedirectToAction("Index");
-                    }
-                    cliente.nombreCliente = cliente.nombreCliente.Trim().ToUpperInvariant();
-                    cliente.apellido1Cliente = cliente.apellido1Cliente.Trim().ToUpperInvariant();
-                    cliente.apellido2Cliente = cliente.apellido2Cliente.Trim().ToUpperInvariant();
-                    cliente.dniCliente = cliente.dniCliente.Trim().ToUpperInvariant();
-                    cliente.emailCliente = cliente.emailCliente.Trim().ToUpperInvariant();
-                    cliente.telefonoCliente = cliente.telefonoCliente.Trim();
-
-                    if (VerificarDniDuplicadoBack(cliente.dniCliente) == 1)
-                    {
-                        ViewBag.mensaje = ItemMensaje.ErrorRegistroDuplicadoCrear(Cliente.GetNombreModelo(),"NIF/NIE",null);
-                        return View(cliente);
-                    }
-
-                    // Activo = 1 => cliente activo  // 0 => cliente ha sido eliminado.
-                    cliente.activo = 1;
-
-                    // Guarda registro en la BBDD.
-                    db.Cliente.Add(cliente);
-                    db.SaveChanges();
-                    TempData["mensaje"] = ItemMensaje.SuccessCrear(Cliente.GetNombreModelo(),cliente.dniCliente);
-                    return RedirectToAction("Index");
-                }
-                catch (Exception ex)
-                {
-                    ViewBag.mensaje = ItemMensaje.ErrorExcepcionCrear(Cliente.GetNombreModelo(), ex.GetType().ToString());
-                    return View(cliente);
-                }
+                ViewBag.mensaje = ItemMensaje.ErrorRegistroDuplicadoCrear(Cliente.GetNombreModelo(), "NIF/NIE", null);
+                return View(cliente);
             }
-            TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Cliente.GetNombreModelo());
-            return RedirectToAction("Index");
+            try
+            {
+                clienteBll.CreateNewCliente(cliente);
+                TempData["mensaje"] = ItemMensaje.SuccessCrear(Cliente.GetNombreModelo(), cliente.dniCliente);
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                ViewBag.mensaje = ItemMensaje.ErrorExcepcionCrear(Cliente.GetNombreModelo(), ex.GetType().ToString());
+                return View(cliente);
+            }
+
         }
 
         /// <summary>
@@ -288,7 +261,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Cliente.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            Cliente cliente = db.Cliente.Where(c => c.clienteId == id && c.activo == 1).FirstOrDefault();
+            Cliente cliente = context.Cliente.Where(c => c.clienteId == id && c.activo == 1).FirstOrDefault();
             if (cliente == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Cliente.GetNombreModelo());
@@ -315,7 +288,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Cliente.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            Cliente cliente = db.Cliente.Where(c => c.activo == 1 && c.clienteId == id).FirstOrDefault();
+            Cliente cliente = context.Cliente.Where(c => c.activo == 1 && c.clienteId == id).FirstOrDefault();
             if (cliente == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Cliente.GetNombreModelo());
@@ -343,13 +316,13 @@ namespace ProyectoSegurosFpDaw.Controllers
                     cliente.telefonoCliente = cliente.telefonoCliente.Trim();
 
                     // Guarda las modificaciones en la BBDD.
-                    db.SaveChanges();
-                    TempData["mensaje"] = ItemMensaje.SuccessEditar(Cliente.GetNombreModelo(),cliente.apellido1Cliente);
+                    context.SaveChanges();
+                    TempData["mensaje"] = ItemMensaje.SuccessEditar(Cliente.GetNombreModelo(), cliente.apellido1Cliente);
                     return RedirectToAction("Index");
                 }
                 ViewBag.mensaje = ItemMensaje.ErrorDatosNoValidosEditar(Cliente.GetNombreModelo());
                 return View(cliente);
-            }           
+            }
             catch (Exception ex)
             {
                 ViewBag.mensaje = ItemMensaje.ErrorExcepcionEditar(Cliente.GetNombreModelo(), ex.GetType().ToString());
@@ -372,14 +345,14 @@ namespace ProyectoSegurosFpDaw.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int clienteId)
         {
-            Cliente cliente = db.Cliente.Where(c => c.activo == 1 && c.clienteId == clienteId).FirstOrDefault();
+            Cliente cliente = context.Cliente.Where(c => c.activo == 1 && c.clienteId == clienteId).FirstOrDefault();
             if (cliente == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDesactivar(Cliente.GetNombreModelo());
                 return RedirectToAction("Index");
             }
             // Verifica que el cliente tenga pólizas en vigor.       
-            var polizasVigor = db.Poliza.Where(c => c.clienteId == clienteId && c.activo == 1).Select(c=>c.polizaId).ToList();
+            var polizasVigor = context.Poliza.Where(c => c.clienteId == clienteId && c.activo == 1).Select(c => c.polizaId).ToList();
             if (polizasVigor.Any())
             {
                 TempData["mensaje"] = ItemMensaje.ErrorPolizaVigorDesactivarCondicionado(Cliente.GetNombreModelo(), polizasVigor);
@@ -395,9 +368,9 @@ namespace ProyectoSegurosFpDaw.Controllers
                     cliente.activo = 0;
 
                     // Actualiza el registro en la BBDD.
-                    db.Entry(cliente).State = EntityState.Modified;
-                    db.SaveChanges();
-                    TempData["mensaje"] = ItemMensaje.SuccessDesactivar(Cliente.GetNombreModelo(),cliente.apellido1Cliente);
+                    context.Entry(cliente).State = EntityState.Modified;
+                    context.SaveChanges();
+                    TempData["mensaje"] = ItemMensaje.SuccessDesactivar(Cliente.GetNombreModelo(), cliente.apellido1Cliente);
                     return RedirectToAction("Index");
                 }
                 catch (Exception ex)
@@ -429,7 +402,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             var respuestaJson = 1;
             var nif = dni.Trim().ToUpperInvariant();
-            var clienteCoincidente = db.Cliente
+            var clienteCoincidente = context.Cliente
                    .Where(c => c.dniCliente == dni).FirstOrDefault();
             if (clienteCoincidente != null)
             {
@@ -441,38 +414,13 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             return Json(respuestaJson, JsonRequestBehavior.AllowGet);
         }
-
-        /// <summary>
-        /// Comprueba si el NIF / NIE introducido
-        /// existe en Clientes.  
-        /// </summary>
-        /// <param name="dni">NIF/NIE cliente</param>
-        /// <returns> 
-        /// 1 => hay coincidencia.
-        /// 0 => no hay coincidencia.
-        /// </returns>
-        private int VerificarDniDuplicadoBack(string dni)
-        {
-            var respuesta = 1;
-            var nif = dni.Trim().ToUpperInvariant();
-            var clienteCoincidente = db.Cliente
-                   .Where(c => c.dniCliente == dni).FirstOrDefault();
-            if (clienteCoincidente != null)
-            {
-                respuesta = 1;
-            }
-            else
-            {
-                respuesta = 0;
-            }
-            return respuesta;
-        }
+        
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                db.Dispose();
+                context.Dispose();
             }
             base.Dispose(disposing);
         }

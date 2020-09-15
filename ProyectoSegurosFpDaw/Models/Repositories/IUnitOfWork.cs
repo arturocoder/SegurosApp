@@ -11,6 +11,7 @@ namespace ProyectoSegurosFpDaw.Models.Repositories
         IRolRepository Rol { get; }
         ICondicionadoPolizaRepository CondicionadoPoliza { get; }
         IUsuarioRepository Usuario { get; }
+        IClienteRepository Cliente { get; }
 
 
         int SaveChanges();

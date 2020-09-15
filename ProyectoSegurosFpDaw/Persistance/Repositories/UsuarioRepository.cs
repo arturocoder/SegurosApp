@@ -19,11 +19,10 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
         {
         }
 
-        public Usuario GetUsuarioActivoWhere(Expression<Func<Usuario, bool>> predicate)
+        public Usuario GetUsuarioActivo(int usuarioId)
         {
             return ProyectoSegurosContext.Usuario
-                          .Where(c => c.activo == 1)
-                          .Where(predicate)
+                          .Where(c => c.activo == 1 && c.usuarioId==usuarioId)                  
                           .SingleOrDefault();
         }
 

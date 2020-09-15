@@ -58,7 +58,7 @@ namespace ProyectoSegurosFpDaw.BLL
         public bool AnyUsuarioWithDni(string dni)
         {
             return unitOfWork.Usuario.Any(c => c.dniUsuario == dni);
-        }                    
+        }        
         public bool FieldsFormat(Usuario usuario)
         {
             if (IsValidFormat(usuario) == false)
