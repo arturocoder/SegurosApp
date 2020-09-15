@@ -20,9 +20,7 @@ namespace ProyectoSegurosFpDaw.BLL
         }
         public bool ValidateChangingRolAdministrador(Usuario usuario)
         {
-
-            var numeroAdmones = unitOfWork.Usuario.Find(c => c.rolId == 1 && c.activo == 1).Count();
-            if (numeroAdmones == 1)
+            if (IsThereOnlyOneUsuarioWithRolAdministrador() ==true)
             {
                 // Comprueba si el usuario a editar tiene un rol administrador .                      
                 var usuarioEstadoPrevio = unitOfWork.Usuario.SingleOrDefaultNoTracking(c => c.usuarioId == usuario.usuarioId && c.rolId == 1);
@@ -31,22 +29,28 @@ namespace ProyectoSegurosFpDaw.BLL
                 {
                     return false;
                 }               
-            }
+            }           
             return true;
-
         }
-
-        public bool IsThereJustOneUsuarioActivoWithRolAdministrador()
+        public bool ValidateDeletingUsuarioRolAdministrador(Usuario usuario)
         {
-
-            var numeroAdmones = unitOfWork.Usuario.Find(c => c.rolId == 1 && c.activo == 1).Count();
-            if (numeroAdmones == 1)
+            if (usuario.usuarioId == 1 && IsThereOnlyOneUsuarioWithRolAdministrador() == true)
+            {
+                return false;
+            }            
+            return true;
+        }
+        private bool IsThereOnlyOneUsuarioWithRolAdministrador()
+        {
+            int usuariosWithRolAdministrador = unitOfWork.Usuario.Find(c => c.rolId == 1 && c.activo == 1).Count();
+            if(usuariosWithRolAdministrador == 1)
             {
                 return true;
             }
             return false;
+        }
 
-        } 
+
         public bool AnyUsuarioWithEmail(string email)
         {
             return unitOfWork.Usuario.Any(c => c.emailUsuario == email);
@@ -108,6 +112,16 @@ namespace ProyectoSegurosFpDaw.BLL
                 usuario.fechaBaja = null;
             }            
             usuario.password = Encriptacion.GetSHA256(usuario.password);
+            unitOfWork.Usuario.Update(usuario);
+            unitOfWork.SaveChanges();
+        }
+        public void DeleteUsuario(Usuario usuario)
+        {
+            usuario.fechaBaja = DateTime.Now;
+            // Asigna rol No Operativo.
+            usuario.rolId = 2;
+            usuario.activo = 0;
+            
             unitOfWork.Usuario.Update(usuario);
             unitOfWork.SaveChanges();
         }

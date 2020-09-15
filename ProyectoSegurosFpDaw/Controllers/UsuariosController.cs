@@ -364,13 +364,12 @@ namespace ProyectoSegurosFpDaw.Controllers
                 ViewBag.mensaje = ItemMensaje.ErrorEditarDesactivarUnicoAdministrador(Usuario.GetNombreModelo());
                 ViewBag.rolId = new SelectList(context.Rol, "rolId", "nombreRol", usuario.rolId);
                 return View(usuario);
-            }           
+            }
             try
             {
                 usuarioBll.UpdateUsuario(usuario);
                 TempData["mensaje"] = ItemMensaje.SuccessEditar(Usuario.GetNombreModelo(), usuario.apellido1Usuario);
                 return RedirectToAction("Index");
-
             }
             catch (Exception ex)
             {
@@ -403,35 +402,16 @@ namespace ProyectoSegurosFpDaw.Controllers
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDesactivar(Usuario.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-
-            // Verifica que en la BBDD exista más de un usuario administrador activos ,
-            // si solo hay un usuario administrador , no se permite eliminarlo.          
-            if (usuario.rolId == 1)
+            if (usuarioBll.ValidateDeletingUsuarioRolAdministrador(usuario) == false)
             {
-                var numeroAdmones = context.Usuario.Where(c => c.rolId == 1 && c.activo == 1).Count();
-                if (numeroAdmones == 1)
-                {
-                    ViewBag.mensaje = ItemMensaje.ErrorEditarDesactivarUnicoAdministrador(Usuario.GetNombreModelo());
-                    return View("Details", usuario);
-                }
+                ViewBag.mensaje = ItemMensaje.ErrorEditarDesactivarUnicoAdministrador(Usuario.GetNombreModelo());
+                return View("Details", usuario);
+
             }
 
             try
             {
-                // Guarda la fecha de hoy como fecha de baja.
-                DateTime hoy = DateTime.Now;
-                usuario.fechaBaja = hoy;
-
-                // Asigna rol No Operativo.
-                usuario.rolId = 2;
-                usuario.activo = 0;
-
-                // Actualiza el registro en la BBDD.
-                //context.Entry(usuario).State = EntityState.Modified;
-                //context.SaveChanges();
-                unitOfWork.Usuario.Update(usuario);
-                unitOfWork.SaveChanges();
-
+                usuarioBll.DeleteUsuario(usuario);
                 TempData["mensaje"] = ItemMensaje.SuccessDesactivar(Usuario.GetNombreModelo(), usuario.apellido1Usuario);
                 return RedirectToAction("Index");
             }
@@ -513,9 +493,6 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             return Json(respuestaJson, JsonRequestBehavior.AllowGet);
         }
-
-
-
 
 
         protected override void Dispose(bool disposing)
