@@ -60,5 +60,9 @@ namespace ProyectoSegurosFpDaw.BLL
             unitOfWork.Cliente.Add(cliente);
             unitOfWork.SaveChanges();
         }
+        public void UpdateCliente()
+        {            
+            unitOfWork.SaveChanges();
+        }
     }
 }

@@ -254,14 +254,9 @@ namespace ProyectoSegurosFpDaw.Controllers
         /// <returns>Vista con formulario para editar un cliente</returns>
         [AutorizarUsuario(permisoId: 7)]
         [HttpGet]
-        public ActionResult Edit(int? id)
+        public ActionResult Edit(int id)
         {
-            if (id == null)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Cliente.GetNombreModelo());
-                return RedirectToAction("Index");
-            }
-            Cliente cliente = context.Cliente.Where(c => c.clienteId == id && c.activo == 1).FirstOrDefault();
+            Cliente cliente = unitOfWork.Cliente.GetClienteActivo(id);
             if (cliente == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Cliente.GetNombreModelo());
@@ -281,47 +276,30 @@ namespace ProyectoSegurosFpDaw.Controllers
         [AutorizarUsuario(permisoId: 7)]
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
-        public ActionResult EditPost(int? id)
+        public ActionResult EditPost(int id)
         {
-            if (id == null)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Cliente.GetNombreModelo());
-                return RedirectToAction("Index");
-            }
-            Cliente cliente = context.Cliente.Where(c => c.activo == 1 && c.clienteId == id).FirstOrDefault();
+
+            Cliente cliente = unitOfWork.Cliente.GetClienteActivo(id);
             if (cliente == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Cliente.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-
-            try
+            if (TryUpdateModel(cliente, "", new string[] { "nombreCliente", "apellido1Cliente", "apellido2Cliente", "emailCliente", "telefonoCliente" }) == false)
             {
-                // Intenta actualizar el cliente con los datos enviados desde el formulario.
-                if (TryUpdateModel(cliente, "", new string[] { "nombreCliente", "apellido1Cliente", "apellido2Cliente", "emailCliente", "telefonoCliente" }))
-                {
-                    // Validaciones y formato de párametros.
-                    if (cliente.nombreCliente.IsNullOrWhiteSpace() || cliente.apellido1Cliente.IsNullOrWhiteSpace()
-                        || cliente.apellido2Cliente.IsNullOrWhiteSpace() || cliente.dniCliente.IsNullOrWhiteSpace()
-                        || cliente.emailCliente.IsNullOrWhiteSpace() || cliente.telefonoCliente.IsNullOrWhiteSpace())
-                    {
-                        TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Cliente.GetNombreModelo());
-                        return RedirectToAction("Index");
-                    }
-
-                    cliente.nombreCliente = cliente.nombreCliente.Trim().ToUpperInvariant();
-                    cliente.apellido1Cliente = cliente.apellido1Cliente.Trim().ToUpperInvariant();
-                    cliente.apellido2Cliente = cliente.apellido2Cliente.Trim().ToUpperInvariant();
-                    cliente.emailCliente = cliente.emailCliente.Trim().ToUpperInvariant();
-                    cliente.telefonoCliente = cliente.telefonoCliente.Trim();
-
-                    // Guarda las modificaciones en la BBDD.
-                    context.SaveChanges();
-                    TempData["mensaje"] = ItemMensaje.SuccessEditar(Cliente.GetNombreModelo(), cliente.apellido1Cliente);
-                    return RedirectToAction("Index");
-                }
                 ViewBag.mensaje = ItemMensaje.ErrorDatosNoValidosEditar(Cliente.GetNombreModelo());
                 return View(cliente);
+            }
+            if (clienteBll.FieldsFormat(cliente) == false)
+            {
+                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Cliente.GetNombreModelo());
+                return RedirectToAction("Index");
+            }
+            try
+            {
+                clienteBll.UpdateCliente();
+                TempData["mensaje"] = ItemMensaje.SuccessEditar(Cliente.GetNombreModelo(), cliente.apellido1Cliente);
+                return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
@@ -414,7 +392,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             return Json(respuestaJson, JsonRequestBehavior.AllowGet);
         }
-        
+
 
         protected override void Dispose(bool disposing)
         {
