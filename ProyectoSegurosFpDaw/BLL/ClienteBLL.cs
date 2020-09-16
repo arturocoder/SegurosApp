@@ -64,5 +64,11 @@ namespace ProyectoSegurosFpDaw.BLL
         {            
             unitOfWork.SaveChanges();
         }
+        public void DeleteCliente(Cliente cliente)
+        {
+            cliente.fechaDesactivado = DateTime.Now;
+            cliente.activo = 0;
+            unitOfWork.SaveChanges();
+        }
     }
 }

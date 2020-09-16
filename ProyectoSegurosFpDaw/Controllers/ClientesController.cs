@@ -323,7 +323,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int clienteId)
         {
-            Cliente cliente = context.Cliente.Where(c => c.activo == 1 && c.clienteId == clienteId).FirstOrDefault();
+            Cliente cliente = unitOfWork.Cliente.GetClienteActivo(clienteId);
             if (cliente == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDesactivar(Cliente.GetNombreModelo());
@@ -341,13 +341,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 try
                 {
                     // Guarda la fecha de hoy como fecha Desactivado.
-                    DateTime hoy = DateTime.Now;
-                    cliente.fechaDesactivado = hoy;
-                    cliente.activo = 0;
-
-                    // Actualiza el registro en la BBDD.
-                    context.Entry(cliente).State = EntityState.Modified;
-                    context.SaveChanges();
+                    clienteBll.DeleteCliente(cliente);
                     TempData["mensaje"] = ItemMensaje.SuccessDesactivar(Cliente.GetNombreModelo(), cliente.apellido1Cliente);
                     return RedirectToAction("Index");
                 }
