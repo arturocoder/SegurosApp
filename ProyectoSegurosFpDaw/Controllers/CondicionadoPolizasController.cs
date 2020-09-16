@@ -13,8 +13,7 @@ namespace ProyectoSegurosFpDaw.Controllers
 {
     [RequireHttps]
     public class CondicionadoPolizasController : Controller
-    {
-        // Instancia de la BBDD.
+    {        
         private ProyectoSegurosDbEntities db = new ProyectoSegurosDbEntities();       
 
         #region Actions
