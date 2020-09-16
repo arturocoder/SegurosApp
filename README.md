@@ -48,9 +48,12 @@ Los objetivos específicos se enmarcan dentro de cuatro áreas:
 
 
 
+#### Branch Version 1.0 
+Versión que fue entregada como proyecto.
+#### Branch Master
+Actualmente en estado de refactorización, aplicando repository pattern / unit of work, y creando una capa BLL.
 
 
-Pendiente de realizar mejoras, refactorizar por casos de uso, eliminar librerías no utilizadas, optimizar los bloques try catch...
 
 Autor del proyecto: Arturo Marín.
 
