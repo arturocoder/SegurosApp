@@ -48,9 +48,9 @@ Los objetivos específicos se enmarcan dentro de cuatro áreas:
 
 
 
-#### Branch Version 1.0 
-Versión que fue entregada como proyecto.
-#### Branch Master
+#### Version 1.0 Branch 
+Versión final que fue entregada como proyecto.
+#### Master Branch 
 Actualmente en estado de refactorización, aplicando repository pattern / unit of work, y creando una capa BLL.
 
 
