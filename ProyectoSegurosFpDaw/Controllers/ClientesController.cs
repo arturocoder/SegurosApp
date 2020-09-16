@@ -19,6 +19,7 @@ namespace ProyectoSegurosFpDaw.Controllers
     public class ClientesController : Controller
     {
         private ProyectoSegurosDbEntities context;
+
         private UnitOfWork unitOfWork;
         private ClienteBLL clienteBll;
 
@@ -78,99 +79,84 @@ namespace ProyectoSegurosFpDaw.Controllers
         [HttpGet]
         public ActionResult BuscarClientes(string clienteId, string dniCliente, string emailCliente, string telefonoCliente)
         {
-            // Validaciones y formato de parámetros      
-            if (dniCliente.IsNullOrWhiteSpace() == false) { dniCliente = dniCliente.Trim().ToUpperInvariant(); }
-            if (emailCliente.IsNullOrWhiteSpace() == false) { emailCliente = emailCliente.Trim().ToUpperInvariant(); }
-            if (telefonoCliente.IsNullOrWhiteSpace() == false) { telefonoCliente = telefonoCliente.Trim(); }
-            int clienteID = 0;
-            if (clienteId.IsNullOrWhiteSpace() == false)
+            string searchingField = clienteBll.GetSearchingField(clienteId, dniCliente, emailCliente, telefonoCliente);
+
+            if (searchingField == "id")
             {
-                bool success = Int32.TryParse(clienteId, out clienteID);
+                bool success = Int32.TryParse(clienteId, out int clienteID);
                 if (success == false)
                 {
                     TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosBuscar(Cliente.GetNombreModelo());
                     return RedirectToAction("Index");
                 }
-            }
-
-            // Búsqueda por parámetros
-            // Filtra por los parámetros que no están vacíos , 
-            // busca coincidencias en la BBDD, 
-            // envía la lista de clientes activos (activo==1) coincidentes a la acción Index.            
-            try
-            {
-                // ClienteId. 
-                if (clienteId.Length > 0)
-                {
-                    var ClientesCoincidentes = context.Cliente
-                               .Where(c => c.activo == 1 && c.clienteId == clienteID)
-                               .ToList();
-
-                    // Si no hay coincidencia en cliente activo, busca en clientes no activos,
-                    // y envía mensaje si hay coincidencia.
-                    if (ClientesCoincidentes.Count == 0)
-                    {
-                        var clienteNoActivo = context.Cliente
-                         .Where(c => c.activo == 0 && c.clienteId == clienteID).FirstOrDefault();
-                        if (clienteNoActivo != null)
-                        {
-                            TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Cliente.GetNombreModelo(), clienteNoActivo.clienteId);
-                        }
-                    }
-                    TempData["clientesCoincidentes"] = ClientesCoincidentes;
-                    return RedirectToAction("Index");
-                }
-                // NIF/NIE. 
-                else if (dniCliente.Length > 0)
-                {
-                    var ClientesCoincidentes = context.Cliente
-                       .Where(c => c.activo == 1 && c.dniCliente == dniCliente)
+                var ClientesCoincidentes = context.Cliente
+                       .Where(c => c.activo == 1 && c.clienteId == clienteID)
                        .ToList();
-                    if (ClientesCoincidentes.Count == 0)
+
+                // Si no hay coincidencia en cliente activo, busca en clientes no activos,
+                // y envía mensaje si hay coincidencia.
+                if (ClientesCoincidentes.Count == 0)
+                {
+                    var clienteNoActivo = context.Cliente
+                     .Where(c => c.activo == 0 && c.clienteId == clienteID).FirstOrDefault();
+                    if (clienteNoActivo != null)
                     {
-                        var clienteNoActivo = context.Cliente
-                         .Where(c => c.activo == 0 && c.dniCliente == dniCliente).FirstOrDefault();
-                        if (clienteNoActivo != null)
-                        {
-                            TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Cliente.GetNombreModelo(), clienteNoActivo.clienteId);
-                        }
+                        TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Cliente.GetNombreModelo(), clienteNoActivo.clienteId);
                     }
-                    TempData["clientesCoincidentes"] = ClientesCoincidentes;
-                    return RedirectToAction("Index");
                 }
-                // Email.
-                else if (emailCliente.Length > 0)
-                {
-                    var ClientesCoincidentes = context.Cliente
-                        .Where(c => c.activo == 1 && c.emailCliente == emailCliente)
-                        .ToList();
-                    TempData["clientesCoincidentes"] = ClientesCoincidentes;
-                    return RedirectToAction("Index");
-                }
-                // Teléfono.
-                else if (telefonoCliente.Length > 0)
-                {
-                    var ClientesCoincidentes = context.Cliente
-                        .Where(c => c.activo == 1 && c.telefonoCliente == telefonoCliente)
-                        .ToList();
-                    TempData["clientesCoincidentes"] = ClientesCoincidentes;
-                    return RedirectToAction("Index");
-                }
-                // Si todos los campos vacíos, devuelve todos los clientes activos.
-                else
-                {
-                    var ClientesCoincidentes = context.Cliente
-                        .Where(c => c.activo == 1)
-                        .ToList();
-                    TempData["clientesCoincidentes"] = ClientesCoincidentes;
-                    return RedirectToAction("Index");
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorExcepcionBuscar(Cliente.GetNombreModelo(), ex.GetType().ToString());
+                TempData["clientesCoincidentes"] = ClientesCoincidentes;
                 return RedirectToAction("Index");
             }
+            if (searchingField == "dni")
+            {
+                dniCliente = dniCliente.Trim().ToUpperInvariant();
+                var ClientesCoincidentes = context.Cliente
+                        .Where(c => c.activo == 1 && c.dniCliente == dniCliente)
+                        .ToList();
+                if (ClientesCoincidentes.Count == 0)
+                {
+                    var clienteNoActivo = context.Cliente
+                     .Where(c => c.activo == 0 && c.dniCliente == dniCliente).FirstOrDefault();
+                    if (clienteNoActivo != null)
+                    {
+                        TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Cliente.GetNombreModelo(), clienteNoActivo.clienteId);
+                    }
+                }
+                TempData["clientesCoincidentes"] = ClientesCoincidentes;
+                return RedirectToAction("Index");
+            }
+
+            if (emailCliente.Length > 0)
+            {
+                emailCliente = emailCliente.Trim().ToUpperInvariant();
+                var ClientesCoincidentes = context.Cliente
+                 .Where(c => c.activo == 1 && c.emailCliente == emailCliente)
+                 .ToList();
+                TempData["clientesCoincidentes"] = ClientesCoincidentes;
+                return RedirectToAction("Index");
+            }
+
+            if (searchingField == "telefono")
+            {
+                telefonoCliente = telefonoCliente.Trim();
+                var ClientesCoincidentes = context.Cliente
+                        .Where(c => c.activo == 1 && c.telefonoCliente == telefonoCliente)
+                         .ToList();
+                TempData["clientesCoincidentes"] = ClientesCoincidentes;
+                return RedirectToAction("Index");
+            }
+            // Si todos los campos vacíos, devuelve todos los clientes activos.           
+            if (searchingField == "allFieldsEmpty")
+            {
+                var ClientesCoincidentes = context.Cliente
+                    .Where(c => c.activo == 1)
+                    .ToList();
+                TempData["clientesCoincidentes"] = ClientesCoincidentes;
+                return RedirectToAction("Index");
+            }
+            TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosBuscar(Cliente.GetNombreModelo());
+            return RedirectToAction("Index");
+
         }
 
 

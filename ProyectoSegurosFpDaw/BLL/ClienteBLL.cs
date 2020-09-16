@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using static ProyectoSegurosFpDaw.Controllers.ClientesController;
 
 namespace ProyectoSegurosFpDaw.BLL
 {
@@ -70,5 +71,17 @@ namespace ProyectoSegurosFpDaw.BLL
             cliente.activo = 0;
             unitOfWork.SaveChanges();
         }
+
+        public string GetSearchingField(string clienteId,string dniCliente,string emailCliente,string telefonoCliente)
+        {
+           
+            if (clienteId.IsNullOrWhiteSpace() == false) { return "id"; }
+            if (dniCliente.IsNullOrWhiteSpace() == false) { return "dni"; }
+            if (emailCliente.IsNullOrWhiteSpace() == false) {return "email"; }
+            if (telefonoCliente.IsNullOrWhiteSpace() == false) { return "telefono"; }
+            return "allFieldsEmpty";
+
+        }
+
     }
 }
