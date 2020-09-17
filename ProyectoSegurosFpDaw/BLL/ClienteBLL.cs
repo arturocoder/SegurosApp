@@ -9,6 +9,14 @@ using static ProyectoSegurosFpDaw.Controllers.ClientesController;
 
 namespace ProyectoSegurosFpDaw.BLL
 {
+    public enum ClienteParam
+    {
+        id,
+        dni,
+        telefono,
+        email,
+        empty
+    }
     public class ClienteBLL
     {
         private UnitOfWork unitOfWork;
@@ -62,7 +70,7 @@ namespace ProyectoSegurosFpDaw.BLL
             unitOfWork.SaveChanges();
         }
         public void UpdateCliente()
-        {            
+        {
             unitOfWork.SaveChanges();
         }
         public void DeleteCliente(Cliente cliente)
@@ -72,16 +80,59 @@ namespace ProyectoSegurosFpDaw.BLL
             unitOfWork.SaveChanges();
         }
 
-        public string GetSearchingField(string clienteId,string dniCliente,string emailCliente,string telefonoCliente)
+        public ClienteParam GetSearchingField(string clienteId, string dniCliente, string emailCliente, string telefonoCliente)
         {
-           
-            if (clienteId.IsNullOrWhiteSpace() == false) { return "id"; }
-            if (dniCliente.IsNullOrWhiteSpace() == false) { return "dni"; }
-            if (emailCliente.IsNullOrWhiteSpace() == false) {return "email"; }
-            if (telefonoCliente.IsNullOrWhiteSpace() == false) { return "telefono"; }
-            return "allFieldsEmpty";
+
+            if (clienteId.IsNullOrWhiteSpace() == false) { return ClienteParam.id; }
+            if (dniCliente.IsNullOrWhiteSpace() == false) { return ClienteParam.dni; }
+            if (emailCliente.IsNullOrWhiteSpace() == false) { return ClienteParam.email; }
+            if (telefonoCliente.IsNullOrWhiteSpace() == false) { return ClienteParam.telefono; }
+            return ClienteParam.empty;
 
         }
+
+        public List<Cliente> SearchClientes(ClienteParam parameter, string searchingValue)
+        {
+            var output = new List<Cliente>();
+            searchingValue = searchingValue.Trim().ToUpperInvariant();
+
+            if (parameter == ClienteParam.id)
+            {
+                bool success = Int32.TryParse(searchingValue, out int clienteId);
+                if (success == false)
+                {
+                    return output;
+                }
+                output = unitOfWork.Cliente.Where(c => c.clienteId == clienteId).ToList();
+            }
+            if (parameter == ClienteParam.dni)
+            {
+                output = unitOfWork.Cliente.Where(c => c.dniCliente == searchingValue).ToList();
+            }
+            if (parameter == ClienteParam.email)
+            {
+                output = unitOfWork.Cliente.Where(c => c.emailCliente == searchingValue).ToList();
+            }
+            if (parameter == ClienteParam.telefono)
+            {
+                output = unitOfWork.Cliente.Where(c => c.telefonoCliente == searchingValue).ToList();
+            }
+            if (parameter == ClienteParam.empty)
+            {
+                output = unitOfWork.Cliente.Where(c => c.activo == 1).ToList();
+            }
+
+            return output;
+        }
+
+
+
+
+
+
+
+
+
 
     }
 }
