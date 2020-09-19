@@ -11,7 +11,7 @@ namespace ProyectoSegurosFpDaw.Persistance
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ProyectoSegurosDbEntities _context;
-            
+
         public UnitOfWork(ProyectoSegurosDbEntities context)
         {
             _context = context;
@@ -20,8 +20,7 @@ namespace ProyectoSegurosFpDaw.Persistance
             Usuario = new UsuarioRepository(_context);
             Cliente = new ClienteRepository(_context);
             GestionPoliza = new GestionPolizaRepository(_context);
-            
-            
+            Poliza = new PolizaRepository(_context);
         }
 
         public IRolRepository Rol { get; private set; }
@@ -29,13 +28,13 @@ namespace ProyectoSegurosFpDaw.Persistance
         public IUsuarioRepository Usuario { get; set; }
         public IClienteRepository Cliente { get; set; }
         public IGestionPolizaRepository GestionPoliza { get; set; }
-
+        public IPolizaRepository Poliza { get; set; }
 
         public int SaveChanges()
         {
             return _context.SaveChanges();
         }
-        
-        
+
+
     }
 }

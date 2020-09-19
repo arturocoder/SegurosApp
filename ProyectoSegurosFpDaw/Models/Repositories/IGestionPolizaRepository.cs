@@ -13,6 +13,8 @@ namespace ProyectoSegurosFpDaw.Models.Repositories
 
         IEnumerable<GestionPoliza> GetGestionesPolizaWithClienteCondicionadoTipoGestionWhere(Expression<Func<GestionPoliza, bool>> predicate);
 
+        //GestionPoliza GetLastGestionPolizaJoinPolizaActivasWhere(Expression<Func<GestionPoliza, bool>> predicate);
+
 
     }
 }

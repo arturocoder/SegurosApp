@@ -40,5 +40,20 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
                 .ToList();
                 
         }
+
+        //public GestionPoliza GetLastGestionPolizaJoinPolizaActivasWhere(Expression<Func<GestionPoliza, bool>> predicate)
+        //{
+        //    var query =
+        //      from gestiones in ProyectoSegurosContext.GestionPoliza
+        //      join polizas in ProyectoSegurosContext.Poliza on gestiones.polizaId equals polizas.polizaId
+        //      orderby gestiones ascending
+        //      select gestiones;
+
+        //    var query2 = from gestiones in ProyectoSegurosContext.GestionPoliza
+        //                 join polizas in ProyectoSegurosContext.Poliza on gestiones.polizaId equals polizas.polizaId
+                         
+        //                 select gestiones;
+
+        //}
     }
 }

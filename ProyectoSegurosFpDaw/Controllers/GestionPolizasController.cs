@@ -451,7 +451,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             ViewBag.historicoLista = historicoPoliza;
             ViewBag.polizaId = id;
-            ViewBag.gestionPolizaIdLast = historicoPoliza.LastOrDefault().gestionPolizaId;
+            ViewBag.gestionPolizaIdLast = gestionPolizaBLL.GetLastGestionPoliza(id).gestionPolizaId;
             return View();
         }
 
@@ -540,7 +540,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 //gestionPoliza.modeloVehiculo = gestionPoliza.modeloVehiculo.Trim().ToUpperInvariant();
                 //gestionPoliza.observaciones = gestionPoliza.observaciones.Trim();
 
-                if (ValidarFormatoMatricula(gestionPoliza.matricula) == false)
+                if (gestionPolizaBLL.ValidarFormatoMatricula(gestionPoliza.matricula) == false)
                 {
                     TempData["mensaje"] = ItemMensaje.ErrorValidarFormatoMatricula(Poliza.GetNombreModelo());
                     return RedirectToAction("Create", new { clienteDni = dni });
@@ -550,7 +550,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                     TempData["mensaje"] = ItemMensaje.ErrorValidarMatriculaDuplicada(Poliza.GetNombreModelo(), gestionPoliza.matricula);
                     return RedirectToAction("Index");
                 }
-                var usuario = GetUsuarioActual();
+                var usuario = GetUsuarioLogado();
                 if (usuario == null)
                 {
                     TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
@@ -676,30 +676,17 @@ namespace ProyectoSegurosFpDaw.Controllers
         /// <returns>Vista con formulario para modificar una póliza (gestión póliza)</returns>
         [AutorizarUsuario(permisoId: 13)]
         [HttpGet]
-        public ActionResult Edit(int? id)
+        public ActionResult Edit(int id)
         {
-            if (id == null)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Poliza.GetNombreModelo());
-                return RedirectToAction("Index");
-            }
-            // Recupera la última gestión de la póliza. 
-            GestionPoliza gestionPoliza = context.GestionPoliza
-                .Include(c => c.Poliza.Cliente)
-                .Include(c => c.CondicionadoPoliza)
-                .Include(c => c.TipoGestion)
-                .Where(c => c.polizaId == id)
-                .OrderByDescending(c => c.gestionPolizaId)
-                .FirstOrDefault();
+            GestionPoliza gestionPoliza = gestionPolizaBLL.GetLastGestionPoliza(id);
             if (gestionPoliza == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            ViewBag.condicionadoPolizaId = new SelectList(context.CondicionadoPoliza
-                .Where(c => c.activo == 1), "condicionadoPolizaId", "tipoCondicionado", gestionPoliza.condicionadoPolizaId);
+            IEnumerable<CondicionadoPoliza> condicionadosActivos = unitOfWork.CondicionadoPoliza.Where(c => c.activo == 1);
+            ViewBag.condicionadoPolizaId = new SelectList(condicionadosActivos, "condicionadoPolizaId", "tipoCondicionado", gestionPoliza.condicionadoPolizaId);
             return View(gestionPoliza);
-
         }
 
         /// <summary>
@@ -713,86 +700,45 @@ namespace ProyectoSegurosFpDaw.Controllers
         [AutorizarUsuario(permisoId: 13)]
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
-        public ActionResult EditPost(int? id)
-        {
-            if (id == null)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Poliza.GetNombreModelo());
-                return RedirectToAction("Index");
-            }
-
-            // Recupera la última gestión póliza de la  póliza (orden descendente => selecciona primer registro).
-            GestionPoliza gestionPoliza = context.GestionPoliza.Where(c => c.polizaId == id).OrderByDescending(c => c.gestionPolizaId).FirstOrDefault();
+        public ActionResult EditPost(int id)
+        {           
+            GestionPoliza gestionPoliza = gestionPolizaBLL.GetLastGestionPoliza(id);
             if (gestionPoliza == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-
             var matriculaEstadoPrevio = gestionPoliza.matricula;
-            try
+          
+            if (TryUpdateModel(gestionPoliza, "", new string[] { "condicionadoPolizaId", "precio", "observaciones", "matricula", "marcaVehiculo", "modeloVehiculo" }) == false || gestionPolizaBLL.FieldsFormatEdit(gestionPoliza) == false)
             {
-                // Intenta actualizar la gestión póliza con los datos enviados en el formulario post 
-                if (TryUpdateModel(gestionPoliza, "", new string[] { "condicionadoPolizaId", "precio", "observaciones", "matricula", "marcaVehiculo", "modeloVehiculo" }))
-                {
-
-                    // Validaciones y formato de parámetros.
-                    if (gestionPoliza.matricula.IsNullOrWhiteSpace() || gestionPoliza.marcaVehiculo.IsNullOrWhiteSpace() || gestionPoliza.modeloVehiculo.IsNullOrWhiteSpace() || gestionPoliza.observaciones.IsNullOrWhiteSpace())
-                    {
-                        TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Poliza.GetNombreModelo());
-                        return RedirectToAction("Details", new { id = gestionPoliza.gestionPolizaId });
-
-                    }
-                    gestionPoliza.matricula = gestionPoliza.matricula.Trim().ToUpperInvariant();
-                    gestionPoliza.marcaVehiculo = gestionPoliza.marcaVehiculo.Trim().ToUpperInvariant();
-                    gestionPoliza.modeloVehiculo = gestionPoliza.modeloVehiculo.Trim().ToUpperInvariant();
-                    gestionPoliza.observaciones = gestionPoliza.observaciones.Trim();
-
-                    if (ValidarFormatoMatricula(gestionPoliza.matricula) == false)
-                    {
-                        TempData["mensaje"] = ItemMensaje.ErrorValidarFormatoMatricula(Poliza.GetNombreModelo());
-                        return RedirectToAction("Details", new { id = gestionPoliza.gestionPolizaId });
-                    }
-
-                    // Si se ha modificado la matrícula                     
-                    if (matriculaEstadoPrevio != gestionPoliza.matricula)
-                    {
-                        if (VerificarMatriculaDuplicada(gestionPoliza.matricula) == true)
-                        {
-                            TempData["mensaje"] = ItemMensaje.ErrorValidarMatriculaDuplicada(Poliza.GetNombreModelo(), gestionPoliza.matricula);
-                            return RedirectToAction("Details", new { id = gestionPoliza.gestionPolizaId });
-                        }
-                    }
-                    var usuario = GetUsuarioActual();
-                    if (usuario == null)
-                    {
-                        TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Poliza.GetNombreModelo());
-                        return RedirectToAction("Index");
-                    }
-
-                    //Asignación de valores
-                    gestionPoliza.usuarioId = usuario.usuarioId;
-                    DateTime hoy = DateTime.Now;
-                    gestionPoliza.fechaGestion = hoy;
-
-                    // Tipo de gestión
-                    // 3 => MODIFICACIÓN 
-                    gestionPoliza.tipoGestionId = 3;
-
-                    //Guarda nueva gestión Póliza en la BBDD.
-                    context.GestionPoliza.Add(gestionPoliza);
-                    context.SaveChanges();
-                    TempData["mensaje"] = ItemMensaje.SuccessEditar(Poliza.GetNombreModelo(), gestionPoliza.polizaId.ToString(CultureInfo.GetCultureInfo("es-ES")));
-                    return RedirectToAction("Index");
-                }
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Poliza.GetNombreModelo());
                 return RedirectToAction("Details", new { id = gestionPoliza.gestionPolizaId });
-            }
-            catch (Exception ex)
+            }         
+
+            if (gestionPolizaBLL.ValidarFormatoMatricula(gestionPoliza.matricula) == false)
             {
-                TempData["mensaje"] = ItemMensaje.ErrorExcepcionEditar(Poliza.GetNombreModelo(), ex.GetType().ToString());
+                TempData["mensaje"] = ItemMensaje.ErrorValidarFormatoMatricula(Poliza.GetNombreModelo());
                 return RedirectToAction("Details", new { id = gestionPoliza.gestionPolizaId });
             }
+            // Si se ha modificado la matrícula                     
+            if (matriculaEstadoPrevio != gestionPoliza.matricula)
+            {
+                if (VerificarMatriculaDuplicada(gestionPoliza.matricula) == true)
+                {
+                    TempData["mensaje"] = ItemMensaje.ErrorValidarMatriculaDuplicada(Poliza.GetNombreModelo(), gestionPoliza.matricula);
+                    return RedirectToAction("Details", new { id = gestionPoliza.gestionPolizaId });
+                }
+            }
+            Usuario usuarioLogado = GetUsuarioLogado();
+            if (usuarioLogado == null)
+            {
+                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Poliza.GetNombreModelo());
+                return RedirectToAction("Index");
+            }
+            gestionPolizaBLL.UpdateGestionPoliza(gestionPoliza, usuarioLogado);          
+            TempData["mensaje"] = ItemMensaje.SuccessEditar(Poliza.GetNombreModelo(), gestionPoliza.polizaId.ToString(CultureInfo.GetCultureInfo("es-ES")));
+            return RedirectToAction("Index");
         }
 
 
@@ -828,7 +774,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             try
             {
-                var usuario = GetUsuarioActual();
+                var usuario = GetUsuarioLogado();
                 gestionPoliza.usuarioId = usuario.usuarioId;
                 DateTime hoy = DateTime.Now;
                 gestionPoliza.fechaGestion = hoy;
@@ -932,39 +878,12 @@ namespace ProyectoSegurosFpDaw.Controllers
         /// <returns>
         /// usuario
         /// </returns>
-        private Usuario GetUsuarioActual()
+        private Usuario GetUsuarioLogado()
         {
             Usuario oUsuario = (Usuario)Session["user"];
             return oUsuario;
         }
-
-        /// <summary>
-        /// Validación de formato de la matrícula mediante expresión regular .
-        ///<para>
-        ///Obtenido de : https://www.laps4.com/comunidad/threads/necesito-funcion-javascript-para-validar-matriculas.186497/
-        ///</para>
-        /// </summary>
-        /// <param name="matricula">matrícula</param>
-        /// <returns>
-        /// true => matricula correcta
-        /// false => matricula incorrecta        
-        /// </returns>
-        private bool ValidarFormatoMatricula(string matricula)
-        {
-
-            // Matrícula nueva: 0123-ABC
-            // Matrícula antigua: AB-0123-CS
-            string pattern = @"(\d{4}-[\D\w]{3}|[\D\w]{1,2}-\d{4}-[\D\\w]{2})";
-            Regex rgx = new Regex(pattern);
-            if (rgx.IsMatch(matricula))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        
 
         protected override void Dispose(bool disposing)
         {
