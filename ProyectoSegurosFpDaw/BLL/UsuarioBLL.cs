@@ -42,7 +42,7 @@ namespace ProyectoSegurosFpDaw.BLL
         }
         private bool IsThereOnlyOneUsuarioWithRolAdministrador()
         {
-            int usuariosWithRolAdministrador = unitOfWork.Usuario.Find(c => c.rolId == 1 && c.activo == 1).Count();
+            int usuariosWithRolAdministrador = unitOfWork.Usuario.Where(c => c.rolId == 1 && c.activo == 1).Count();
             if(usuariosWithRolAdministrador == 1)
             {
                 return true;

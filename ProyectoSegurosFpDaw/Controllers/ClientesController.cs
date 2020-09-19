@@ -78,99 +78,42 @@ namespace ProyectoSegurosFpDaw.Controllers
         [HttpGet]
         public ActionResult BuscarClientes(string clienteId, string dniCliente, string emailCliente, string telefonoCliente)
         {
-            // Validaciones y formato de parámetros      
-            if (dniCliente.IsNullOrWhiteSpace() == false) { dniCliente = dniCliente.Trim().ToUpperInvariant(); }
-            if (emailCliente.IsNullOrWhiteSpace() == false) { emailCliente = emailCliente.Trim().ToUpperInvariant(); }
-            if (telefonoCliente.IsNullOrWhiteSpace() == false) { telefonoCliente = telefonoCliente.Trim(); }
-            int clienteID = 0;
-            if (clienteId.IsNullOrWhiteSpace() == false)
-            {
-                bool success = Int32.TryParse(clienteId, out clienteID);
-                if (success == false)
-                {
-                    TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosBuscar(Cliente.GetNombreModelo());
-                    return RedirectToAction("Index");
-                }
-            }
+            ClienteParam searchingField = clienteBll.GetSearchingField(clienteId, dniCliente, emailCliente, telefonoCliente);
 
-            // Búsqueda por parámetros
-            // Filtra por los parámetros que no están vacíos , 
-            // busca coincidencias en la BBDD, 
-            // envía la lista de clientes activos (activo==1) coincidentes a la acción Index.            
-            try
-            {
-                // ClienteId. 
-                if (clienteId.Length > 0)
-                {
-                    var ClientesCoincidentes = context.Cliente
-                               .Where(c => c.activo == 1 && c.clienteId == clienteID)
-                               .ToList();
+            List<Cliente> clienteMatches = new List<Cliente>();
 
-                    // Si no hay coincidencia en cliente activo, busca en clientes no activos,
-                    // y envía mensaje si hay coincidencia.
-                    if (ClientesCoincidentes.Count == 0)
-                    {
-                        var clienteNoActivo = context.Cliente
-                         .Where(c => c.activo == 0 && c.clienteId == clienteID).FirstOrDefault();
-                        if (clienteNoActivo != null)
-                        {
-                            TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Cliente.GetNombreModelo(), clienteNoActivo.clienteId);
-                        }
-                    }
-                    TempData["clientesCoincidentes"] = ClientesCoincidentes;
-                    return RedirectToAction("Index");
-                }
-                // NIF/NIE. 
-                else if (dniCliente.Length > 0)
-                {
-                    var ClientesCoincidentes = context.Cliente
-                       .Where(c => c.activo == 1 && c.dniCliente == dniCliente)
-                       .ToList();
-                    if (ClientesCoincidentes.Count == 0)
-                    {
-                        var clienteNoActivo = context.Cliente
-                         .Where(c => c.activo == 0 && c.dniCliente == dniCliente).FirstOrDefault();
-                        if (clienteNoActivo != null)
-                        {
-                            TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Cliente.GetNombreModelo(), clienteNoActivo.clienteId);
-                        }
-                    }
-                    TempData["clientesCoincidentes"] = ClientesCoincidentes;
-                    return RedirectToAction("Index");
-                }
-                // Email.
-                else if (emailCliente.Length > 0)
-                {
-                    var ClientesCoincidentes = context.Cliente
-                        .Where(c => c.activo == 1 && c.emailCliente == emailCliente)
-                        .ToList();
-                    TempData["clientesCoincidentes"] = ClientesCoincidentes;
-                    return RedirectToAction("Index");
-                }
-                // Teléfono.
-                else if (telefonoCliente.Length > 0)
-                {
-                    var ClientesCoincidentes = context.Cliente
-                        .Where(c => c.activo == 1 && c.telefonoCliente == telefonoCliente)
-                        .ToList();
-                    TempData["clientesCoincidentes"] = ClientesCoincidentes;
-                    return RedirectToAction("Index");
-                }
-                // Si todos los campos vacíos, devuelve todos los clientes activos.
-                else
-                {
-                    var ClientesCoincidentes = context.Cliente
-                        .Where(c => c.activo == 1)
-                        .ToList();
-                    TempData["clientesCoincidentes"] = ClientesCoincidentes;
-                    return RedirectToAction("Index");
-                }
-            }
-            catch (Exception ex)
+            if (searchingField == ClienteParam.id)
             {
-                TempData["mensaje"] = ItemMensaje.ErrorExcepcionBuscar(Cliente.GetNombreModelo(), ex.GetType().ToString());
-                return RedirectToAction("Index");
+                clienteMatches = clienteBll.SearchClientes(ClienteParam.id, clienteId);
+                // Si cliente ha sido eliminado
+                if (clienteMatches.Any(c => c.activo == 0))
+                {
+                    TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Cliente.GetNombreModelo(), clienteMatches.FirstOrDefault().clienteId);
+                }
             }
+            if (searchingField == ClienteParam.dni)
+            {
+                clienteMatches = clienteBll.SearchClientes(ClienteParam.dni, dniCliente);
+                if (clienteMatches.Any(c => c.activo == 0))
+                {
+                    TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Cliente.GetNombreModelo(), clienteMatches.FirstOrDefault().clienteId);
+                }
+            }
+            if (searchingField == ClienteParam.email)
+            {
+                clienteMatches = clienteBll.SearchClientes(ClienteParam.email, emailCliente);
+            }
+            if (searchingField == ClienteParam.telefono)
+            {
+                clienteMatches = clienteBll.SearchClientes(ClienteParam.telefono, telefonoCliente);
+            }
+            // Si todos los campos vacíos, devuelve todos los clientes activos.           
+            if (searchingField == ClienteParam.empty)
+            {
+                clienteMatches = clienteBll.SearchClientes(ClienteParam.empty, string.Empty);
+            }
+            TempData["clientesCoincidentes"] = clienteMatches;
+            return RedirectToAction("Index");
         }
 
 
@@ -208,15 +151,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             return View();
         }
-
-        /// <summary>
-        /// POST: crea un nuevo cliente. 
-        /// </summary>
-        /// <param name="cliente">Cliente con :nombre , apellido1, apellido2, NIF/NIE, email, teléfono</param>
-        /// <returns>
-        /// Ok => Guarda registro en BBDD y redirecciona a Index con mensaje de success.
-        /// Error => redirecciona a Index / Create con mensaje de error.
-        /// </returns>
+        
         [AutorizarUsuario(permisoId: 6)]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -246,12 +181,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
 
         }
-
-        /// <summary>
-        /// GET: formulario para editar un cliente.
-        /// </summary>
-        /// <param name="id">cliente Id</param>
-        /// <returns>Vista con formulario para editar un cliente</returns>
+      
         [AutorizarUsuario(permisoId: 7)]
         [HttpGet]
         public ActionResult Edit(int id)
@@ -264,15 +194,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             return View(cliente);
         }
-
-        /// <summary>
-        /// POST : edita un cliente. 
-        /// </summary>
-        /// <param name="id">cliente Id</param>
-        /// <return>
-        /// Ok => Modifica registro en BBDD y redirecciona a Index con mensaje de success.
-        /// Error => redirecciona a Index / Edit con mensaje de error.
-        /// </return>
+      
         [AutorizarUsuario(permisoId: 7)]
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
@@ -323,7 +245,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int clienteId)
         {
-            Cliente cliente = context.Cliente.Where(c => c.activo == 1 && c.clienteId == clienteId).FirstOrDefault();
+            Cliente cliente = unitOfWork.Cliente.GetClienteActivo(clienteId);
             if (cliente == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDesactivar(Cliente.GetNombreModelo());
@@ -339,15 +261,8 @@ namespace ProyectoSegurosFpDaw.Controllers
             else
             {
                 try
-                {
-                    // Guarda la fecha de hoy como fecha Desactivado.
-                    DateTime hoy = DateTime.Now;
-                    cliente.fechaDesactivado = hoy;
-                    cliente.activo = 0;
-
-                    // Actualiza el registro en la BBDD.
-                    context.Entry(cliente).State = EntityState.Modified;
-                    context.SaveChanges();
+                {                   
+                    clienteBll.DeleteCliente(cliente);
                     TempData["mensaje"] = ItemMensaje.SuccessDesactivar(Cliente.GetNombreModelo(), cliente.apellido1Cliente);
                     return RedirectToAction("Index");
                 }
