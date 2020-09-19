@@ -12,7 +12,7 @@ namespace ProyectoSegurosFpDaw.Models.Repositories
         ICondicionadoPolizaRepository CondicionadoPoliza { get; }
         IUsuarioRepository Usuario { get; }
         IClienteRepository Cliente { get; }
-
+        IGestionPolizaRepository GestionPoliza { get; }
 
         int SaveChanges();
         

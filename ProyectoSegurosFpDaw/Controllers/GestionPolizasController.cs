@@ -8,8 +8,11 @@ using System.Text.RegularExpressions;
 using System.Web.Mvc;
 using System.Web.WebPages;
 using Microsoft.Ajax.Utilities;
+using ProyectoSegurosFpDaw.BLL;
+using ProyectoSegurosFpDaw.Controllers.Helpers;
 using ProyectoSegurosFpDaw.Filtros;
 using ProyectoSegurosFpDaw.Models;
+using ProyectoSegurosFpDaw.Persistance;
 
 namespace ProyectoSegurosFpDaw.Controllers
 {
@@ -17,7 +20,17 @@ namespace ProyectoSegurosFpDaw.Controllers
     public class GestionPolizasController : Controller
     {
         // Instancia de la BBDD
-        private ProyectoSegurosDbEntities db = new ProyectoSegurosDbEntities();       
+        private ProyectoSegurosDbEntities context;
+        private UnitOfWork unitOfWork;
+        private GestionPolizaBLL gestionPolizaBLL;
+        private GestionPolizasControllerHelper helper;
+        public GestionPolizasController()
+        {
+            context = new ProyectoSegurosDbEntities();
+            unitOfWork = new UnitOfWork(context);
+            gestionPolizaBLL = new GestionPolizaBLL(unitOfWork);
+            helper = new GestionPolizasControllerHelper();
+        }
 
         #region Actions
 
@@ -55,7 +68,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             // 0 => no vigente
             // 1 => vigente
             // 2 => todos
-            ViewBag.estadoPoliza = GetSelectListEstadoPolizaConOpcionTodos();
+            ViewBag.estadoPoliza = helper.GetSelectListEstadoPolizaConOpcionTodos();
             ViewBag.estadoSession = estadoSession;
             return View();
         }
@@ -126,8 +139,8 @@ namespace ProyectoSegurosFpDaw.Controllers
                     {
                         // Obtiene el id de las pólizas que coinciden con el rango de fecha de Alta.
                         var polizasCoincidentes =
-                             from gestiones in db.GestionPoliza
-                             join polizas in db.Poliza on gestiones.polizaId equals polizas.polizaId
+                             from gestiones in context.GestionPoliza
+                             join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
                              where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
                              select new { Poliza = polizas.polizaId };
 
@@ -138,7 +151,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                             foreach (var item in polizasCoincidentes.Distinct())
                             {
                                 // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º)
-                                var ultimaGestion = db.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
+                                var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
                                     .Where(c => c.polizaId == item.Poliza)
                                     .OrderByDescending(c => c.gestionPolizaId)
                                     .FirstOrDefault();
@@ -155,9 +168,9 @@ namespace ProyectoSegurosFpDaw.Controllers
                         // Obtiene el id de las pólizas que coinciden con 
                         // el rango de fecha de Alta + estado Póliza (activo/No activo).
                         var polizasCoincidentes =
-                             from gestiones in db.GestionPoliza
-                             join polizas in db.Poliza on gestiones.polizaId equals polizas.polizaId
-                             where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza 
+                             from gestiones in context.GestionPoliza
+                             join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
+                             where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
                                 && polizas.activo == estadoPolizaInt
                              select new { Poliza = polizas.polizaId };
 
@@ -168,7 +181,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                             foreach (var item in polizasCoincidentes.Distinct())
                             {
                                 // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
-                                var ultimaGestion = db.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
+                                var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
                                     .Where(c => c.polizaId == item.Poliza)
                                     .OrderByDescending(c => c.gestionPolizaId)
                                     .FirstOrDefault();
@@ -187,7 +200,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                     // Póliza Id 
                     if (polizaId != null)
                     {
-                        var ultimaGestion = db.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
+                        var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
                                     .Where(c => c.polizaId == polizaId)
                                     .OrderByDescending(c => c.gestionPolizaId)
                                     .FirstOrDefault();
@@ -206,12 +219,12 @@ namespace ProyectoSegurosFpDaw.Controllers
                         {
                             // Obtiene el id de las pólizas que coinciden con el rango de fecha de Alta + matrícula
                             var polizasCoincidentes =
-                                 from gestiones in db.GestionPoliza
-                                 join polizas in db.Poliza on gestiones.polizaId equals polizas.polizaId
+                                 from gestiones in context.GestionPoliza
+                                 join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
                                  where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
                                     && gestiones.matricula == matricula
                                  select new { Poliza = polizas.polizaId };
-                            
+
                             // Si hay resultados coincidentes.
                             if (polizasCoincidentes.Any())
                             {
@@ -219,7 +232,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                                 foreach (var item in polizasCoincidentes.Distinct())
                                 {
                                     // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
-                                    var ultimaGestion = db.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
+                                    var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
                                         .Where(c => c.polizaId == item.Poliza)
                                         .OrderByDescending(c => c.gestionPolizaId)
                                         .FirstOrDefault();
@@ -236,9 +249,9 @@ namespace ProyectoSegurosFpDaw.Controllers
                             // Obtiene id de las pólizas que coinciden con 
                             // el rango de fecha de Alta + estado Póliza (activo/No activo) + matrícula.                     
                             var polizasCoincidentes =
-                                 from gestiones in db.GestionPoliza
-                                 join polizas in db.Poliza on gestiones.polizaId equals polizas.polizaId
-                                 where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza 
+                                 from gestiones in context.GestionPoliza
+                                 join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
+                                 where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
                                     && polizas.activo == estadoPolizaInt && gestiones.matricula == matricula
                                  select new { Poliza = polizas.polizaId };
 
@@ -249,7 +262,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                                 foreach (var item in polizasCoincidentes.Distinct())
                                 {
                                     // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º)
-                                    var ultimaGestion = db.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
+                                    var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
                                         .Where(c => c.polizaId == item.Poliza)
                                         .OrderByDescending(c => c.gestionPolizaId)
                                         .FirstOrDefault();
@@ -269,9 +282,9 @@ namespace ProyectoSegurosFpDaw.Controllers
                         {
                             // Obtiene id de las pólizas que coinciden con el rango de fecha de Alta + NIF / NIE.
                             var polizasCoincidentes =
-                                 from gestiones in db.GestionPoliza
-                                 join polizas in db.Poliza on gestiones.polizaId equals polizas.polizaId
-                                 where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza 
+                                 from gestiones in context.GestionPoliza
+                                 join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
+                                 where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
                                     && polizas.Cliente.dniCliente == dniCliente
                                  select new { Poliza = polizas.polizaId };
 
@@ -282,7 +295,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                                 foreach (var item in polizasCoincidentes.Distinct())
                                 {
                                     // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
-                                    var ultimaGestion = db.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
+                                    var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
                                         .Where(c => c.polizaId == item.Poliza)
                                         .OrderByDescending(c => c.gestionPolizaId)
                                         .FirstOrDefault();
@@ -299,9 +312,9 @@ namespace ProyectoSegurosFpDaw.Controllers
                             // Obtiene el id de las pólizas que coinciden con 
                             // el rango de fecha de Alta + estado Póliza (activo/No activo) + matrícula.                  
                             var polizasCoincidentes =
-                                 from gestiones in db.GestionPoliza
-                                 join polizas in db.Poliza on gestiones.polizaId equals polizas.polizaId
-                                 where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza 
+                                 from gestiones in context.GestionPoliza
+                                 join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
+                                 where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
                                     && polizas.activo == estadoPolizaInt && polizas.Cliente.dniCliente == dniCliente
                                  select new { Poliza = polizas.polizaId };
                             // Si hay resultados coincidentes.
@@ -311,7 +324,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                                 foreach (var item in polizasCoincidentes.Distinct())
                                 {
                                     // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
-                                    var ultimaGestion = db.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
+                                    var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
                                         .Where(c => c.polizaId == item.Poliza)
                                         .OrderByDescending(c => c.gestionPolizaId)
                                         .FirstOrDefault();
@@ -331,9 +344,9 @@ namespace ProyectoSegurosFpDaw.Controllers
                         {
                             // Obtiene el id de las pólizas que coinciden con el rango de fecha de Alta + teléfono.
                             var polizasCoincidentes =
-                                 from gestiones in db.GestionPoliza
-                                 join polizas in db.Poliza on gestiones.polizaId equals polizas.polizaId
-                                 where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza 
+                                 from gestiones in context.GestionPoliza
+                                 join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
+                                 where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
                                     && polizas.Cliente.telefonoCliente == telefonoCliente
                                  select new { Poliza = polizas.polizaId };
                             // Si hay resultados coincidentes.
@@ -343,7 +356,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                                 foreach (var item in polizasCoincidentes.Distinct())
                                 {
                                     // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
-                                    var ultimaGestion = db.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
+                                    var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
                                         .Where(c => c.polizaId == item.Poliza)
                                         .OrderByDescending(c => c.gestionPolizaId)
                                         .FirstOrDefault();
@@ -359,8 +372,8 @@ namespace ProyectoSegurosFpDaw.Controllers
                             // Obtiene el id de las pólizas que coinciden
                             // con el rango de fecha de Alta + estado Póliza (activo/No activo) + matrícula.                    
                             var polizasCoincidentes =
-                                 from gestiones in db.GestionPoliza
-                                 join polizas in db.Poliza on gestiones.polizaId equals polizas.polizaId
+                                 from gestiones in context.GestionPoliza
+                                 join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
                                  where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
                                     && polizas.activo == estadoPolizaInt && polizas.Cliente.telefonoCliente == telefonoCliente
                                  select new { Poliza = polizas.polizaId };
@@ -372,7 +385,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                                 foreach (var item in polizasCoincidentes.Distinct())
                                 {
                                     // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
-                                    var ultimaGestion = db.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
+                                    var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
                                         .Where(c => c.polizaId == item.Poliza)
                                         .OrderByDescending(c => c.gestionPolizaId)
                                         .FirstOrDefault();
@@ -384,7 +397,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                             }
                         }
                     }
-                }                
+                }
                 else
                 {
                     TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosBuscar(Poliza.GetNombreModelo());
@@ -410,18 +423,9 @@ namespace ProyectoSegurosFpDaw.Controllers
         /// <returns>Vista de la información del usuario</returns>
         [AutorizarUsuario(permisoId: 15)]
         [HttpGet]
-        public ActionResult Details(int? id)
+        public ActionResult Details(int id)
         {
-            if (id == null)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDetails(Poliza.GetNombreModelo());
-                return RedirectToAction("Index");
-            }
-            GestionPoliza gestionPoliza = db.GestionPoliza
-                .Include(c => c.Poliza.Cliente)
-                .Include(c => c.CondicionadoPoliza)
-                .Include(c => c.TipoGestion)
-                .Where(c => c.gestionPolizaId == id).FirstOrDefault();
+            GestionPoliza gestionPoliza = unitOfWork.GestionPoliza.GetGestionPolizaWithClienteCondicionadoTipoGestion(id);
             if (gestionPoliza == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosDetails(Poliza.GetNombreModelo());
@@ -434,35 +438,20 @@ namespace ProyectoSegurosFpDaw.Controllers
             return View(gestionPoliza);
         }
 
-        /// <summary>
-        /// GET: muestra una lista con todas las gestiones pólizas de una póliza. 
-        /// </summary>
-        /// <param name="id">póliza Id</param>
-        /// <returns>Vista con lista de gestionPolizas</returns>
+
         [AutorizarUsuario(permisoId: 17)]
         [HttpGet]
-        public ActionResult Historico(int? id)
+        public ActionResult Historico(int id)
         {
-            if (id == null)
+            List<GestionPoliza> historicoPoliza = gestionPolizaBLL.GetHistoricoPoliza(id);
+            if (historicoPoliza == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosBuscar(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            var gestionPolizaLista = db.GestionPoliza
-                .Include(c => c.Poliza.Cliente)
-                .Include(c => c.CondicionadoPoliza)
-                .Include(c => c.TipoGestion)
-                .Where(c => c.polizaId == id)
-                .OrderBy(c => c.fechaGestion)
-                .ToList();
-            if (gestionPolizaLista == null)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosBuscar(Poliza.GetNombreModelo());
-                return RedirectToAction("Index");
-            }
-            ViewBag.historicoLista = gestionPolizaLista;
+            ViewBag.historicoLista = historicoPoliza;
             ViewBag.polizaId = id;
-            ViewBag.gestionPolizaIdLast = gestionPolizaLista.LastOrDefault().gestionPolizaId;
+            ViewBag.gestionPolizaIdLast = historicoPoliza.LastOrDefault().gestionPolizaId;
             return View();
         }
 
@@ -478,37 +467,29 @@ namespace ProyectoSegurosFpDaw.Controllers
         [HttpGet]
         public ActionResult Create(string clienteDni)
         {
-            if (clienteDni == null)
+            if (clienteDni.IsNullOrWhiteSpace())
             {
                 TempData["mensaje"] = ItemMensaje.ErrorNifNoValidoCrearPoliza(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
-            }            
-            if (clienteDni.Length != 0) { clienteDni = clienteDni.Trim().ToUpperInvariant(); }
-            else
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorNifNoValidoCrearPoliza(Poliza.GetNombreModelo());
-                return RedirectToAction("Index");
-
             }
-            var cliente = db.Cliente.Where(c => c.dniCliente == clienteDni).FirstOrDefault();
+            clienteDni = clienteDni.Trim().ToUpperInvariant();
+            Cliente cliente = unitOfWork.Cliente.Where(c => c.dniCliente == clienteDni).FirstOrDefault();
             if (cliente == null)
             {
-                TempData["mensaje"] = ItemMensaje.ErrorNifNoExisteCrearPoliza(Poliza.GetNombreModelo(),clienteDni);
+                TempData["mensaje"] = ItemMensaje.ErrorNifNoExisteCrearPoliza(Poliza.GetNombreModelo(), clienteDni);
                 return RedirectToAction("Create", "Clientes");
-
             }
             if (cliente.activo == 0)
             {
-                TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Cliente.GetNombreModelo(),cliente.clienteId);
+                TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Cliente.GetNombreModelo(), cliente.clienteId);
                 return RedirectToAction("Index");
             }
-            //Comprueba que haya mensajes enviado desde otra action 
             if (TempData.ContainsKey("mensaje"))
             {
                 ViewBag.mensaje = TempData["mensaje"];
             }
             ViewBag.cliente = cliente;
-            ViewBag.condicionadoPolizaId = new SelectList(db.CondicionadoPoliza.Where(c => c.activo == 1), "condicionadoPolizaId", "tipoCondicionado");
+            ViewBag.condicionadoPolizaId = new SelectList(unitOfWork.CondicionadoPoliza.Where(c => c.activo == 1), "condicionadoPolizaId", "tipoCondicionado");
             return View();
         }
 
@@ -525,170 +506,167 @@ namespace ProyectoSegurosFpDaw.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "matricula,marcaVehiculo,modeloVehiculo,fechaInicio,fechaFin,precio,observaciones,condicionadoPolizaId")] GestionPoliza gestionPoliza, string clienteId)
         {
-            if (gestionPoliza == null || clienteId == null)
+            if (ModelState.IsValid == false || gestionPolizaBLL.FieldsFormat(gestionPoliza, clienteId) == false)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            if (ModelState.IsValid)
+            // Validaciones y formato de parámetros
+            bool success = Int32.TryParse(clienteId.Trim(), out int clienteID);
+            if (success == false)
             {
-                // Validaciones y formato de parámetros
-                bool success = Int32.TryParse(clienteId.Trim(), out int clienteID);
-                if (success == false)
-                {
-                    TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
-                    return RedirectToAction("Index");
-                }
-                var dni = db.Cliente.Where(c => c.clienteId == clienteID).Select(c => c.dniCliente).FirstOrDefault();
-                if (dni == null)
-                {
-                    TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
-                    return RedirectToAction("Index");
-                }
-
-                // Creación de la póliza.
-                try
-                {                    
-                    if (gestionPoliza.matricula.IsNullOrWhiteSpace() || gestionPoliza.marcaVehiculo.IsNullOrWhiteSpace() 
-                        || gestionPoliza.modeloVehiculo.IsNullOrWhiteSpace() || gestionPoliza.observaciones.IsNullOrWhiteSpace() 
-                        || gestionPoliza.fechaInicio == null || gestionPoliza.fechaFin == null)
-                    {
-                        TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
-                        return RedirectToAction("Index");
-                    }                   
-                    gestionPoliza.matricula = gestionPoliza.matricula.Trim().ToUpperInvariant();
-                    gestionPoliza.marcaVehiculo = gestionPoliza.marcaVehiculo.Trim().ToUpperInvariant();
-                    gestionPoliza.modeloVehiculo = gestionPoliza.modeloVehiculo.Trim().ToUpperInvariant();
-                    gestionPoliza.observaciones = gestionPoliza.observaciones.Trim();                  
-
-                    if (ValidarFormatoMatricula(gestionPoliza.matricula) == false)
-                    {
-                        TempData["mensaje"] = ItemMensaje.ErrorValidarFormatoMatricula(Poliza.GetNombreModelo());
-                        return RedirectToAction("Create", new { clienteDni = dni });
-                    }                    
-                    if (VerificarMatriculaDuplicada(gestionPoliza.matricula) == true)
-                    {
-                        TempData["mensaje"] = ItemMensaje.ErrorValidarMatriculaDuplicada(Poliza.GetNombreModelo(),gestionPoliza.matricula);
-                        return RedirectToAction("Index");
-                    }
-                    var usuario = GetUsuarioActual();
-                    if (usuario == null)
-                    {
-                        TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
-                        return RedirectToAction("Index");
-                    }
-
-                    DateTime hoyFecha = DateTime.Today;
-                    if (gestionPoliza.fechaInicio < hoyFecha)
-                    {
-                        TempData["mensaje"] = ItemMensaje.ErrorFechaInicioMenorHoy(Poliza.GetNombreModelo());
-                        return RedirectToAction("Create", new { clienteDni = dni });
-                    }
-                    if (gestionPoliza.fechaFin > gestionPoliza.fechaInicio.AddYears(1))
-                    {                        
-                        TempData["mensaje"] = ItemMensaje.ErrorFechasMaxRangoInicioFin(Poliza.GetNombreModelo(),365);                      
-                        return RedirectToAction("Create", new { clienteDni = dni });
-                    }
-                    if (gestionPoliza.fechaFin > hoyFecha.AddYears(1).AddMonths(6))
-                    {                        
-                        TempData["mensaje"] = ItemMensaje.ErrorFechasMaxRangoHoyFin(Poliza.GetNombreModelo(), 547);
-                        return RedirectToAction("Create", new { clienteDni = dni });
-                    }
-
-                    // Asigna valores a la gestión póliza.
-                    gestionPoliza.usuarioId = usuario.usuarioId;
-                    DateTime hoy = DateTime.Now;
-                    gestionPoliza.fechaGestion = hoy;
-
-                    // Tipo de gestión
-                    // 1 => ALTA 
-                    gestionPoliza.tipoGestionId = 1;                     
-                    var poliza = new Poliza();
-
-                    // poliza.activo =>  
-                    // -1 =>  estado temporal mientras se procesa la generación de póliza,
-                    // para poder recuperar el id de póliza si al generar el primer gestionPoliza se produce algún error.
-                    poliza.activo = -1;
-                    poliza.clienteId = clienteID;
-
-                    //Crea el registro en la BBDD.
-                    db.Poliza.Add(poliza);
-                    db.SaveChanges();
-                }
-                catch (Exception ex)
-                {
-                    // Comprueba que se haya creado una póliza.
-                    var polizaCreada = db.Poliza.Where(c => c.clienteId == clienteID && c.activo == -1).FirstOrDefault();
-                    //Si se ha creado, elimina póliza y guarda cambios.
-                    if (polizaCreada != null)
-                    {
-                        db.Poliza.Remove(polizaCreada);
-                        db.SaveChanges();
-                    }
-                    TempData["mensaje"] = ItemMensaje.ErrorExcepcionCrear(Poliza.GetNombreModelo(), ex.GetType().ToString());
-                    return RedirectToAction("Create", new { clienteDni = dni });
-
-                }
-                // Creación de la gestión póliza
-                try
-                {
-                    // Recupera la póliza creada.
-                    var polizaIdCreada = db.Poliza.Where(c => c.clienteId == clienteID && c.activo == -1).Select(s => s.polizaId).FirstOrDefault();
-                    // Crea la gestiónPóliza Inicial de Alta.
-                    gestionPoliza.polizaId = polizaIdCreada;
-                    db.GestionPoliza.Add(gestionPoliza);
-                    db.SaveChanges();
-                }
-                catch (Exception ex)
-                {                                       
-                    // Comprueba que se haya creado una póliza.
-                    var polizaCreada = db.Poliza.Where(c => c.clienteId == clienteID && c.activo == -1).FirstOrDefault();
-                    // Si se ha creado, elimina póliza y guarda cambios.
-                    if (polizaCreada != null)
-                    {
-                        db.Poliza.Remove(polizaCreada);
-                        db.SaveChanges();
-                    }
-                    TempData["mensaje"] = ItemMensaje.ErrorExcepcionCrear(Poliza.GetNombreModelo(), ex.GetType().ToString());
-                    return RedirectToAction("Create", new { clienteDni = dni });
-                }
-                try
-                {
-
-                    // Recupera la póliza creada y cambia su estado a activo =  1                                      
-                    var polizaCreada = db.Poliza.Where(c => c.clienteId == clienteID && c.activo == -1).FirstOrDefault();
-                    polizaCreada.activo = 1;
-
-                    // Actualiza póliza en BBDD.
-                    db.Entry(polizaCreada).State = EntityState.Modified;
-                    db.SaveChanges();
-                    TempData["mensaje"] = ItemMensaje.SuccessCrear(Poliza.GetNombreModelo(),  polizaCreada.polizaId.ToString(CultureInfo.GetCultureInfo("es-ES")));
-                    return RedirectToAction("Index");
-                }
-                catch (Exception ex)
-                {
-                    // Comprueba que se haya creado una póliza 
-                    var polizaCreada = db.Poliza.Where(c => c.clienteId == clienteID && c.activo == -1).FirstOrDefault();
-                    // si se ha creado póliza 
-                    if (polizaCreada != null)
-                    {
-                        // Comprueba que se haya creado la gestiónPóliza , y la elimina
-                        var gestionPolizaCreada = db.GestionPoliza.Where(c => c.polizaId == polizaCreada.polizaId).FirstOrDefault();
-                        if (gestionPolizaCreada != null) 
-                        { 
-                            db.GestionPoliza.Remove(gestionPolizaCreada);
-                        }
-
-                        // Elimina póliza y guarda cambios.
-                        db.Poliza.Remove(polizaCreada);
-                        db.SaveChanges();
-                    }
-                    TempData["mensaje"] = ItemMensaje.ErrorExcepcionCrear(Poliza.GetNombreModelo(), ex.GetType().ToString());
-                    return RedirectToAction("Create", new { clienteDni = dni });
-                }
+                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
+                return RedirectToAction("Index");
             }
-            TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
-            return RedirectToAction("Index");
+            var dni = context.Cliente.Where(c => c.clienteId == clienteID).Select(c => c.dniCliente).FirstOrDefault();
+            if (dni == null)
+            {
+                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
+                return RedirectToAction("Index");
+            }
+
+            // Creación de la póliza.
+            try
+            {
+                //if (gestionPoliza.matricula.IsNullOrWhiteSpace() || gestionPoliza.marcaVehiculo.IsNullOrWhiteSpace()
+                //    || gestionPoliza.modeloVehiculo.IsNullOrWhiteSpace() || gestionPoliza.observaciones.IsNullOrWhiteSpace()
+                //    || gestionPoliza.fechaInicio == null || gestionPoliza.fechaFin == null)
+                //{
+                //    TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
+                //    return RedirectToAction("Index");
+                //}
+                //gestionPoliza.matricula = gestionPoliza.matricula.Trim().ToUpperInvariant();
+                //gestionPoliza.marcaVehiculo = gestionPoliza.marcaVehiculo.Trim().ToUpperInvariant();
+                //gestionPoliza.modeloVehiculo = gestionPoliza.modeloVehiculo.Trim().ToUpperInvariant();
+                //gestionPoliza.observaciones = gestionPoliza.observaciones.Trim();
+
+                if (ValidarFormatoMatricula(gestionPoliza.matricula) == false)
+                {
+                    TempData["mensaje"] = ItemMensaje.ErrorValidarFormatoMatricula(Poliza.GetNombreModelo());
+                    return RedirectToAction("Create", new { clienteDni = dni });
+                }
+                if (VerificarMatriculaDuplicada(gestionPoliza.matricula) == true)
+                {
+                    TempData["mensaje"] = ItemMensaje.ErrorValidarMatriculaDuplicada(Poliza.GetNombreModelo(), gestionPoliza.matricula);
+                    return RedirectToAction("Index");
+                }
+                var usuario = GetUsuarioActual();
+                if (usuario == null)
+                {
+                    TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
+                    return RedirectToAction("Index");
+                }
+
+                DateTime hoyFecha = DateTime.Today;
+                if (gestionPoliza.fechaInicio < hoyFecha)
+                {
+                    TempData["mensaje"] = ItemMensaje.ErrorFechaInicioMenorHoy(Poliza.GetNombreModelo());
+                    return RedirectToAction("Create", new { clienteDni = dni });
+                }
+                if (gestionPoliza.fechaFin > gestionPoliza.fechaInicio.AddYears(1))
+                {
+                    TempData["mensaje"] = ItemMensaje.ErrorFechasMaxRangoInicioFin(Poliza.GetNombreModelo(), 365);
+                    return RedirectToAction("Create", new { clienteDni = dni });
+                }
+                if (gestionPoliza.fechaFin > hoyFecha.AddYears(1).AddMonths(6))
+                {
+                    TempData["mensaje"] = ItemMensaje.ErrorFechasMaxRangoHoyFin(Poliza.GetNombreModelo(), 547);
+                    return RedirectToAction("Create", new { clienteDni = dni });
+                }
+
+                // Asigna valores a la gestión póliza.
+                gestionPoliza.usuarioId = usuario.usuarioId;
+                DateTime hoy = DateTime.Now;
+                gestionPoliza.fechaGestion = hoy;
+
+                // Tipo de gestión
+                // 1 => ALTA 
+                gestionPoliza.tipoGestionId = 1;
+                var poliza = new Poliza();
+
+                // poliza.activo =>  
+                // -1 =>  estado temporal mientras se procesa la generación de póliza,
+                // para poder recuperar el id de póliza si al generar el primer gestionPoliza se produce algún error.
+                poliza.activo = -1;
+                poliza.clienteId = clienteID;
+
+                //Crea el registro en la BBDD.
+                context.Poliza.Add(poliza);
+                context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                // Comprueba que se haya creado una póliza.
+                var polizaCreada = context.Poliza.Where(c => c.clienteId == clienteID && c.activo == -1).FirstOrDefault();
+                //Si se ha creado, elimina póliza y guarda cambios.
+                if (polizaCreada != null)
+                {
+                    context.Poliza.Remove(polizaCreada);
+                    context.SaveChanges();
+                }
+                TempData["mensaje"] = ItemMensaje.ErrorExcepcionCrear(Poliza.GetNombreModelo(), ex.GetType().ToString());
+                return RedirectToAction("Create", new { clienteDni = dni });
+
+            }
+            // Creación de la gestión póliza
+            try
+            {
+                // Recupera la póliza creada.
+                var polizaIdCreada = context.Poliza.Where(c => c.clienteId == clienteID && c.activo == -1).Select(s => s.polizaId).FirstOrDefault();
+                // Crea la gestiónPóliza Inicial de Alta.
+                gestionPoliza.polizaId = polizaIdCreada;
+                context.GestionPoliza.Add(gestionPoliza);
+                context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                // Comprueba que se haya creado una póliza.
+                var polizaCreada = context.Poliza.Where(c => c.clienteId == clienteID && c.activo == -1).FirstOrDefault();
+                // Si se ha creado, elimina póliza y guarda cambios.
+                if (polizaCreada != null)
+                {
+                    context.Poliza.Remove(polizaCreada);
+                    context.SaveChanges();
+                }
+                TempData["mensaje"] = ItemMensaje.ErrorExcepcionCrear(Poliza.GetNombreModelo(), ex.GetType().ToString());
+                return RedirectToAction("Create", new { clienteDni = dni });
+            }
+            try
+            {
+
+                // Recupera la póliza creada y cambia su estado a activo =  1                                      
+                var polizaCreada = context.Poliza.Where(c => c.clienteId == clienteID && c.activo == -1).FirstOrDefault();
+                polizaCreada.activo = 1;
+
+                // Actualiza póliza en BBDD.
+                context.Entry(polizaCreada).State = EntityState.Modified;
+                context.SaveChanges();
+                TempData["mensaje"] = ItemMensaje.SuccessCrear(Poliza.GetNombreModelo(), polizaCreada.polizaId.ToString(CultureInfo.GetCultureInfo("es-ES")));
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                // Comprueba que se haya creado una póliza 
+                var polizaCreada = context.Poliza.Where(c => c.clienteId == clienteID && c.activo == -1).FirstOrDefault();
+                // si se ha creado póliza 
+                if (polizaCreada != null)
+                {
+                    // Comprueba que se haya creado la gestiónPóliza , y la elimina
+                    var gestionPolizaCreada = context.GestionPoliza.Where(c => c.polizaId == polizaCreada.polizaId).FirstOrDefault();
+                    if (gestionPolizaCreada != null)
+                    {
+                        context.GestionPoliza.Remove(gestionPolizaCreada);
+                    }
+
+                    // Elimina póliza y guarda cambios.
+                    context.Poliza.Remove(polizaCreada);
+                    context.SaveChanges();
+                }
+                TempData["mensaje"] = ItemMensaje.ErrorExcepcionCrear(Poliza.GetNombreModelo(), ex.GetType().ToString());
+                return RedirectToAction("Create", new { clienteDni = dni });
+            }
+
+
         }
 
         /// <summary>
@@ -706,7 +684,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 return RedirectToAction("Index");
             }
             // Recupera la última gestión de la póliza. 
-            GestionPoliza gestionPoliza = db.GestionPoliza
+            GestionPoliza gestionPoliza = context.GestionPoliza
                 .Include(c => c.Poliza.Cliente)
                 .Include(c => c.CondicionadoPoliza)
                 .Include(c => c.TipoGestion)
@@ -718,7 +696,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            ViewBag.condicionadoPolizaId = new SelectList(db.CondicionadoPoliza
+            ViewBag.condicionadoPolizaId = new SelectList(context.CondicionadoPoliza
                 .Where(c => c.activo == 1), "condicionadoPolizaId", "tipoCondicionado", gestionPoliza.condicionadoPolizaId);
             return View(gestionPoliza);
 
@@ -744,13 +722,13 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
 
             // Recupera la última gestión póliza de la  póliza (orden descendente => selecciona primer registro).
-            GestionPoliza gestionPoliza = db.GestionPoliza.Where(c => c.polizaId == id).OrderByDescending(c => c.gestionPolizaId).FirstOrDefault();
+            GestionPoliza gestionPoliza = context.GestionPoliza.Where(c => c.polizaId == id).OrderByDescending(c => c.gestionPolizaId).FirstOrDefault();
             if (gestionPoliza == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            
+
             var matriculaEstadoPrevio = gestionPoliza.matricula;
             try
             {
@@ -768,7 +746,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                     gestionPoliza.matricula = gestionPoliza.matricula.Trim().ToUpperInvariant();
                     gestionPoliza.marcaVehiculo = gestionPoliza.marcaVehiculo.Trim().ToUpperInvariant();
                     gestionPoliza.modeloVehiculo = gestionPoliza.modeloVehiculo.Trim().ToUpperInvariant();
-                    gestionPoliza.observaciones = gestionPoliza.observaciones.Trim();                                       
+                    gestionPoliza.observaciones = gestionPoliza.observaciones.Trim();
 
                     if (ValidarFormatoMatricula(gestionPoliza.matricula) == false)
                     {
@@ -778,10 +756,10 @@ namespace ProyectoSegurosFpDaw.Controllers
 
                     // Si se ha modificado la matrícula                     
                     if (matriculaEstadoPrevio != gestionPoliza.matricula)
-                    {                        
+                    {
                         if (VerificarMatriculaDuplicada(gestionPoliza.matricula) == true)
                         {
-                            TempData["mensaje"] = ItemMensaje.ErrorValidarMatriculaDuplicada(Poliza.GetNombreModelo(),gestionPoliza.matricula);
+                            TempData["mensaje"] = ItemMensaje.ErrorValidarMatriculaDuplicada(Poliza.GetNombreModelo(), gestionPoliza.matricula);
                             return RedirectToAction("Details", new { id = gestionPoliza.gestionPolizaId });
                         }
                     }
@@ -802,16 +780,16 @@ namespace ProyectoSegurosFpDaw.Controllers
                     gestionPoliza.tipoGestionId = 3;
 
                     //Guarda nueva gestión Póliza en la BBDD.
-                    db.GestionPoliza.Add(gestionPoliza);
-                    db.SaveChanges();
+                    context.GestionPoliza.Add(gestionPoliza);
+                    context.SaveChanges();
                     TempData["mensaje"] = ItemMensaje.SuccessEditar(Poliza.GetNombreModelo(), gestionPoliza.polizaId.ToString(CultureInfo.GetCultureInfo("es-ES")));
                     return RedirectToAction("Index");
                 }
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Poliza.GetNombreModelo());
                 return RedirectToAction("Details", new { id = gestionPoliza.gestionPolizaId });
-            }          
+            }
             catch (Exception ex)
-            {                
+            {
                 TempData["mensaje"] = ItemMensaje.ErrorExcepcionEditar(Poliza.GetNombreModelo(), ex.GetType().ToString());
                 return RedirectToAction("Details", new { id = gestionPoliza.gestionPolizaId });
             }
@@ -831,13 +809,13 @@ namespace ProyectoSegurosFpDaw.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int gestionPolizaId, string motivoClx)
         {
-            GestionPoliza gestionPoliza = db.GestionPoliza.Find(gestionPolizaId);
+            GestionPoliza gestionPoliza = context.GestionPoliza.Find(gestionPolizaId);
             if (gestionPoliza == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCancelar(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            Poliza poliza = db.Poliza.Find(gestionPoliza.polizaId);
+            Poliza poliza = context.Poliza.Find(gestionPoliza.polizaId);
             if (poliza == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCancelar(Poliza.GetNombreModelo());
@@ -849,8 +827,8 @@ namespace ProyectoSegurosFpDaw.Controllers
                 return RedirectToAction("Index");
             }
             try
-            {                
-                var usuario = GetUsuarioActual();                
+            {
+                var usuario = GetUsuarioActual();
                 gestionPoliza.usuarioId = usuario.usuarioId;
                 DateTime hoy = DateTime.Now;
                 gestionPoliza.fechaGestion = hoy;
@@ -883,7 +861,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 }
 
                 //Crea la nueva gestión póliza.
-                db.GestionPoliza.Add(gestionPoliza);
+                context.GestionPoliza.Add(gestionPoliza);
 
                 //Desactiva la póliza (activo = 0)
                 //Guarda la fecha de hoy como fecha Desactivado.              
@@ -891,8 +869,8 @@ namespace ProyectoSegurosFpDaw.Controllers
                 poliza.activo = 0;
 
                 // Actualiza y guarda cambios en BBDD.
-                db.Entry(poliza).State = EntityState.Modified;                
-                db.SaveChanges();
+                context.Entry(poliza).State = EntityState.Modified;
+                context.SaveChanges();
                 TempData["mensaje"] = ItemMensaje.SuccessCancelar(Poliza.GetNombreModelo(), poliza.polizaId.ToString(CultureInfo.GetCultureInfo("es-ES")));
                 return RedirectToAction("Index");
             }
@@ -900,23 +878,23 @@ namespace ProyectoSegurosFpDaw.Controllers
             {
                 // Si no se ha podido dar de baja la póliza
                 // Comprueba que se haya cambiado el estado activo
-                var polizaModificada = db.Poliza.Find(poliza.polizaId);
+                var polizaModificada = context.Poliza.Find(poliza.polizaId);
                 if (polizaModificada.activo == 0)
                 {
                     polizaModificada.activo = 1;
-                    db.Entry(polizaModificada).State = EntityState.Modified;
+                    context.Entry(polizaModificada).State = EntityState.Modified;
 
                 }
                 // Comprueba que se haya creado una gestión Póliza con estado baja y la elimina
-                var gestionPolizaModificada = db.GestionPoliza
+                var gestionPolizaModificada = context.GestionPoliza
                     .Where(c => c.polizaId == poliza.polizaId && c.tipoGestionId == 2).FirstOrDefault();
                 if (gestionPolizaModificada != null)
                 {
-                    db.GestionPoliza.Remove(gestionPolizaModificada);
+                    context.GestionPoliza.Remove(gestionPolizaModificada);
                 }
 
                 //Guarda cambios en BBDD
-                db.SaveChanges();
+                context.SaveChanges();
                 TempData["mensaje"] = ItemMensaje.ErrorExcepcionCancelar(Poliza.GetNombreModelo(), ex.GetType().ToString());
                 return RedirectToAction("Index");
             }
@@ -924,21 +902,6 @@ namespace ProyectoSegurosFpDaw.Controllers
         #endregion
         #region Métodos
 
-        /// <summary>
-        /// Crea una lista SelectListItem con estados de póliza, con 3 valores / textos 
-        /// <para>0 => no vigente</para>
-        /// <para>1 => vigente</para>
-        /// <para>2 => todos</para>
-        /// </summary>
-        /// <returns> retorna un List SelectListItem </returns>                    
-        private List<SelectListItem> GetSelectListEstadoPolizaConOpcionTodos()
-        {
-            var roles = new List<SelectListItem>();
-            roles.Add(new SelectListItem { Value = "2", Text = "TODOS" });
-            roles.Add(new SelectListItem { Value = "1", Text = "VIGENTE" });
-            roles.Add(new SelectListItem { Value = "0", Text = "NO VIGENTE" });
-            return roles;
-        }
 
         /// <summary>
         /// Verifica que la matrícula ya esté dada de alta en una póliza 
@@ -954,8 +917,8 @@ namespace ProyectoSegurosFpDaw.Controllers
             var matriculaComprobar = matricula.Trim().ToUpperInvariant();
             //Verificar las gestiones polizas que tengan esa matricula  , y que la póliza esté activa                      
             var query =
-               from gestiones in db.GestionPoliza
-               join polizas in db.Poliza on gestiones.polizaId equals polizas.polizaId
+               from gestiones in context.GestionPoliza
+               join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
                where gestiones.matricula == matriculaComprobar && polizas.activo == 1
                select new { GestionPoliza = gestiones };
 
@@ -1007,7 +970,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                context.Dispose();
             }
             base.Dispose(disposing);
         }

@@ -19,6 +19,7 @@ namespace ProyectoSegurosFpDaw.Persistance
             CondicionadoPoliza = new CondicionadoPolizaRepository(_context);
             Usuario = new UsuarioRepository(_context);
             Cliente = new ClienteRepository(_context);
+            GestionPoliza = new GestionPolizaRepository(_context);
             
             
         }
@@ -27,6 +28,8 @@ namespace ProyectoSegurosFpDaw.Persistance
         public ICondicionadoPolizaRepository CondicionadoPoliza { get; set; }
         public IUsuarioRepository Usuario { get; set; }
         public IClienteRepository Cliente { get; set; }
+        public IGestionPolizaRepository GestionPoliza { get; set; }
+
 
         public int SaveChanges()
         {

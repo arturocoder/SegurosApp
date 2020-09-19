@@ -154,12 +154,14 @@
     <Compile Include="BLL\ClienteBLL.cs" />
     <Compile Include="BLL\CondicionadoPolizaBLL.cs" />
     <Compile Include="BLL\Encriptacion.cs" />
+    <Compile Include="BLL\GestionPolizaBLL.cs" />
     <Compile Include="BLL\UsuarioBLL.cs" />
     <Compile Include="Controllers\AccesoController.cs" />
     <Compile Include="Controllers\ClientesController.cs" />
     <Compile Include="Controllers\CondicionadoPolizasController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\GestionPolizasController.cs" />
+    <Compile Include="Controllers\Helpers\GestionPolizasControllerHelper.cs" />
     <Compile Include="Controllers\Helpers\UsuarioControllerHelper.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\RolesPermisosController.cs" />
@@ -207,6 +209,7 @@
     </Compile>
     <Compile Include="Models\ReinicioBBDD.cs" />
     <Compile Include="Models\Repositories\IClienteRepository.cs" />
+    <Compile Include="Models\Repositories\IGestionPolizaRepository.cs" />
     <Compile Include="Models\Repositories\IUsuarioRepository.cs" />
     <Compile Include="Models\Repositories\ICondicionadoPolizaRepository.cs" />
     <Compile Include="Models\Repositories\IRepository.cs" />
@@ -226,6 +229,7 @@
     </Compile>
     <Compile Include="Persistance\Repositories\ClienteRepository.cs" />
     <Compile Include="Persistance\Repositories\CondicionadoPolizaRepository.cs" />
+    <Compile Include="Persistance\Repositories\GestionPolizaRepository.cs" />
     <Compile Include="Persistance\Repositories\Repository.cs" />
     <Compile Include="Persistance\Repositories\RolRepository.cs" />
     <Compile Include="Persistance\Repositories\UsuarioRepository.cs" />

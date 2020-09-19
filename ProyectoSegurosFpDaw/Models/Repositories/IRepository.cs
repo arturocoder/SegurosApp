@@ -12,9 +12,7 @@ namespace ProyectoSegurosFpDaw.Models.Repositories
         TEntity Get(int id);
         IEnumerable<TEntity> GetAll();
 
-        IEnumerable<TEntity> Where(Expression<Func<TEntity, bool>> predicate);
-
-    
+        IEnumerable<TEntity> Where(Expression<Func<TEntity, bool>> predicate);    
 
 
         TEntity SingleOrDefault(Expression<Func<TEntity, bool>> predicate);
