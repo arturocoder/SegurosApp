@@ -19,7 +19,6 @@ namespace ProyectoSegurosFpDaw.Controllers
     public class ClientesController : Controller
     {
         private ProyectoSegurosDbEntities context;
-
         private UnitOfWork unitOfWork;
         private ClienteBLL clienteBll;
 
