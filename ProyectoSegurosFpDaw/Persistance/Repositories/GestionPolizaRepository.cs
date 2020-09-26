@@ -45,11 +45,13 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
         public bool ExistMatriculaInPolizasActivas(string matricula)
         {
             var polizasActivas = ProyectoSegurosContext.Poliza.Where(c => c.activo == 1);
+            // Get Last GestionPolizaId on every Poliza Activa
             var gestionesPolizaLast = from gestiones in ProyectoSegurosContext.GestionPoliza
                                       join polizas in polizasActivas on gestiones.polizaId equals polizas.polizaId
                                       group gestiones by gestiones.polizaId
                                       into g
                                       select g.Max(c => c.gestionPolizaId);
+            
             var gestionPolizaIdCoincidenteConMatricula = from gestiones in ProyectoSegurosContext.GestionPoliza
                                                          join gest in gestionesPolizaLast on gestiones.gestionPolizaId equals gest
                                                          where gestiones.matricula == matricula

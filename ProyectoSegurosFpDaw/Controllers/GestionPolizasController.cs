@@ -43,8 +43,6 @@ namespace ProyectoSegurosFpDaw.Controllers
         [HttpGet]
         public ActionResult Index()
         {
-            //PRUBEA 
-            VerificarMatriculaDuplicada2("4440-AAM");
 
             // Estadosession que se envía a la vista a través de ViewBag
             // para colapsar/mostrar la sección que corresponda.
@@ -712,7 +710,6 @@ namespace ProyectoSegurosFpDaw.Controllers
                 return RedirectToAction("Index");
             }
             var matriculaEstadoPrevio = gestionPoliza.matricula;
-
             if (TryUpdateModel(gestionPoliza, "", new string[] { "condicionadoPolizaId", "precio", "observaciones", "matricula", "marcaVehiculo", "modeloVehiculo" }) == false || gestionPolizaBLL.FieldsFormatEdit(gestionPoliza) == false)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Poliza.GetNombreModelo());
@@ -724,7 +721,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 TempData["mensaje"] = ItemMensaje.ErrorValidarFormatoMatricula(Poliza.GetNombreModelo());
                 return RedirectToAction("Details", new { id = gestionPoliza.gestionPolizaId });
             }
-            // Si se ha modificado la matrícula                     
+            // Si se ha modificado la matrícula, verifica que no esté en una póliza Activa.                     
             if (matriculaEstadoPrevio != gestionPoliza.matricula && gestionPolizaBLL.ExistMatriculaInPolizasActivas(gestionPoliza.matricula) == true)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorValidarMatriculaDuplicada(Poliza.GetNombreModelo(), gestionPoliza.matricula);
@@ -755,18 +752,18 @@ namespace ProyectoSegurosFpDaw.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int gestionPolizaId, string motivoClx)
         {
-            GestionPoliza gestionPoliza = context.GestionPoliza.Find(gestionPolizaId);
+            if (motivoClx.IsNullOrWhiteSpace())
+            {
+                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCancelar(Poliza.GetNombreModelo());
+                return RedirectToAction("Index");
+            }           
+            GestionPoliza gestionPoliza = unitOfWork.GestionPoliza.Get(gestionPolizaId);
             if (gestionPoliza == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCancelar(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
-            }
-            Poliza poliza = context.Poliza.Find(gestionPoliza.polizaId);
-            if (poliza == null)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCancelar(Poliza.GetNombreModelo());
-                return RedirectToAction("Index");
-            }
+            }            
+            Poliza poliza = unitOfWork.Poliza.Get(gestionPoliza.polizaId);          
             if (poliza.activo == 0)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorYaCanceladoOrDesactivado(Poliza.GetNombreModelo());
@@ -774,151 +771,19 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             try
             {
-                var usuario = GetUsuarioLogado();
-                gestionPoliza.usuarioId = usuario.usuarioId;
-                DateTime hoy = DateTime.Now;
-                gestionPoliza.fechaGestion = hoy;
-                DateTime hoyFecha = DateTime.Today;
-
-                // Validaciones
-
-                // Si es una póliza con fecha de inicio futura ,asigna mismo valor a fecha Inicio /Fin.
-                if (gestionPoliza.fechaInicio > hoyFecha)
-                {
-                    gestionPoliza.fechaFin = gestionPoliza.fechaInicio;
-                }
-                else
-                {
-                    gestionPoliza.fechaFin = hoyFecha;
-
-                }
-
-                // Tipo de gestión:
-                // 2 => BAJA 
-                gestionPoliza.tipoGestionId = 2;
-                if (motivoClx.IsNullOrWhiteSpace())
-                {
-                    TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCancelar(Poliza.GetNombreModelo());
-                    return RedirectToAction("Index");
-                }
-                else
-                {
-                    gestionPoliza.observaciones = "Póliza cancelada por usuario : " + usuario.emailUsuario + ". \nMotivo : " + motivoClx.Trim();
-                }
-
-                //Crea la nueva gestión póliza.
-                context.GestionPoliza.Add(gestionPoliza);
-
-                //Desactiva la póliza (activo = 0)
-                //Guarda la fecha de hoy como fecha Desactivado.              
-                poliza.fechaDesactivado = hoy;
-                poliza.activo = 0;
-
-                // Actualiza y guarda cambios en BBDD.
-                context.Entry(poliza).State = EntityState.Modified;
-                context.SaveChanges();
+                gestionPolizaBLL.DeleteGestionPoliza(gestionPoliza, GetUsuarioLogado(),motivoClx, poliza);               
                 TempData["mensaje"] = ItemMensaje.SuccessCancelar(Poliza.GetNombreModelo(), poliza.polizaId.ToString(CultureInfo.GetCultureInfo("es-ES")));
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
-                // Si no se ha podido dar de baja la póliza
-                // Comprueba que se haya cambiado el estado activo
-                var polizaModificada = context.Poliza.Find(poliza.polizaId);
-                if (polizaModificada.activo == 0)
-                {
-                    polizaModificada.activo = 1;
-                    context.Entry(polizaModificada).State = EntityState.Modified;
-
-                }
-                // Comprueba que se haya creado una gestión Póliza con estado baja y la elimina
-                var gestionPolizaModificada = context.GestionPoliza
-                    .Where(c => c.polizaId == poliza.polizaId && c.tipoGestionId == 2).FirstOrDefault();
-                if (gestionPolizaModificada != null)
-                {
-                    context.GestionPoliza.Remove(gestionPolizaModificada);
-                }
-
-                //Guarda cambios en BBDD
-                context.SaveChanges();
+                gestionPolizaBLL.UnDeleteGestionPoliza(poliza.polizaId);               
                 TempData["mensaje"] = ItemMensaje.ErrorExcepcionCancelar(Poliza.GetNombreModelo(), ex.GetType().ToString());
                 return RedirectToAction("Index");
             }
         }
         #endregion
         #region Métodos
-
-
-        /// <summary>
-        /// Verifica que la matrícula ya esté dada de alta en una póliza 
-        /// que esté en vigor o con fecha de inicio futura (poliza activa=1)
-        /// </summary>
-        /// <param name="matricula">matricula</param>
-        /// <returns> 
-        /// true => si está duplicada.
-        /// false => si no está duplicada .
-        /// </returns>
-        private bool VerificarMatriculaDuplicada3(string matricula)
-        {
-            var matriculaComprobar = matricula.Trim().ToUpperInvariant();
-            //Verificar las gestiones polizas que tengan esa matricula  , y que la póliza esté activa                      
-            var query =
-               from gestiones in context.GestionPoliza
-               join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
-               where gestiones.matricula == matriculaComprobar && polizas.activo == 1
-               select new { GestionPoliza = gestiones };
-
-            var hayDatos = query.Count();
-            if (hayDatos > 0) { return true; } else { return false; }
-        }
-        private bool VerificarMatriculaDuplicada(string matricula)
-        {
-            // Polizas que estén activas
-            // última gestión de poliza 
-            // Coincidencia con matricula
-            //FUNCIONA!
-            var polizasActivas = context.Poliza.Where(c => c.activo == 1);
-            var gestionesPolizaLast = from gestiones in context.GestionPoliza
-                                      join polizas in polizasActivas on gestiones.polizaId equals polizas.polizaId
-                                      group gestiones by gestiones.polizaId
-                                      into g
-                                      select g.Max(c => c.gestionPolizaId);
-
-            var gestionPolizaIdCoincidenteConMatricula = from gestiones in context.GestionPoliza
-                                                         join gest in gestionesPolizaLast on gestiones.gestionPolizaId equals gest
-                                                         where gestiones.matricula == matricula
-                                                         select gestiones.gestionPolizaId;
-            if (gestionPolizaIdCoincidenteConMatricula.Any())
-            {
-                return true;
-            }
-            return false;
-        }
-
-        private bool VerificarMatriculaDuplicada2(string matricula)
-        {
-            // Polizas que estén activas
-            // última gestión de poliza 
-            // Coincidencia con matricula
-
-            //var polizasActivas = context.Poliza.Where(c => c.activo == 1);
-            var gestionesPolizaLast = from gestiones in context.GestionPoliza
-                                      join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
-                                      where polizas.activo == 1
-                                      group gestiones by gestiones.polizaId
-                                      into g
-                                      select g.Max()
-                                      into h
-                                      where h.matricula == matricula
-                                      select h;
-
-
-
-            return false;
-        }
-
-
-
 
 
         /// <summary>

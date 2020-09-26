@@ -131,10 +131,6 @@ namespace ProyectoSegurosFpDaw.BLL
         {
             return unitOfWork.GestionPoliza.ExistMatriculaInPolizasActivas(matricula);
         }
-       
-
-
-
 
 
         public void UpdateGestionPoliza(GestionPoliza gestionPoliza, Usuario usuarioLogado)
@@ -148,7 +144,54 @@ namespace ProyectoSegurosFpDaw.BLL
             unitOfWork.SaveChanges();
         }
 
+        public void DeleteGestionPoliza(GestionPoliza gestionPoliza, Usuario usuarioLogado, string motivoCancelacion, Poliza poliza)
+        {
+            gestionPoliza.usuarioId = usuarioLogado.usuarioId;
+            gestionPoliza.fechaGestion = DateTime.Now;
 
+            // Si es una póliza con fecha de inicio futura ,asigna mismo valor a fecha Inicio /Fin.
+            if (gestionPoliza.fechaInicio > DateTime.Today)
+            {
+                gestionPoliza.fechaFin = gestionPoliza.fechaInicio;
+            }
+            else
+            {
+                gestionPoliza.fechaFin = DateTime.Today;
 
+            }
+
+            // Tipo de gestión:
+            // 2 => BAJA 
+            gestionPoliza.tipoGestionId = 2;
+            gestionPoliza.observaciones = "Póliza cancelada por usuario : " + usuarioLogado.emailUsuario + ". \nMotivo : " + motivoCancelacion.Trim();
+
+            // Crea nueva gestión póliza
+            unitOfWork.GestionPoliza.Add(gestionPoliza);
+            poliza.fechaDesactivado = DateTime.Now;
+            poliza.activo = 0;
+
+            unitOfWork.SaveChanges();
+            throw new Exception();
+        }
+        public void UnDeleteGestionPoliza(int polizaId)
+        {
+            // Si no se ha podido dar de baja la póliza
+            // Comprueba que se haya cambiado el estado activo           
+            var polizaModificada = unitOfWork.Poliza.Get(polizaId);
+            if (polizaModificada.activo == 0)
+            {
+                polizaModificada.activo = 1;              
+
+            }
+            // Comprueba que se haya creado una gestión Póliza con estado baja y la elimina
+            var gestionPolizaModificada = unitOfWork.GestionPoliza
+                .Where(c => c.polizaId == polizaId && c.tipoGestionId == 2).FirstOrDefault();
+            if (gestionPolizaModificada != null)
+            {
+                unitOfWork.GestionPoliza.Remove(gestionPolizaModificada);
+            }
+            
+            unitOfWork.SaveChanges();
+        }
     }
 }
