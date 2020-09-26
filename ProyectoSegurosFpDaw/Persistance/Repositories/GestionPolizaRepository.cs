@@ -40,20 +40,28 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
                 .ToList();
                 
         }
+       
 
-        //public GestionPoliza GetLastGestionPolizaJoinPolizaActivasWhere(Expression<Func<GestionPoliza, bool>> predicate)
-        //{
-        //    var query =
-        //      from gestiones in ProyectoSegurosContext.GestionPoliza
-        //      join polizas in ProyectoSegurosContext.Poliza on gestiones.polizaId equals polizas.polizaId
-        //      orderby gestiones ascending
-        //      select gestiones;
+        public bool ExistMatriculaInPolizasActivas(string matricula)
+        {
+            var polizasActivas = ProyectoSegurosContext.Poliza.Where(c => c.activo == 1);
+            var gestionesPolizaLast = from gestiones in ProyectoSegurosContext.GestionPoliza
+                                      join polizas in polizasActivas on gestiones.polizaId equals polizas.polizaId
+                                      group gestiones by gestiones.polizaId
+                                      into g
+                                      select g.Max(c => c.gestionPolizaId);
+            var gestionPolizaIdCoincidenteConMatricula = from gestiones in ProyectoSegurosContext.GestionPoliza
+                                                         join gest in gestionesPolizaLast on gestiones.gestionPolizaId equals gest
+                                                         where gestiones.matricula == matricula
+                                                         select gestiones.gestionPolizaId;
+            if (gestionPolizaIdCoincidenteConMatricula.Any())
+            {
+                return true;
+            }
+            return false;
 
-        //    var query2 = from gestiones in ProyectoSegurosContext.GestionPoliza
-        //                 join polizas in ProyectoSegurosContext.Poliza on gestiones.polizaId equals polizas.polizaId
-                         
-        //                 select gestiones;
+        }
 
-        //}
+
     }
 }

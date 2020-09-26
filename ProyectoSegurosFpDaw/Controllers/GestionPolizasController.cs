@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -42,6 +43,8 @@ namespace ProyectoSegurosFpDaw.Controllers
         [HttpGet]
         public ActionResult Index()
         {
+            //PRUBEA 
+            VerificarMatriculaDuplicada2("4440-AAM");
 
             // Estadosession que se envía a la vista a través de ViewBag
             // para colapsar/mostrar la sección que corresponda.
@@ -545,7 +548,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                     TempData["mensaje"] = ItemMensaje.ErrorValidarFormatoMatricula(Poliza.GetNombreModelo());
                     return RedirectToAction("Create", new { clienteDni = dni });
                 }
-                if (VerificarMatriculaDuplicada(gestionPoliza.matricula) == true)
+                if (gestionPolizaBLL.ExistMatriculaInPolizasActivas(gestionPoliza.matricula) == true)
                 {
                     TempData["mensaje"] = ItemMensaje.ErrorValidarMatriculaDuplicada(Poliza.GetNombreModelo(), gestionPoliza.matricula);
                     return RedirectToAction("Index");
@@ -701,7 +704,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
         public ActionResult EditPost(int id)
-        {           
+        {
             GestionPoliza gestionPoliza = gestionPolizaBLL.GetLastGestionPoliza(id);
             if (gestionPoliza == null)
             {
@@ -709,12 +712,12 @@ namespace ProyectoSegurosFpDaw.Controllers
                 return RedirectToAction("Index");
             }
             var matriculaEstadoPrevio = gestionPoliza.matricula;
-          
+
             if (TryUpdateModel(gestionPoliza, "", new string[] { "condicionadoPolizaId", "precio", "observaciones", "matricula", "marcaVehiculo", "modeloVehiculo" }) == false || gestionPolizaBLL.FieldsFormatEdit(gestionPoliza) == false)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Poliza.GetNombreModelo());
                 return RedirectToAction("Details", new { id = gestionPoliza.gestionPolizaId });
-            }         
+            }
 
             if (gestionPolizaBLL.ValidarFormatoMatricula(gestionPoliza.matricula) == false)
             {
@@ -722,13 +725,10 @@ namespace ProyectoSegurosFpDaw.Controllers
                 return RedirectToAction("Details", new { id = gestionPoliza.gestionPolizaId });
             }
             // Si se ha modificado la matrícula                     
-            if (matriculaEstadoPrevio != gestionPoliza.matricula)
+            if (matriculaEstadoPrevio != gestionPoliza.matricula && gestionPolizaBLL.ExistMatriculaInPolizasActivas(gestionPoliza.matricula) == true)
             {
-                if (VerificarMatriculaDuplicada(gestionPoliza.matricula) == true)
-                {
-                    TempData["mensaje"] = ItemMensaje.ErrorValidarMatriculaDuplicada(Poliza.GetNombreModelo(), gestionPoliza.matricula);
-                    return RedirectToAction("Details", new { id = gestionPoliza.gestionPolizaId });
-                }
+                TempData["mensaje"] = ItemMensaje.ErrorValidarMatriculaDuplicada(Poliza.GetNombreModelo(), gestionPoliza.matricula);
+                return RedirectToAction("Details", new { id = gestionPoliza.gestionPolizaId });
             }
             Usuario usuarioLogado = GetUsuarioLogado();
             if (usuarioLogado == null)
@@ -736,7 +736,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            gestionPolizaBLL.UpdateGestionPoliza(gestionPoliza, usuarioLogado);          
+            gestionPolizaBLL.UpdateGestionPoliza(gestionPoliza, usuarioLogado);
             TempData["mensaje"] = ItemMensaje.SuccessEditar(Poliza.GetNombreModelo(), gestionPoliza.polizaId.ToString(CultureInfo.GetCultureInfo("es-ES")));
             return RedirectToAction("Index");
         }
@@ -858,7 +858,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         /// true => si está duplicada.
         /// false => si no está duplicada .
         /// </returns>
-        private bool VerificarMatriculaDuplicada(string matricula)
+        private bool VerificarMatriculaDuplicada3(string matricula)
         {
             var matriculaComprobar = matricula.Trim().ToUpperInvariant();
             //Verificar las gestiones polizas que tengan esa matricula  , y que la póliza esté activa                      
@@ -871,6 +871,55 @@ namespace ProyectoSegurosFpDaw.Controllers
             var hayDatos = query.Count();
             if (hayDatos > 0) { return true; } else { return false; }
         }
+        private bool VerificarMatriculaDuplicada(string matricula)
+        {
+            // Polizas que estén activas
+            // última gestión de poliza 
+            // Coincidencia con matricula
+            //FUNCIONA!
+            var polizasActivas = context.Poliza.Where(c => c.activo == 1);
+            var gestionesPolizaLast = from gestiones in context.GestionPoliza
+                                      join polizas in polizasActivas on gestiones.polizaId equals polizas.polizaId
+                                      group gestiones by gestiones.polizaId
+                                      into g
+                                      select g.Max(c => c.gestionPolizaId);
+
+            var gestionPolizaIdCoincidenteConMatricula = from gestiones in context.GestionPoliza
+                                                         join gest in gestionesPolizaLast on gestiones.gestionPolizaId equals gest
+                                                         where gestiones.matricula == matricula
+                                                         select gestiones.gestionPolizaId;
+            if (gestionPolizaIdCoincidenteConMatricula.Any())
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private bool VerificarMatriculaDuplicada2(string matricula)
+        {
+            // Polizas que estén activas
+            // última gestión de poliza 
+            // Coincidencia con matricula
+
+            //var polizasActivas = context.Poliza.Where(c => c.activo == 1);
+            var gestionesPolizaLast = from gestiones in context.GestionPoliza
+                                      join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
+                                      where polizas.activo == 1
+                                      group gestiones by gestiones.polizaId
+                                      into g
+                                      select g.Max()
+                                      into h
+                                      where h.matricula == matricula
+                                      select h;
+
+
+
+            return false;
+        }
+
+
+
+
 
         /// <summary>
         /// Obtiene el Usuario de la Session actual (usuario logado).
@@ -883,7 +932,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             Usuario oUsuario = (Usuario)Session["user"];
             return oUsuario;
         }
-        
+
 
         protected override void Dispose(bool disposing)
         {

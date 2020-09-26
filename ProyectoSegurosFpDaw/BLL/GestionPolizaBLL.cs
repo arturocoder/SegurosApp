@@ -127,8 +127,12 @@ namespace ProyectoSegurosFpDaw.BLL
             return false;
         }
 
+        public bool ExistMatriculaInPolizasActivas(string matricula)
+        {
+            return unitOfWork.GestionPoliza.ExistMatriculaInPolizasActivas(matricula);
+        }
+       
 
-      
 
 
 
