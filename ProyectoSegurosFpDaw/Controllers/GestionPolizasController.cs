@@ -556,34 +556,11 @@ namespace ProyectoSegurosFpDaw.Controllers
             try
             {
                 gestionPolizaBLL.CreatePoliza(gestionPoliza, usuario, cliente);               
-            }
+                gestionPolizaBLL.CreateGestionPoliza(gestionPoliza, cliente);               
+            }           
             catch (Exception ex)
             {
                 gestionPolizaBLL.UnCreatePoliza(cliente);               
-                TempData["mensaje"] = ItemMensaje.ErrorExcepcionCrear(Poliza.GetNombreModelo(), ex.GetType().ToString());
-                return RedirectToAction("Create", new { clienteDni = cliente.dniCliente });
-
-            }
-            // Creación de la gestión póliza
-            try
-            {
-                // Recupera la póliza creada.
-                var polizaIdCreada = context.Poliza.Where(c => c.clienteId == cliente.clienteId && c.activo == -1).Select(s => s.polizaId).FirstOrDefault();
-                // Crea la gestiónPóliza Inicial de Alta.
-                gestionPoliza.polizaId = polizaIdCreada;
-                context.GestionPoliza.Add(gestionPoliza);
-                context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                // Comprueba que se haya creado una póliza.
-                var polizaCreada = context.Poliza.Where(c => c.clienteId == cliente.clienteId && c.activo == -1).FirstOrDefault();
-                // Si se ha creado, elimina póliza y guarda cambios.
-                if (polizaCreada != null)
-                {
-                    context.Poliza.Remove(polizaCreada);
-                    context.SaveChanges();
-                }
                 TempData["mensaje"] = ItemMensaje.ErrorExcepcionCrear(Poliza.GetNombreModelo(), ex.GetType().ToString());
                 return RedirectToAction("Create", new { clienteDni = cliente.dniCliente });
             }
