@@ -132,7 +132,7 @@ namespace ProyectoSegurosFpDaw.BLL
             return unitOfWork.GestionPoliza.ExistMatriculaInPolizasActivas(matricula);
         }
 
-        public void CreatePoliza(GestionPoliza gestionPoliza,Usuario usuarioLogado,Cliente cliente)
+        private void CreatePoliza(GestionPoliza gestionPoliza,Usuario usuarioLogado,Cliente cliente)
         {
             // Asigna valores a la gestión póliza.
             gestionPoliza.usuarioId = usuarioLogado.usuarioId;
@@ -156,6 +156,32 @@ namespace ProyectoSegurosFpDaw.BLL
             unitOfWork.SaveChanges();
 
         }
+       
+        private void CreateGestionPoliza(GestionPoliza gestionPoliza,Cliente cliente)
+        {
+            
+            // Recupera la póliza creada.
+            var polizaIdCreada = unitOfWork.Poliza.Where(c => c.clienteId == cliente.clienteId && c.activo == -1).Select(s => s.polizaId).FirstOrDefault();
+            // Crea la gestiónPóliza Inicial de Alta.
+            gestionPoliza.polizaId = polizaIdCreada;
+            unitOfWork.GestionPoliza.Add(gestionPoliza);
+            unitOfWork.SaveChanges();
+            throw new Exception();
+        }
+
+        public Poliza CreatePolizaAndFirstGestionPoliza(GestionPoliza gestionPoliza, Usuario usuarioLogado, Cliente cliente)
+        {
+            CreatePoliza(gestionPoliza, usuarioLogado, cliente);
+            CreateGestionPoliza(gestionPoliza, cliente);
+            // Recupera la póliza creada y cambia su estado de activo = -1  a activo = 1 
+            // En el proceso de creación tiene activo=-1 para gestión de errores, poder volver a estado inicial. 
+            var polizaCreada = unitOfWork.Poliza.Where(c => c.clienteId == cliente.clienteId && c.activo == -1).FirstOrDefault();
+            polizaCreada.activo = 1;
+            // Actualiza póliza en BBDD.           
+            unitOfWork.SaveChanges();
+            return polizaCreada;
+        }
+
         /// <summary>
         /// Elimina póliza creada temporalmente
         /// Por cascada, elimina también la gestión póliza asociada
@@ -172,15 +198,8 @@ namespace ProyectoSegurosFpDaw.BLL
                 unitOfWork.SaveChanges();
             }
         }
-        public void CreateGestionPoliza(GestionPoliza gestionPoliza,Cliente cliente)
-        {
-            // Recupera la póliza creada.
-            var polizaIdCreada = unitOfWork.Poliza.Where(c => c.clienteId == cliente.clienteId && c.activo == -1).Select(s => s.polizaId).FirstOrDefault();
-            // Crea la gestiónPóliza Inicial de Alta.
-            gestionPoliza.polizaId = polizaIdCreada;
-            unitOfWork.GestionPoliza.Add(gestionPoliza);
-            unitOfWork.SaveChanges();
-        }
+
+        
        
 
         public void UpdateGestionPoliza(GestionPoliza gestionPoliza, Usuario usuarioLogado)

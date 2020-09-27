@@ -555,50 +555,16 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             try
             {
-                gestionPolizaBLL.CreatePoliza(gestionPoliza, usuario, cliente);               
-                gestionPolizaBLL.CreateGestionPoliza(gestionPoliza, cliente);               
-            }           
-            catch (Exception ex)
-            {
-                gestionPolizaBLL.UnCreatePoliza(cliente);               
-                TempData["mensaje"] = ItemMensaje.ErrorExcepcionCrear(Poliza.GetNombreModelo(), ex.GetType().ToString());
-                return RedirectToAction("Create", new { clienteDni = cliente.dniCliente });
-            }
-            try
-            {
-
-                // Recupera la póliza creada y cambia su estado a activo =  1                                      
-                var polizaCreada = context.Poliza.Where(c => c.clienteId == cliente.clienteId && c.activo == -1).FirstOrDefault();
-                polizaCreada.activo = 1;
-
-                // Actualiza póliza en BBDD.
-                context.Entry(polizaCreada).State = EntityState.Modified;
-                context.SaveChanges();
+                Poliza polizaCreada = gestionPolizaBLL.CreatePolizaAndFirstGestionPoliza(gestionPoliza, usuario, cliente);               
                 TempData["mensaje"] = ItemMensaje.SuccessCrear(Poliza.GetNombreModelo(), polizaCreada.polizaId.ToString(CultureInfo.GetCultureInfo("es-ES")));
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
-                // Comprueba que se haya creado una póliza 
-                var polizaCreada = context.Poliza.Where(c => c.clienteId == cliente.clienteId && c.activo == -1).FirstOrDefault();
-                // si se ha creado póliza 
-                if (polizaCreada != null)
-                {
-                    // Comprueba que se haya creado la gestiónPóliza , y la elimina
-                    var gestionPolizaCreada = context.GestionPoliza.Where(c => c.polizaId == polizaCreada.polizaId).FirstOrDefault();
-                    if (gestionPolizaCreada != null)
-                    {
-                        context.GestionPoliza.Remove(gestionPolizaCreada);
-                    }
-
-                    // Elimina póliza y guarda cambios.
-                    context.Poliza.Remove(polizaCreada);
-                    context.SaveChanges();
-                }
+                gestionPolizaBLL.UnCreatePoliza(cliente);               
                 TempData["mensaje"] = ItemMensaje.ErrorExcepcionCrear(Poliza.GetNombreModelo(), ex.GetType().ToString());
                 return RedirectToAction("Create", new { clienteDni = cliente.dniCliente });
-            }
-
+            }          
 
         }
 
