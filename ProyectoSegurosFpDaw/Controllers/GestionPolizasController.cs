@@ -507,113 +507,68 @@ namespace ProyectoSegurosFpDaw.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "matricula,marcaVehiculo,modeloVehiculo,fechaInicio,fechaFin,precio,observaciones,condicionadoPolizaId")] GestionPoliza gestionPoliza, string clienteId)
         {
-            if (ModelState.IsValid == false || gestionPolizaBLL.FieldsFormat(gestionPoliza, clienteId) == false)
+            if (ModelState.IsValid == false || gestionPolizaBLL.FieldsFormatCreate(gestionPoliza, clienteId) == false)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            // Validaciones y formato de parámetros
             bool success = Int32.TryParse(clienteId.Trim(), out int clienteID);
             if (success == false)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            var dni = context.Cliente.Where(c => c.clienteId == clienteID).Select(c => c.dniCliente).FirstOrDefault();
-            if (dni == null)
+            var cliente = unitOfWork.Cliente.Get(clienteID);
+
+            if (gestionPolizaBLL.ValidarFormatoMatricula(gestionPoliza.matricula) == false)
+            {
+                TempData["mensaje"] = ItemMensaje.ErrorValidarFormatoMatricula(Poliza.GetNombreModelo());
+                return RedirectToAction("Create", new { clienteDni = cliente.dniCliente });
+            }
+            if (gestionPolizaBLL.ExistMatriculaInPolizasActivas(gestionPoliza.matricula) == true)
+            {
+                TempData["mensaje"] = ItemMensaje.ErrorValidarMatriculaDuplicada(Poliza.GetNombreModelo(), gestionPoliza.matricula);
+                return RedirectToAction("Index");
+            }
+            var usuario = GetUsuarioLogado();
+            if (usuario == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-
-            // Creación de la póliza.
+            // Validaciones de rangos de fecha.
+            DateTime today = DateTime.Today;
+            if (gestionPoliza.fechaInicio < today)
+            {
+                TempData["mensaje"] = ItemMensaje.ErrorFechaInicioMenorHoy(Poliza.GetNombreModelo());
+                return RedirectToAction("Create", new { clienteDni = cliente.dniCliente });
+            }
+            if (gestionPoliza.fechaFin > gestionPoliza.fechaInicio.AddYears(1))
+            {
+                TempData["mensaje"] = ItemMensaje.ErrorFechasMaxRangoInicioFin(Poliza.GetNombreModelo(), 365);
+                return RedirectToAction("Create", new { clienteDni = cliente.dniCliente });
+            }
+            if (gestionPoliza.fechaFin > today.AddYears(1).AddMonths(6))
+            {
+                TempData["mensaje"] = ItemMensaje.ErrorFechasMaxRangoHoyFin(Poliza.GetNombreModelo(), 547);
+                return RedirectToAction("Create", new { clienteDni = cliente.dniCliente });
+            }
             try
             {
-                //if (gestionPoliza.matricula.IsNullOrWhiteSpace() || gestionPoliza.marcaVehiculo.IsNullOrWhiteSpace()
-                //    || gestionPoliza.modeloVehiculo.IsNullOrWhiteSpace() || gestionPoliza.observaciones.IsNullOrWhiteSpace()
-                //    || gestionPoliza.fechaInicio == null || gestionPoliza.fechaFin == null)
-                //{
-                //    TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
-                //    return RedirectToAction("Index");
-                //}
-                //gestionPoliza.matricula = gestionPoliza.matricula.Trim().ToUpperInvariant();
-                //gestionPoliza.marcaVehiculo = gestionPoliza.marcaVehiculo.Trim().ToUpperInvariant();
-                //gestionPoliza.modeloVehiculo = gestionPoliza.modeloVehiculo.Trim().ToUpperInvariant();
-                //gestionPoliza.observaciones = gestionPoliza.observaciones.Trim();
-
-                if (gestionPolizaBLL.ValidarFormatoMatricula(gestionPoliza.matricula) == false)
-                {
-                    TempData["mensaje"] = ItemMensaje.ErrorValidarFormatoMatricula(Poliza.GetNombreModelo());
-                    return RedirectToAction("Create", new { clienteDni = dni });
-                }
-                if (gestionPolizaBLL.ExistMatriculaInPolizasActivas(gestionPoliza.matricula) == true)
-                {
-                    TempData["mensaje"] = ItemMensaje.ErrorValidarMatriculaDuplicada(Poliza.GetNombreModelo(), gestionPoliza.matricula);
-                    return RedirectToAction("Index");
-                }
-                var usuario = GetUsuarioLogado();
-                if (usuario == null)
-                {
-                    TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
-                    return RedirectToAction("Index");
-                }
-
-                DateTime hoyFecha = DateTime.Today;
-                if (gestionPoliza.fechaInicio < hoyFecha)
-                {
-                    TempData["mensaje"] = ItemMensaje.ErrorFechaInicioMenorHoy(Poliza.GetNombreModelo());
-                    return RedirectToAction("Create", new { clienteDni = dni });
-                }
-                if (gestionPoliza.fechaFin > gestionPoliza.fechaInicio.AddYears(1))
-                {
-                    TempData["mensaje"] = ItemMensaje.ErrorFechasMaxRangoInicioFin(Poliza.GetNombreModelo(), 365);
-                    return RedirectToAction("Create", new { clienteDni = dni });
-                }
-                if (gestionPoliza.fechaFin > hoyFecha.AddYears(1).AddMonths(6))
-                {
-                    TempData["mensaje"] = ItemMensaje.ErrorFechasMaxRangoHoyFin(Poliza.GetNombreModelo(), 547);
-                    return RedirectToAction("Create", new { clienteDni = dni });
-                }
-
-                // Asigna valores a la gestión póliza.
-                gestionPoliza.usuarioId = usuario.usuarioId;
-                DateTime hoy = DateTime.Now;
-                gestionPoliza.fechaGestion = hoy;
-
-                // Tipo de gestión
-                // 1 => ALTA 
-                gestionPoliza.tipoGestionId = 1;
-                var poliza = new Poliza();
-
-                // poliza.activo =>  
-                // -1 =>  estado temporal mientras se procesa la generación de póliza,
-                // para poder recuperar el id de póliza si al generar el primer gestionPoliza se produce algún error.
-                poliza.activo = -1;
-                poliza.clienteId = clienteID;
-
-                //Crea el registro en la BBDD.
-                context.Poliza.Add(poliza);
-                context.SaveChanges();
+                gestionPolizaBLL.CreatePoliza(gestionPoliza, usuario, cliente);               
             }
             catch (Exception ex)
             {
-                // Comprueba que se haya creado una póliza.
-                var polizaCreada = context.Poliza.Where(c => c.clienteId == clienteID && c.activo == -1).FirstOrDefault();
-                //Si se ha creado, elimina póliza y guarda cambios.
-                if (polizaCreada != null)
-                {
-                    context.Poliza.Remove(polizaCreada);
-                    context.SaveChanges();
-                }
+                gestionPolizaBLL.UnCreatePoliza(cliente);               
                 TempData["mensaje"] = ItemMensaje.ErrorExcepcionCrear(Poliza.GetNombreModelo(), ex.GetType().ToString());
-                return RedirectToAction("Create", new { clienteDni = dni });
+                return RedirectToAction("Create", new { clienteDni = cliente.dniCliente });
 
             }
             // Creación de la gestión póliza
             try
             {
                 // Recupera la póliza creada.
-                var polizaIdCreada = context.Poliza.Where(c => c.clienteId == clienteID && c.activo == -1).Select(s => s.polizaId).FirstOrDefault();
+                var polizaIdCreada = context.Poliza.Where(c => c.clienteId == cliente.clienteId && c.activo == -1).Select(s => s.polizaId).FirstOrDefault();
                 // Crea la gestiónPóliza Inicial de Alta.
                 gestionPoliza.polizaId = polizaIdCreada;
                 context.GestionPoliza.Add(gestionPoliza);
@@ -622,7 +577,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             catch (Exception ex)
             {
                 // Comprueba que se haya creado una póliza.
-                var polizaCreada = context.Poliza.Where(c => c.clienteId == clienteID && c.activo == -1).FirstOrDefault();
+                var polizaCreada = context.Poliza.Where(c => c.clienteId == cliente.clienteId && c.activo == -1).FirstOrDefault();
                 // Si se ha creado, elimina póliza y guarda cambios.
                 if (polizaCreada != null)
                 {
@@ -630,13 +585,13 @@ namespace ProyectoSegurosFpDaw.Controllers
                     context.SaveChanges();
                 }
                 TempData["mensaje"] = ItemMensaje.ErrorExcepcionCrear(Poliza.GetNombreModelo(), ex.GetType().ToString());
-                return RedirectToAction("Create", new { clienteDni = dni });
+                return RedirectToAction("Create", new { clienteDni = cliente.dniCliente });
             }
             try
             {
 
                 // Recupera la póliza creada y cambia su estado a activo =  1                                      
-                var polizaCreada = context.Poliza.Where(c => c.clienteId == clienteID && c.activo == -1).FirstOrDefault();
+                var polizaCreada = context.Poliza.Where(c => c.clienteId == cliente.clienteId && c.activo == -1).FirstOrDefault();
                 polizaCreada.activo = 1;
 
                 // Actualiza póliza en BBDD.
@@ -648,7 +603,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             catch (Exception ex)
             {
                 // Comprueba que se haya creado una póliza 
-                var polizaCreada = context.Poliza.Where(c => c.clienteId == clienteID && c.activo == -1).FirstOrDefault();
+                var polizaCreada = context.Poliza.Where(c => c.clienteId == cliente.clienteId && c.activo == -1).FirstOrDefault();
                 // si se ha creado póliza 
                 if (polizaCreada != null)
                 {
@@ -664,7 +619,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                     context.SaveChanges();
                 }
                 TempData["mensaje"] = ItemMensaje.ErrorExcepcionCrear(Poliza.GetNombreModelo(), ex.GetType().ToString());
-                return RedirectToAction("Create", new { clienteDni = dni });
+                return RedirectToAction("Create", new { clienteDni = cliente.dniCliente });
             }
 
 
@@ -733,9 +688,21 @@ namespace ProyectoSegurosFpDaw.Controllers
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            gestionPolizaBLL.UpdateGestionPoliza(gestionPoliza, usuarioLogado);
-            TempData["mensaje"] = ItemMensaje.SuccessEditar(Poliza.GetNombreModelo(), gestionPoliza.polizaId.ToString(CultureInfo.GetCultureInfo("es-ES")));
-            return RedirectToAction("Index");
+            try
+            {
+                gestionPolizaBLL.UpdateGestionPoliza(gestionPoliza, usuarioLogado);
+                TempData["mensaje"] = ItemMensaje.SuccessEditar(Poliza.GetNombreModelo(), gestionPoliza.polizaId.ToString(CultureInfo.GetCultureInfo("es-ES")));
+                return RedirectToAction("Index");
+
+            }
+            catch (Exception ex)
+            {
+
+                ViewBag.mensaje = ItemMensaje.ErrorExcepcionEditar(Poliza.GetNombreModelo(), ex.GetType().ToString());
+                IEnumerable<CondicionadoPoliza> condicionadosActivos = unitOfWork.CondicionadoPoliza.Where(c => c.activo == 1);
+                ViewBag.condicionadoPolizaId = new SelectList(condicionadosActivos, "condicionadoPolizaId", "tipoCondicionado", gestionPoliza.condicionadoPolizaId);
+                return View(gestionPoliza);
+            }
         }
 
 
@@ -756,14 +723,14 @@ namespace ProyectoSegurosFpDaw.Controllers
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCancelar(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
-            }           
+            }
             GestionPoliza gestionPoliza = unitOfWork.GestionPoliza.Get(gestionPolizaId);
             if (gestionPoliza == null)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCancelar(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
-            }            
-            Poliza poliza = unitOfWork.Poliza.Get(gestionPoliza.polizaId);          
+            }
+            Poliza poliza = unitOfWork.Poliza.Get(gestionPoliza.polizaId);
             if (poliza.activo == 0)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorYaCanceladoOrDesactivado(Poliza.GetNombreModelo());
@@ -771,21 +738,19 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             try
             {
-                gestionPolizaBLL.DeleteGestionPoliza(gestionPoliza, GetUsuarioLogado(),motivoClx, poliza);               
+                gestionPolizaBLL.DeleteGestionPoliza(gestionPoliza, GetUsuarioLogado(), motivoClx, poliza);
                 TempData["mensaje"] = ItemMensaje.SuccessCancelar(Poliza.GetNombreModelo(), poliza.polizaId.ToString(CultureInfo.GetCultureInfo("es-ES")));
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
-                gestionPolizaBLL.UnDeleteGestionPoliza(poliza.polizaId);               
+                gestionPolizaBLL.UnDeleteGestionPoliza(poliza.polizaId);
                 TempData["mensaje"] = ItemMensaje.ErrorExcepcionCancelar(Poliza.GetNombreModelo(), ex.GetType().ToString());
                 return RedirectToAction("Index");
             }
         }
         #endregion
         #region Métodos
-
-
         /// <summary>
         /// Obtiene el Usuario de la Session actual (usuario logado).
         /// </summary>
@@ -797,7 +762,6 @@ namespace ProyectoSegurosFpDaw.Controllers
             Usuario oUsuario = (Usuario)Session["user"];
             return oUsuario;
         }
-
 
         protected override void Dispose(bool disposing)
         {

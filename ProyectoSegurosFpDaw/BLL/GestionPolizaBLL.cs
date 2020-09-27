@@ -41,9 +41,9 @@ namespace ProyectoSegurosFpDaw.BLL
 
         }
 
-        public bool FieldsFormat(GestionPoliza gestionPoliza, string clienteId)
+        public bool FieldsFormatCreate(GestionPoliza gestionPoliza, string clienteId)
         {
-            if (IsValidFormat(gestionPoliza, clienteId) == false)
+            if (IsValidFormatCreate(gestionPoliza, clienteId) == false)
             {
                 return false;
             }
@@ -54,7 +54,7 @@ namespace ProyectoSegurosFpDaw.BLL
             return true;
         }
 
-        private bool IsValidFormat(GestionPoliza gestionPoliza, string clienteId)
+        private bool IsValidFormatCreate(GestionPoliza gestionPoliza, string clienteId)
         {
             if (gestionPoliza == null || clienteId.IsNullOrWhiteSpace())
             {
@@ -132,6 +132,41 @@ namespace ProyectoSegurosFpDaw.BLL
             return unitOfWork.GestionPoliza.ExistMatriculaInPolizasActivas(matricula);
         }
 
+        public void CreatePoliza(GestionPoliza gestionPoliza,Usuario usuarioLogado,Cliente cliente)
+        {
+            // Asigna valores a la gestión póliza.
+            gestionPoliza.usuarioId = usuarioLogado.usuarioId;
+            //DateTime hoy = DateTime.Now;
+            gestionPoliza.fechaGestion = DateTime.Now;
+
+            // Tipo de gestión
+            // 1 => ALTA 
+            gestionPoliza.tipoGestionId = 1;
+            var poliza = new Poliza
+            {
+                // poliza.activo =>  
+                // -1 =>  estado temporal mientras se procesa la generación de póliza,
+                // para poder recuperar el id de póliza si al generar el primer gestionPoliza se produce algún error.
+                activo = -1,
+                clienteId = cliente.clienteId
+            };
+
+            //Crea el registro en la BBDD.
+            unitOfWork.Poliza.Add(poliza);
+            unitOfWork.SaveChanges();
+
+        }
+        public void UnCreatePoliza(Cliente cliente)
+        {
+            // Comprueba que se haya creado una póliza.
+            var polizaCreada = unitOfWork.Poliza.Where(c => c.clienteId == cliente.clienteId && c.activo == -1).FirstOrDefault();
+            //Si se ha creado, elimina póliza y guarda cambios.
+            if (polizaCreada != null)
+            {
+                unitOfWork.Poliza.Remove(polizaCreada);
+                unitOfWork.SaveChanges();
+            }
+        }
 
         public void UpdateGestionPoliza(GestionPoliza gestionPoliza, Usuario usuarioLogado)
         {
