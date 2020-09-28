@@ -156,6 +156,7 @@
     <Compile Include="BLL\Encriptacion.cs" />
     <Compile Include="BLL\GestionPolizaBLL.cs" />
     <Compile Include="BLL\UsuarioBLL.cs" />
+    <Compile Include="BLL\UsuarioSearching.cs" />
     <Compile Include="Controllers\AccesoController.cs" />
     <Compile Include="Controllers\ClientesController.cs" />
     <Compile Include="Controllers\CondicionadoPolizasController.cs" />

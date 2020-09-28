@@ -239,7 +239,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         [HttpGet]
         [AutorizarUsuario(permisoId: 4)]
         public ActionResult Details(int id)
-        {           
+        {
             var usuario = unitOfWork.Usuario.GetUsuarioActivo(id);
             if (usuario == null)
             {
@@ -302,7 +302,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         [HttpGet]
         [AutorizarUsuario(permisoId: 2)]
         public ActionResult Edit(int id)
-        {          
+        {
 
             var usuario = unitOfWork.Usuario.GetUsuarioActivo(id);
             if (usuario == null)
@@ -325,7 +325,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
         public ActionResult EditPost(int id)
-        {            
+        {
             var usuario = unitOfWork.Usuario.GetUsuarioActivo(id);
             if (usuario == null)
             {

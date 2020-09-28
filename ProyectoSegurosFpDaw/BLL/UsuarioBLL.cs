@@ -1,4 +1,4 @@
-﻿    using Microsoft.Ajax.Utilities;
+﻿using Microsoft.Ajax.Utilities;
 using ProyectoSegurosFpDaw.Models;
 using ProyectoSegurosFpDaw.Persistance;
 using System;
@@ -9,10 +9,11 @@ using System.Web;
 
 namespace ProyectoSegurosFpDaw.BLL
 {
-    public class UsuarioBLL 
+
+    public class UsuarioBLL
     {
-        
-        private UnitOfWork unitOfWork;        
+
+        private UnitOfWork unitOfWork;
 
         public UsuarioBLL(UnitOfWork unitOfWork)
         {
@@ -20,7 +21,7 @@ namespace ProyectoSegurosFpDaw.BLL
         }
         public bool ValidateChangingRolAdministrador(Usuario usuario)
         {
-            if (IsThereOnlyOneUsuarioWithRolAdministrador() ==true)
+            if (IsThereOnlyOneUsuarioWithRolAdministrador() == true)
             {
                 // Comprueba si el usuario a editar tiene un rol administrador .                      
                 var usuarioEstadoPrevio = unitOfWork.Usuario.SingleOrDefaultNoTracking(c => c.usuarioId == usuario.usuarioId && c.rolId == 1);
@@ -28,8 +29,8 @@ namespace ProyectoSegurosFpDaw.BLL
                 if (usuarioEstadoPrevio != null && usuarioEstadoPrevio.rolId != usuario.rolId)
                 {
                     return false;
-                }               
-            }           
+                }
+            }
             return true;
         }
         public bool ValidateDeletingUsuarioRolAdministrador(Usuario usuario)
@@ -37,13 +38,13 @@ namespace ProyectoSegurosFpDaw.BLL
             if (usuario.usuarioId == 1 && IsThereOnlyOneUsuarioWithRolAdministrador() == true)
             {
                 return false;
-            }            
+            }
             return true;
         }
         private bool IsThereOnlyOneUsuarioWithRolAdministrador()
         {
             int usuariosWithRolAdministrador = unitOfWork.Usuario.Where(c => c.rolId == 1 && c.activo == 1).Count();
-            if(usuariosWithRolAdministrador == 1)
+            if (usuariosWithRolAdministrador == 1)
             {
                 return true;
             }
@@ -58,7 +59,7 @@ namespace ProyectoSegurosFpDaw.BLL
         public bool AnyUsuarioWithDni(string dni)
         {
             return unitOfWork.Usuario.Any(c => c.dniUsuario == dni);
-        }        
+        }
         public bool FieldsFormat(Usuario usuario)
         {
             if (IsValidFormat(usuario) == false)
@@ -90,6 +91,71 @@ namespace ProyectoSegurosFpDaw.BLL
 
         }
 
+        public UsuarioSearching GetSearchingField(string nombre, string apellido1, string dni, string email, string rolId)
+        {
+            UsuarioSearching output = new UsuarioSearching
+            {
+                SearchingParam = UsuarioSearchingParam.empty,
+                SearchingRol = UsuarioSearchingRolParam.allRoles
+            };
+            if (rolId.IsNullOrWhiteSpace() == false && rolId != "0")
+            {
+                output.SearchingRol = UsuarioSearchingRolParam.rolId;
+                output.SearchingValue = rolId;
+
+            }
+
+
+            if (nombre.IsNullOrWhiteSpace() == false)
+            {
+                output.SearchingParam = UsuarioSearchingParam.nombre;
+                output.SearchingValue = nombre;
+
+            }
+            if (apellido1.IsNullOrWhiteSpace() == false)
+            {
+                output.SearchingParam = UsuarioSearchingParam.apellido1;
+                output.SearchingValue = apellido1;
+
+            }
+            if (nombre.IsNullOrWhiteSpace() == false && apellido1.IsNullOrWhiteSpace() == false)
+            {
+                output.SearchingParam = UsuarioSearchingParam.nombreAndApellido1;
+            }
+            if (dni.IsNullOrWhiteSpace() == false)
+            {
+                output.SearchingParam = UsuarioSearchingParam.dni;
+
+            }
+            if (email.IsNullOrWhiteSpace() == false)
+            {
+                output.SearchingParam = UsuarioSearchingParam.email;
+            }
+            return output;
+
+
+
+        }
+
+        public IEnumerable<Usuario> SearchUsuarios(UsuarioSearching usuarioSearching)
+        {
+
+            usuarioSearching.SearchingValue = usuarioSearching.SearchingValue.Trim().ToUpperInvariant();
+
+            if (usuarioSearching.SearchingRol == UsuarioSearchingRolParam.allRoles)
+            {
+                return unitOfWork.Usuario.GetUsuariosActivosWithRoles();
+
+            }
+            return unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.rolId == rolID);
+
+
+
+
+        }
+
+
+
         public void CreateNewUsuario(Usuario usuario)
         {
             usuario.fechaAlta = DateTime.Now;
@@ -99,7 +165,7 @@ namespace ProyectoSegurosFpDaw.BLL
             unitOfWork.SaveChanges();
         }
         public void UpdateUsuario(Usuario usuario)
-        {                         
+        {
             // Si se va a modificar rol a No operativo.   
             if (usuario.rolId == 2)
             {
@@ -110,7 +176,7 @@ namespace ProyectoSegurosFpDaw.BLL
             else
             {
                 usuario.fechaBaja = null;
-            }            
+            }
             usuario.password = Encriptacion.GetSHA256(usuario.password);
             unitOfWork.Usuario.Update(usuario);
             unitOfWork.SaveChanges();
@@ -121,10 +187,10 @@ namespace ProyectoSegurosFpDaw.BLL
             // Asigna rol No Operativo.
             usuario.rolId = 2;
             usuario.activo = 0;
-            
+
             unitOfWork.Usuario.Update(usuario);
             unitOfWork.SaveChanges();
         }
-        
+
     }
 }

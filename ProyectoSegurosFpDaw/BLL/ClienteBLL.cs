@@ -80,12 +80,12 @@ namespace ProyectoSegurosFpDaw.BLL
             unitOfWork.SaveChanges();
         }
 
-        public ClienteParam GetSearchingField(string clienteId, string dniCliente, string emailCliente, string telefonoCliente)
+        public ClienteParam GetSearchingField(string clienteId, string dniCliente, string email, string telefonoCliente)
         {
 
             if (clienteId.IsNullOrWhiteSpace() == false) { return ClienteParam.id; }
             if (dniCliente.IsNullOrWhiteSpace() == false) { return ClienteParam.dni; }
-            if (emailCliente.IsNullOrWhiteSpace() == false) { return ClienteParam.email; }
+            if (email.IsNullOrWhiteSpace() == false) { return ClienteParam.email; }
             if (telefonoCliente.IsNullOrWhiteSpace() == false) { return ClienteParam.telefono; }
             return ClienteParam.empty;
 
