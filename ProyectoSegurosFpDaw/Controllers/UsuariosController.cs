@@ -83,6 +83,9 @@ namespace ProyectoSegurosFpDaw.Controllers
         [AutorizarUsuario(permisoId: 18)]
         public ActionResult BuscarUsuarios(string nombreUsuario, string apellido1Usuario, string dniUsuario, string emailUsuario, string rolId)
         {
+
+            var parametro = usuarioBll.GetSearchingField(nombreUsuario, apellido1Usuario, dniUsuario, emailUsuario, rolId);
+
             // Validaciones y formato de parámetros.      
             int rolID = 0;
             if (rolId.IsNullOrWhiteSpace() == false)
@@ -108,10 +111,13 @@ namespace ProyectoSegurosFpDaw.Controllers
             try
             {
                 // Rol (resto de campos vacíos).
-                if (nombreUsuario.Length == 0 && apellido1Usuario.Length == 0 && dniUsuario.Length == 0 && emailUsuario.Length == 0)
+                //if (nombreUsuario.Length == 0 && apellido1Usuario.Length == 0 && dniUsuario.Length == 0 && emailUsuario.Length == 0)
+                if (parametro.SearchingParam == UsuarioSearchingParam.empty)
                 {
                     // Todos los roles == todos los usuarios activos.
-                    if (rolId == "0")
+                    //if (rolId == "0")
+                    if (parametro.SearchingRol == UsuarioSearchingRolParam.allRoles)
+
                     {
                         TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRoles();
                         return RedirectToAction("Index");
@@ -125,10 +131,11 @@ namespace ProyectoSegurosFpDaw.Controllers
                 else
                 {
                     // Nombre y 1er Apellido + Rol.
-                    if (nombreUsuario.Length > 0 && apellido1Usuario.Length > 0)
+                    //if (nombreUsuario.Length > 0 && apellido1Usuario.Length > 0)
+                    if (parametro.SearchingParam == UsuarioSearchingParam.nombreAndApellido1)
                     {
                         // Todos los roles
-                        if (rolId == "0")
+                        if (parametro.SearchingRol == UsuarioSearchingRolParam.allRoles)
                         {
                             TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.nombreUsuario == nombreUsuario && c.apellido1Usuario == apellido1Usuario);
                             return RedirectToAction("Index");
@@ -140,10 +147,11 @@ namespace ProyectoSegurosFpDaw.Controllers
                         }
                     }
                     // Nombre + Rol.
-                    else if (nombreUsuario.Length > 0)
+                    //else if (nombreUsuario.Length > 0)
+                    else if (parametro.SearchingParam == UsuarioSearchingParam.nombre)
                     {
                         // Todos los roles.
-                        if (rolId == "0")
+                        if (parametro.SearchingRol == UsuarioSearchingRolParam.allRoles)
                         {
                             TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.nombreUsuario == nombreUsuario);
                             return RedirectToAction("Index");
@@ -155,10 +163,11 @@ namespace ProyectoSegurosFpDaw.Controllers
                         }
                     }
                     // Apellido + Rol.
-                    else if (apellido1Usuario.Length > 0)
+                    //else if (apellido1Usuario.Length > 0)
+                    else if (parametro.SearchingParam == UsuarioSearchingParam.apellido1)
                     {
                         // Todos los roles.
-                        if (rolId == "0")
+                        if (parametro.SearchingRol == UsuarioSearchingRolParam.allRoles)
                         {
                             TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.apellido1Usuario == apellido1Usuario);
                             return RedirectToAction("Index");
@@ -171,10 +180,11 @@ namespace ProyectoSegurosFpDaw.Controllers
                         }
                     }
                     // NIF/NIE.
-                    else if (dniUsuario.Length > 0)
+                    //else if (dniUsuario.Length > 0)
+                    else if (parametro.SearchingParam == UsuarioSearchingParam.dni)
                     {
                         // Todos los roles.
-                        if (rolId == "0")
+                        if (parametro.SearchingRol == UsuarioSearchingRolParam.allRoles)
                         {
                             var usuariosCoincidentes = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.dniUsuario == dniUsuario);
 
@@ -198,10 +208,10 @@ namespace ProyectoSegurosFpDaw.Controllers
                         }
                     }
                     // Email.
-                    else if (emailUsuario.Length > 0)
+                    else if (parametro.SearchingParam == UsuarioSearchingParam.email)
                     {
                         //Todos los roles.
-                        if (rolId == "0")
+                        if (parametro.SearchingRol == UsuarioSearchingRolParam.allRoles)
                         {
                             var usuariosCoincidentes = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.emailUsuario == emailUsuario);
                             if (usuariosCoincidentes.Any() == false)

@@ -23,6 +23,7 @@ namespace ProyectoSegurosFpDaw.BLL
     {
         public UsuarioSearchingParam SearchingParam { get; set; }
         public UsuarioSearchingRolParam SearchingRol { get; set; }
-        public string SearchingValue { get; set; }
+        public List<string> SearchingValue { get; set; } = new List<string>();
+        public int SearchingValueRol { get; set; }
     }
 }

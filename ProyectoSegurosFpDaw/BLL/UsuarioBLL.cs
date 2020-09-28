@@ -98,24 +98,24 @@ namespace ProyectoSegurosFpDaw.BLL
                 SearchingParam = UsuarioSearchingParam.empty,
                 SearchingRol = UsuarioSearchingRolParam.allRoles
             };
+
             if (rolId.IsNullOrWhiteSpace() == false && rolId != "0")
             {
                 output.SearchingRol = UsuarioSearchingRolParam.rolId;
-                output.SearchingValue = rolId;
-
+                output.SearchingValueRol = int.Parse(rolId);
             }
 
 
             if (nombre.IsNullOrWhiteSpace() == false)
             {
                 output.SearchingParam = UsuarioSearchingParam.nombre;
-                output.SearchingValue = nombre;
+                output.SearchingValue.Add(nombre.Trim().ToUpperInvariant());
 
             }
             if (apellido1.IsNullOrWhiteSpace() == false)
             {
                 output.SearchingParam = UsuarioSearchingParam.apellido1;
-                output.SearchingValue = apellido1;
+                output.SearchingValue.Add(apellido1.Trim().ToUpperInvariant());
 
             }
             if (nombre.IsNullOrWhiteSpace() == false && apellido1.IsNullOrWhiteSpace() == false)
@@ -125,11 +125,12 @@ namespace ProyectoSegurosFpDaw.BLL
             if (dni.IsNullOrWhiteSpace() == false)
             {
                 output.SearchingParam = UsuarioSearchingParam.dni;
-
+                output.SearchingValue.Add(dni.Trim().ToUpperInvariant());
             }
             if (email.IsNullOrWhiteSpace() == false)
             {
                 output.SearchingParam = UsuarioSearchingParam.email;
+                output.SearchingValue.Add(email.Trim().ToUpperInvariant());
             }
             return output;
 
@@ -137,22 +138,22 @@ namespace ProyectoSegurosFpDaw.BLL
 
         }
 
-        public IEnumerable<Usuario> SearchUsuarios(UsuarioSearching usuarioSearching)
-        {
+        //public IEnumerable<Usuario> SearchUsuarios(UsuarioSearching usuarioSearching)
+        //{
 
-            usuarioSearching.SearchingValue = usuarioSearching.SearchingValue.Trim().ToUpperInvariant();
+        //    usuarioSearching.SearchingValue.ForEach(value => value = value.Trim().ToUpperInvariant());
 
-            if (usuarioSearching.SearchingRol == UsuarioSearchingRolParam.allRoles)
-            {
-                return unitOfWork.Usuario.GetUsuariosActivosWithRoles();
+        //    if (usuarioSearching.SearchingRol == UsuarioSearchingRolParam.allRoles)
+        //    {
+        //        return unitOfWork.Usuario.GetUsuariosActivosWithRoles();
 
-            }
-            return unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.rolId == rolID);
-
+        //    }
 
 
 
-        }
+
+
+        //}
 
 
 
