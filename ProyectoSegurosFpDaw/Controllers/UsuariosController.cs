@@ -32,10 +32,7 @@ namespace ProyectoSegurosFpDaw.Controllers
 
         #region Actions        
 
-        /// <summary>
-        /// GET : muestra formulario para buscar Usuarios y listado con los resultados.
-        /// </summary>
-        /// <returns>Vista con formulario y resultados.</returns>       
+             
         [HttpGet]
         [AutorizarUsuario(permisoId: 5)]
         public ActionResult Index()
@@ -64,40 +61,32 @@ namespace ProyectoSegurosFpDaw.Controllers
             ViewBag.rolId = helper.GetSelectListRolConOpcionTodos(roles);
             ViewBag.estadoSession = estadoSession;
             return View();
-        }
-        /// <summary>
-        /// GET : busca en la BBDD Clientes que coincidan con los parámetros introducidos.
-        /// </summary>
-        /// <param name="nombreUsuario">nombre Usuario</param>
-        /// <param name="apellido1Usuario">1er Apellido Usuario</param>
-        /// <param name="dniUsuario">NIF/NIE Usuario</param>
-        /// <param name="emailUsuario">email Usuario</param>
-        /// <param name="rolId">rol Id Usuario</param>
-        /// <returns>
-        /// Hay coincidencias de usuarios activos => envía una lista Usuario de coincidencias y redirecciona al Index para mostrarlos.
-        /// Hay coincidencias de usuario no activos => envía un mensaje de información y redirecciona al Index.
-        /// Sin coincidencias => envía una lista Usuario vacía y redirecciona a Index .
-        /// Error => redirecciona a Index con mensaje de error.
-        /// </returns>
+        }       
         [HttpGet]
         [AutorizarUsuario(permisoId: 18)]
         public ActionResult BuscarUsuarios(string nombreUsuario, string apellido1Usuario, string dniUsuario, string emailUsuario, string rolId)
         {
-
-            var parametro = usuarioBll.GetSearchingField(nombreUsuario, apellido1Usuario, dniUsuario, emailUsuario, rolId);
-            var usuariosMatches = usuarioBll.SearchUsuarios(parametro);
-
-            if (usuariosMatches.Any() && usuariosMatches.FirstOrDefault().activo==0)
+            try
             {
-                var usuarioNoActivo = usuariosMatches.FirstOrDefault();
-                TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Usuario.GetNombreModelo(), usuarioNoActivo.usuarioId);
+                UsuarioSearching searchingFields = usuarioBll.GetSearchingField(nombreUsuario, apellido1Usuario, dniUsuario, emailUsuario, rolId);
+                List<Usuario> usuariosMatches = usuarioBll.SearchUsuarios(searchingFields);
+
+                if (usuariosMatches.Any() && usuariosMatches.FirstOrDefault().activo == 0)
+                {
+                    var usuarioNoActivo = usuariosMatches.FirstOrDefault();
+                    TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Usuario.GetNombreModelo(), usuarioNoActivo.usuarioId);
+                }
+
+                TempData["usuariosCoincidentes"] = usuariosMatches;
+                return RedirectToAction("Index");
+
             }
-
-            TempData["usuariosCoincidentes"] = usuariosMatches;
-            return RedirectToAction("Index");
-
+            catch (Exception ex)
+            {
+                TempData["mensaje"] = ItemMensaje.ErrorExcepcionBuscar(Usuario.GetNombreModelo(), ex.GetType().ToString());
+                return RedirectToAction("Index");
+            }
         }
-
 
         [HttpGet]
         [AutorizarUsuario(permisoId: 4)]
@@ -156,12 +145,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 return View(usuario);
             }
         }
-
-        /// <summary>
-        /// GET: formulario para editar un usuario.
-        /// </summary>
-        /// <param name="id">usuario Id</param>
-        /// <returns>Vista con formulario para editar un usuario</returns>
+      
         [HttpGet]
         [AutorizarUsuario(permisoId: 2)]
         public ActionResult Edit(int id)
@@ -177,13 +161,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             ViewBag.rolId = new SelectList(unitOfWork.Rol.GetAll(), "rolId", "nombreRol", usuario.rolId);
             return View(usuario);
         }
-
-        /// <summary>
-        /// POST : edita un usuario. 
-        /// </summary>
-        /// <param name="id">usuario Id</param>
-        /// Ok => Modifica registro en BBDD y redirecciona a Index con mensaje de success.
-        /// Error => redirecciona a Index / Edit con mensaje de error.
+        
         [AutorizarUsuario(permisoId: 2)]
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
@@ -227,18 +205,6 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
         }
 
-
-
-        /// <summary>
-        /// POST: modifica usuario => activo = 0 / rol  = no activo. 
-        /// El usuario no se elimina en la BBDD
-        /// para poder seguir consultando pólizas o gestiones realizadas por el usuario                
-        /// </summary>
-        /// <param name="usuarioId">usuarioId</param> 
-        /// <return>
-        /// Ok => Modifica registro en BBDD y redirecciona a Index con mensaje de success.
-        /// Error => redirecciona a Index / Details con mensaje de error.
-        /// </return>
         [AutorizarUsuario(permisoId: 3)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
