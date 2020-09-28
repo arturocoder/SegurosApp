@@ -138,24 +138,131 @@ namespace ProyectoSegurosFpDaw.BLL
 
         }
 
-        //public IEnumerable<Usuario> SearchUsuarios(UsuarioSearching usuarioSearching)
-        //{
+       
+        public List<Usuario> SearchUsuarios(UsuarioSearching parametro)
+        {
+            var output = new List<Usuario>();
+            
+            // Rol (resto de campos vacíos).            
+            if (parametro.SearchingParam == UsuarioSearchingParam.empty)
+            {
+                // Todos los roles == todos los usuarios activos.
+                //if (rolId == "0")
+                if (parametro.SearchingRol == UsuarioSearchingRolParam.allRoles)
+                {
+                    output = unitOfWork.Usuario.GetUsuariosActivosWithRoles().ToList();
 
-        //    usuarioSearching.SearchingValue.ForEach(value => value = value.Trim().ToUpperInvariant());
+                }
+                else
+                {
+                    output = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.rolId == parametro.SearchingValueRol).ToList();
+                }
+            }
+            else
+            {
+                // Nombre y 1er Apellido + Rol.               
+                if (parametro.SearchingParam == UsuarioSearchingParam.nombreAndApellido1)
+                {
+                    var nombre = parametro.SearchingValue[0];
+                    var apellido1 = parametro.SearchingValue[1];
+                    // Todos los roles
+                    if (parametro.SearchingRol == UsuarioSearchingRolParam.allRoles)
+                    {
+                        
+                        output = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.nombreUsuario == nombre && c.apellido1Usuario == apellido1).ToList();
+                    }
+                    else
+                    {
+                        output = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.nombreUsuario == nombre && c.apellido1Usuario ==apellido1 && c.rolId == parametro.SearchingValueRol).ToList();
 
-        //    if (usuarioSearching.SearchingRol == UsuarioSearchingRolParam.allRoles)
-        //    {
-        //        return unitOfWork.Usuario.GetUsuariosActivosWithRoles();
+                    }
+                }
+                // Nombre + Rol.                
+                else if (parametro.SearchingParam == UsuarioSearchingParam.nombre)
+                {
+                    var nombre = parametro.SearchingValue[0];
+                    // Todos los roles.
+                    if (parametro.SearchingRol == UsuarioSearchingRolParam.allRoles)
+                    {
+                        output = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.nombreUsuario == nombre).ToList();
+                    }
+                    else
+                    {
+                        output = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.nombreUsuario == nombre && c.rolId == parametro.SearchingValueRol).ToList();
+                    }
+                }
+                // Apellido + Rol.               
+                else if (parametro.SearchingParam == UsuarioSearchingParam.apellido1)
+                {                    
+                    var apellido1 = parametro.SearchingValue[0];
+                    // Todos los roles.
+                    if (parametro.SearchingRol == UsuarioSearchingRolParam.allRoles)
+                    {
+                        output = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.apellido1Usuario == apellido1).ToList();
 
-        //    }
+                    }
+                    else
+                    {
+                        output = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.apellido1Usuario == apellido1 && c.rolId == parametro.SearchingValueRol).ToList();
+                    }
+                }
+                // NIF/NIE.                
+                else if (parametro.SearchingParam == UsuarioSearchingParam.dni)
+                {
+                    var dni = parametro.SearchingValue[0];
+                    // Todos los roles.
+                    if (parametro.SearchingRol == UsuarioSearchingRolParam.allRoles)
+                    {
+                        var usuariosCoincidentes = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.dniUsuario == dni).ToList();
+
+                        // Si no hay coincidencia en cliente activo, busca en clientes no activos                     
+                        if (usuariosCoincidentes.Any() == false)
+                        {
+                             usuariosCoincidentes= unitOfWork.Usuario.GetUsuariosNoActivosWithRolesWhere(c => c.dniUsuario == dni).ToList();                           
+                           
+                        }
+                        output = usuariosCoincidentes;
+                    }
+                    else
+                    {
+                        output = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.dniUsuario == dni && c.rolId == parametro.SearchingValueRol).ToList();
+                    }
+                }
+                // Email.
+                else if (parametro.SearchingParam == UsuarioSearchingParam.email)
+                {
+                    var email = parametro.SearchingValue[0];
+                    //Todos los roles.
+                    if (parametro.SearchingRol == UsuarioSearchingRolParam.allRoles)
+                    {
+                        var usuariosCoincidentes = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.emailUsuario == email);
+                        if (usuariosCoincidentes.Any() == false)
+                        {
+                            usuariosCoincidentes = unitOfWork.Usuario.GetUsuariosNoActivosWithRolesWhere(c => c.emailUsuario == email).ToList();                            
+                        }
+                        output = usuariosCoincidentes.ToList();
+                    }
+                    else
+                    {
+
+                        output = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.emailUsuario == email && c.rolId == parametro.SearchingValueRol).ToList();
+                    }
+                }
+                else
+                {
+                    //return RedirectToAction("Index");
+                }
+            }
+
+
+
+            return output;
 
 
 
 
-
-        //}
-
-
+        }
+       
 
         public void CreateNewUsuario(Usuario usuario)
         {

@@ -85,164 +85,17 @@ namespace ProyectoSegurosFpDaw.Controllers
         {
 
             var parametro = usuarioBll.GetSearchingField(nombreUsuario, apellido1Usuario, dniUsuario, emailUsuario, rolId);
+            var usuariosMatches = usuarioBll.SearchUsuarios(parametro);
 
-            // Validaciones y formato de parámetros.      
-            int rolID = 0;
-            if (rolId.IsNullOrWhiteSpace() == false)
+            if (usuariosMatches.Any() && usuariosMatches.FirstOrDefault().activo==0)
             {
-                bool success = Int32.TryParse(rolId, out rolID);
-                if (success == false)
-                {
-                    TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosBuscar(Usuario.GetNombreModelo());
-                    return RedirectToAction("Index");
-                }
+                var usuarioNoActivo = usuariosMatches.FirstOrDefault();
+                TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Usuario.GetNombreModelo(), usuarioNoActivo.usuarioId);
             }
-            if (nombreUsuario.IsNullOrWhiteSpace() == false) { nombreUsuario = nombreUsuario.Trim().ToUpperInvariant(); }
-            if (apellido1Usuario.IsNullOrWhiteSpace() == false) { apellido1Usuario = apellido1Usuario.Trim().ToUpperInvariant(); }
-            if (dniUsuario.IsNullOrWhiteSpace() == false) { dniUsuario = dniUsuario.Trim().ToUpperInvariant(); }
-            if (emailUsuario.IsNullOrWhiteSpace() == false) { emailUsuario = emailUsuario.Trim().ToUpperInvariant(); }
 
-            // Búsqueda por parámetros
-            // Filtra por los parámetros que no están vacíos , 
-            // busca coincidencias en la BBDD, 
-            // envía la lista de usuarios activos (activo==1) coincidentes a la acción Index.
-            // rolId == 0 => Todos los roles.
+            TempData["usuariosCoincidentes"] = usuariosMatches;
+            return RedirectToAction("Index");
 
-            try
-            {
-                // Rol (resto de campos vacíos).
-                //if (nombreUsuario.Length == 0 && apellido1Usuario.Length == 0 && dniUsuario.Length == 0 && emailUsuario.Length == 0)
-                if (parametro.SearchingParam == UsuarioSearchingParam.empty)
-                {
-                    // Todos los roles == todos los usuarios activos.
-                    //if (rolId == "0")
-                    if (parametro.SearchingRol == UsuarioSearchingRolParam.allRoles)
-
-                    {
-                        TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRoles();
-                        return RedirectToAction("Index");
-                    }
-                    else
-                    {
-                        TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.rolId == rolID);
-                        return RedirectToAction("Index");
-                    }
-                }
-                else
-                {
-                    // Nombre y 1er Apellido + Rol.
-                    //if (nombreUsuario.Length > 0 && apellido1Usuario.Length > 0)
-                    if (parametro.SearchingParam == UsuarioSearchingParam.nombreAndApellido1)
-                    {
-                        // Todos los roles
-                        if (parametro.SearchingRol == UsuarioSearchingRolParam.allRoles)
-                        {
-                            TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.nombreUsuario == nombreUsuario && c.apellido1Usuario == apellido1Usuario);
-                            return RedirectToAction("Index");
-                        }
-                        else
-                        {
-                            TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.nombreUsuario == nombreUsuario && c.apellido1Usuario == apellido1Usuario && c.rolId == rolID);
-                            return RedirectToAction("Index");
-                        }
-                    }
-                    // Nombre + Rol.
-                    //else if (nombreUsuario.Length > 0)
-                    else if (parametro.SearchingParam == UsuarioSearchingParam.nombre)
-                    {
-                        // Todos los roles.
-                        if (parametro.SearchingRol == UsuarioSearchingRolParam.allRoles)
-                        {
-                            TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.nombreUsuario == nombreUsuario);
-                            return RedirectToAction("Index");
-                        }
-                        else
-                        {
-                            TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.nombreUsuario == nombreUsuario && c.rolId == rolID);
-                            return RedirectToAction("Index");
-                        }
-                    }
-                    // Apellido + Rol.
-                    //else if (apellido1Usuario.Length > 0)
-                    else if (parametro.SearchingParam == UsuarioSearchingParam.apellido1)
-                    {
-                        // Todos los roles.
-                        if (parametro.SearchingRol == UsuarioSearchingRolParam.allRoles)
-                        {
-                            TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.apellido1Usuario == apellido1Usuario);
-                            return RedirectToAction("Index");
-
-                        }
-                        else
-                        {
-                            TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.apellido1Usuario == apellido1Usuario && c.rolId == rolID);
-                            return RedirectToAction("Index");
-                        }
-                    }
-                    // NIF/NIE.
-                    //else if (dniUsuario.Length > 0)
-                    else if (parametro.SearchingParam == UsuarioSearchingParam.dni)
-                    {
-                        // Todos los roles.
-                        if (parametro.SearchingRol == UsuarioSearchingRolParam.allRoles)
-                        {
-                            var usuariosCoincidentes = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.dniUsuario == dniUsuario);
-
-                            // Si no hay coincidencia en cliente activo, busca en clientes no activos,
-                            // y envía mensaje si hay coincidencia.
-                            if (usuariosCoincidentes.Any() == false)
-                            {
-                                var usuarioNoActivo = unitOfWork.Usuario.GetUsuariosNoActivosWithRolesWhere(c => c.dniUsuario == dniUsuario).FirstOrDefault();
-                                if (usuarioNoActivo != null)
-                                {
-                                    TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Usuario.GetNombreModelo(), usuarioNoActivo.usuarioId);
-                                }
-                            }
-                            TempData["usuariosCoincidentes"] = usuariosCoincidentes;
-                            return RedirectToAction("Index");
-                        }
-                        else
-                        {
-                            TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.dniUsuario == dniUsuario && c.rolId == rolID);
-                            return RedirectToAction("Index");
-                        }
-                    }
-                    // Email.
-                    else if (parametro.SearchingParam == UsuarioSearchingParam.email)
-                    {
-                        //Todos los roles.
-                        if (parametro.SearchingRol == UsuarioSearchingRolParam.allRoles)
-                        {
-                            var usuariosCoincidentes = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.emailUsuario == emailUsuario);
-                            if (usuariosCoincidentes.Any() == false)
-                            {
-                                var usuarioNoActivo = unitOfWork.Usuario.GetUsuariosNoActivosWithRolesWhere(c => c.emailUsuario == emailUsuario).FirstOrDefault();
-                                if (usuarioNoActivo != null)
-                                {
-                                    TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Usuario.GetNombreModelo(), usuarioNoActivo.usuarioId);
-                                }
-                            }
-                            TempData["usuariosCoincidentes"] = usuariosCoincidentes;
-                            return RedirectToAction("Index");
-                        }
-                        else
-                        {
-
-                            TempData["usuariosCoincidentes"] = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.emailUsuario == emailUsuario && c.rolId == rolID);
-                            return RedirectToAction("Index");
-                        }
-                    }
-                    else
-                    {
-                        return RedirectToAction("Index");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorExcepcionBuscar(Usuario.GetNombreModelo(), ex.GetType().ToString());
-                return RedirectToAction("Index");
-            }
         }
 
 
