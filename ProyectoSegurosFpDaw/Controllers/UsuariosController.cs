@@ -61,7 +61,8 @@ namespace ProyectoSegurosFpDaw.Controllers
             ViewBag.rolId = helper.GetSelectListRolConOpcionTodos(roles);
             ViewBag.estadoSession = estadoSession;
             return View();
-        }       
+        } 
+        
         [HttpGet]
         [AutorizarUsuario(permisoId: 18)]
         public ActionResult BuscarUsuarios(string nombreUsuario, string apellido1Usuario, string dniUsuario, string emailUsuario, string rolId)
@@ -150,7 +151,6 @@ namespace ProyectoSegurosFpDaw.Controllers
         [AutorizarUsuario(permisoId: 2)]
         public ActionResult Edit(int id)
         {
-
             var usuario = unitOfWork.Usuario.GetUsuarioActivo(id);
             if (usuario == null)
             {
@@ -271,9 +271,6 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             return Json(respuestaJson, JsonRequestBehavior.AllowGet);
         }
-
-
-
 
         /// <summary>
         /// Comprueba a través de llamada Ajax desde la vista, 
