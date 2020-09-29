@@ -414,14 +414,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 return RedirectToAction("Index");
             }
         }
-
-
-
-        /// <summary>
-        /// GET: Muestra la información de la última gestionPoliza de una póliza.
-        /// </summary>
-        /// <param name="id">gestionPoliza Id</param>
-        /// <returns>Vista de la información del usuario</returns>
+       
         [AutorizarUsuario(permisoId: 15)]
         [HttpGet]
         public ActionResult Details(int id)
@@ -512,13 +505,7 @@ namespace ProyectoSegurosFpDaw.Controllers
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
             }
-            bool success = Int32.TryParse(clienteId.Trim(), out int clienteID);
-            if (success == false)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
-                return RedirectToAction("Index");
-            }
-            var cliente = unitOfWork.Cliente.Get(clienteID);
+            Cliente cliente = unitOfWork.Cliente.Get(int.Parse(clienteId));
 
             if (gestionPolizaBLL.ValidarFormatoMatricula(gestionPoliza.matricula) == false)
             {

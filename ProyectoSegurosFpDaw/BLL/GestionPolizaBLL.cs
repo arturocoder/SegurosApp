@@ -60,6 +60,12 @@ namespace ProyectoSegurosFpDaw.BLL
             {
                 return false;
             }
+            bool success = Int32.TryParse(clienteId.Trim(), out int clienteID);
+            if(success == false)
+            {
+                return false;
+            }
+            
             if (gestionPoliza.matricula.IsNullOrWhiteSpace() || gestionPoliza.marcaVehiculo.IsNullOrWhiteSpace()
                         || gestionPoliza.modeloVehiculo.IsNullOrWhiteSpace() || gestionPoliza.observaciones.IsNullOrWhiteSpace()
                         || gestionPoliza.fechaInicio == null || gestionPoliza.fechaFin == null)
@@ -165,8 +171,7 @@ namespace ProyectoSegurosFpDaw.BLL
             // Crea la gestiónPóliza Inicial de Alta.
             gestionPoliza.polizaId = polizaIdCreada;
             unitOfWork.GestionPoliza.Add(gestionPoliza);
-            unitOfWork.SaveChanges();
-            throw new Exception();
+            unitOfWork.SaveChanges();            
         }
 
         public Poliza CreatePolizaAndFirstGestionPoliza(GestionPoliza gestionPoliza, Usuario usuarioLogado, Cliente cliente)
@@ -240,7 +245,7 @@ namespace ProyectoSegurosFpDaw.BLL
             poliza.activo = 0;
 
             unitOfWork.SaveChanges();
-            throw new Exception();
+           
         }
         public void UnDeleteGestionPoliza(int polizaId)
         {
