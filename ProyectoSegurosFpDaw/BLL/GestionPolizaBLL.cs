@@ -3,6 +3,7 @@ using ProyectoSegurosFpDaw.Models;
 using ProyectoSegurosFpDaw.Persistance;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -61,11 +62,11 @@ namespace ProyectoSegurosFpDaw.BLL
                 return false;
             }
             bool success = Int32.TryParse(clienteId.Trim(), out int clienteID);
-            if(success == false)
+            if (success == false)
             {
                 return false;
             }
-            
+
             if (gestionPoliza.matricula.IsNullOrWhiteSpace() || gestionPoliza.marcaVehiculo.IsNullOrWhiteSpace()
                         || gestionPoliza.modeloVehiculo.IsNullOrWhiteSpace() || gestionPoliza.observaciones.IsNullOrWhiteSpace()
                         || gestionPoliza.fechaInicio == null || gestionPoliza.fechaFin == null)
@@ -108,6 +109,132 @@ namespace ProyectoSegurosFpDaw.BLL
             return true;
         }
 
+        public bool IsValidSearching(string fechaInicio, string fechaFinal, string estadoPoliza)
+        {
+            if (fechaInicio.IsNullOrWhiteSpace() == false && fechaFinal.IsNullOrWhiteSpace() == false && estadoPoliza.IsNullOrWhiteSpace() == false)
+            {
+                return true;
+            }
+            return false;
+
+        }
+
+        public PolizaSearching GetSearchingField(int? polizaId, string matricula, string dniCliente, string telefonoCliente, string fechaInicio, string fechaFinal, string estadoPoliza)
+        {
+            PolizaSearching output = new PolizaSearching()
+            {
+                FechaInicio = DateTime.Parse(fechaInicio.Trim(), CultureInfo.GetCultureInfo("es-ES")),
+                FechaFinal = DateTime.Parse(fechaFinal.Trim(), CultureInfo.GetCultureInfo("es-ES")),
+                SearchingParam = PolizaSearchingParam.empty
+            };
+            if (estadoPoliza == "0") output.EstadoPoliza = EstadoPolizaParam.noActivo;
+            if (estadoPoliza == "1") output.EstadoPoliza = EstadoPolizaParam.activo;
+            if (estadoPoliza == "2") output.EstadoPoliza = EstadoPolizaParam.todos;
+
+            if (polizaId != null)
+            {
+                output.SearchingParam = PolizaSearchingParam.polizaId;
+                output.PolizaId = (int)polizaId;
+            }
+
+            if (matricula.IsNullOrWhiteSpace() == false)
+            {
+                output.SearchingParam = PolizaSearchingParam.matricula;
+                output.Value = matricula.Trim().ToUpperInvariant();
+            }
+            if (dniCliente.IsNullOrWhiteSpace() == false)
+            {
+                output.SearchingParam = PolizaSearchingParam.dniCliente;
+                output.Value = dniCliente.Trim().ToUpperInvariant();
+            }
+            if (telefonoCliente.IsNullOrWhiteSpace() == false)
+            {
+                output.SearchingParam = PolizaSearchingParam.telefonoCliente;
+                output.Value = telefonoCliente.Trim();
+            }
+            return output;
+        }
+
+        public List<GestionPoliza> SearchPolizas(PolizaSearching searchingFields)
+        {
+            List<GestionPoliza> output = new List<GestionPoliza>();           
+
+            // Fecha Alta + Estado  (resto de campos vacíos).
+            if (searchingFields.SearchingParam == PolizaSearchingParam.empty)
+            {
+                // Estado Póliza Todos. 
+                if (searchingFields.EstadoPoliza == EstadoPolizaParam.todos)
+                {
+                    output = unitOfWork.GestionPoliza.GetLastGestionPolizaWithPolizaByDate(searchingFields.FechaInicio, searchingFields.FechaFinal).ToList();
+                    return output;
+                }
+                output = unitOfWork.GestionPoliza.GetLastGestionPolizaWithPolizaByDate(searchingFields.FechaInicio, searchingFields.FechaFinal, (int)searchingFields.EstadoPoliza).ToList();
+                return output;
+
+            }
+
+            // Póliza Id 
+            if (searchingFields.SearchingParam == PolizaSearchingParam.polizaId)
+            {
+                GestionPoliza gestionPoliza = unitOfWork.GestionPoliza
+                    .GetGestionesPolizaWithClienteCondicionadoTipoGestionWhere(c => c.polizaId == searchingFields.PolizaId)
+                    .OrderByDescending(c => c.gestionPolizaId)
+                    .FirstOrDefault();
+                if (gestionPoliza != null)
+                {
+                    output.Add(gestionPoliza);
+                }
+                return output;
+            }
+            // Fecha Alta + Estado + Matrícula que aparezca en cualquiera de sus gestionPoliza.
+            if (searchingFields.SearchingParam == PolizaSearchingParam.matricula)
+            {
+                // Estado Póliza Todos 
+                if (searchingFields.EstadoPoliza == EstadoPolizaParam.todos)
+                {
+
+                }
+                else
+                {
+
+                }
+            }
+            // Fecha Alta + Estado + NIF / NIE.
+            if (searchingFields.SearchingParam == PolizaSearchingParam.dniCliente)
+            {
+                // Estado Póliza Todos.
+                if (searchingFields.EstadoPoliza == EstadoPolizaParam.todos)
+                {
+                }
+                else
+                {
+
+                }
+            }
+            // Fecha Alta + Estado + Teléfono.
+            if (searchingFields.SearchingParam == PolizaSearchingParam.telefonoCliente)
+            {
+                // Estado Póliza Todos.
+                if (searchingFields.EstadoPoliza == EstadoPolizaParam.todos)
+                {
+
+                }
+                else
+                {
+
+                }
+            }
+            // Si no hay ningún resultado coincidente, devuelve una lista vacía.
+            return output;
+        }
+
+        //public IEnumerable<GestionPoliza> resultsTemp(DateTime fechaInicioPoliza,DateTime fechaFinalPoliza)
+        //{
+        //    return unitOfWork.GestionPoliza.GetLastGestionPolizaWithPolizaByDate(fechaInicioPoliza, fechaFinalPoliza);
+        //}
+
+
+
         /// <summary>
         /// Validación de formato de la matrícula mediante expresión regular .
         ///<para>
@@ -138,7 +265,7 @@ namespace ProyectoSegurosFpDaw.BLL
             return unitOfWork.GestionPoliza.ExistMatriculaInPolizasActivas(matricula);
         }
 
-        private void CreatePoliza(GestionPoliza gestionPoliza,Usuario usuarioLogado,Cliente cliente)
+        private void CreatePoliza(GestionPoliza gestionPoliza, Usuario usuarioLogado, Cliente cliente)
         {
             // Asigna valores a la gestión póliza.
             gestionPoliza.usuarioId = usuarioLogado.usuarioId;
@@ -162,16 +289,16 @@ namespace ProyectoSegurosFpDaw.BLL
             unitOfWork.SaveChanges();
 
         }
-       
-        private void CreateGestionPoliza(GestionPoliza gestionPoliza,Cliente cliente)
+
+        private void CreateGestionPoliza(GestionPoliza gestionPoliza, Cliente cliente)
         {
-            
+
             // Recupera la póliza creada.
             var polizaIdCreada = unitOfWork.Poliza.Where(c => c.clienteId == cliente.clienteId && c.activo == -1).Select(s => s.polizaId).FirstOrDefault();
             // Crea la gestiónPóliza Inicial de Alta.
             gestionPoliza.polizaId = polizaIdCreada;
             unitOfWork.GestionPoliza.Add(gestionPoliza);
-            unitOfWork.SaveChanges();            
+            unitOfWork.SaveChanges();
         }
 
         public Poliza CreatePolizaAndFirstGestionPoliza(GestionPoliza gestionPoliza, Usuario usuarioLogado, Cliente cliente)
@@ -204,8 +331,8 @@ namespace ProyectoSegurosFpDaw.BLL
             }
         }
 
-        
-       
+
+
 
         public void UpdateGestionPoliza(GestionPoliza gestionPoliza, Usuario usuarioLogado)
         {
@@ -245,7 +372,7 @@ namespace ProyectoSegurosFpDaw.BLL
             poliza.activo = 0;
 
             unitOfWork.SaveChanges();
-           
+
         }
         public void UnDeleteGestionPoliza(int polizaId)
         {
@@ -254,7 +381,7 @@ namespace ProyectoSegurosFpDaw.BLL
             var polizaModificada = unitOfWork.Poliza.Get(polizaId);
             if (polizaModificada.activo == 0)
             {
-                polizaModificada.activo = 1;              
+                polizaModificada.activo = 1;
 
             }
             // Comprueba que se haya creado una gestión Póliza con estado baja y la elimina
@@ -264,7 +391,7 @@ namespace ProyectoSegurosFpDaw.BLL
             {
                 unitOfWork.GestionPoliza.Remove(gestionPolizaModificada);
             }
-            
+
             unitOfWork.SaveChanges();
         }
     }

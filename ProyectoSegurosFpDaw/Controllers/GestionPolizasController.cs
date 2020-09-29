@@ -93,31 +93,44 @@ namespace ProyectoSegurosFpDaw.Controllers
         [AutorizarUsuario(permisoId: 20)]
         public ActionResult BuscarPolizas(int? polizaId, string matricula, string dniCliente, string telefonoCliente, string fechaInicio, string fechaFinal, string estadoPoliza)
         {
-            // Validaciones y formato de parámetros.
-            int estadoPolizaInt;
-            DateTime fechaInicioPoliza = new DateTime();
-            DateTime fechaFinalPoliza = new DateTime();
-            int contadorParametrosVacios = 0;
-            if (polizaId == null) { contadorParametrosVacios++; }
-            if (matricula.IsNullOrWhiteSpace() == false) { matricula = matricula.Trim().ToUpperInvariant(); } else { contadorParametrosVacios++; }
-            if (dniCliente.IsNullOrWhiteSpace() == false) { dniCliente = dniCliente.Trim().ToUpperInvariant(); } else { contadorParametrosVacios++; }
-            if (telefonoCliente.IsNullOrWhiteSpace() == false) { telefonoCliente = telefonoCliente.Trim(); } else { contadorParametrosVacios++; }
-
-            // Los campos fechaInicio ,fechafinal y estadoPoliza son obligatorios.
-            if (fechaInicio.IsNullOrWhiteSpace() == false && fechaFinal.IsNullOrWhiteSpace() == false && estadoPoliza.IsNullOrWhiteSpace() == false)
-            {
-                fechaInicio = fechaInicio.Trim();
-                fechaInicioPoliza = DateTime.Parse(fechaInicio, CultureInfo.GetCultureInfo("es-ES"));
-                fechaFinal = fechaFinal.Trim();
-                fechaFinalPoliza = DateTime.Parse(fechaFinal, CultureInfo.GetCultureInfo("es-ES"));
-                estadoPoliza = estadoPoliza.Trim();
-                estadoPolizaInt = int.Parse(estadoPoliza, CultureInfo.GetCultureInfo("es-ES"));
-            }
-            else
+            if (gestionPolizaBLL.IsValidSearching(fechaInicio, fechaFinal, estadoPoliza) == false)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosBuscar(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
             }
+
+            PolizaSearching searchingFields = gestionPolizaBLL.GetSearchingField(polizaId, matricula, dniCliente, telefonoCliente, fechaInicio, fechaFinal, estadoPoliza);
+
+            List<GestionPoliza> results = gestionPolizaBLL.SearchPolizas(searchingFields);
+
+            TempData["polizasCoincidentes"] = results;
+            return RedirectToAction("Index");
+
+            // Validaciones y formato de parámetros.
+            //int estadoPolizaInt;
+            //DateTime fechaInicioPoliza = new DateTime();
+            //DateTime fechaFinalPoliza = new DateTime();
+            //int contadorParametrosVacios = 0;
+            //if (polizaId == null) { contadorParametrosVacios++; }
+            //if (matricula.IsNullOrWhiteSpace() == false) { matricula = matricula.Trim().ToUpperInvariant(); } else { contadorParametrosVacios++; }
+            //if (dniCliente.IsNullOrWhiteSpace() == false) { dniCliente = dniCliente.Trim().ToUpperInvariant(); } else { contadorParametrosVacios++; }
+            //if (telefonoCliente.IsNullOrWhiteSpace() == false) { telefonoCliente = telefonoCliente.Trim(); } else { contadorParametrosVacios++; }
+
+            //// Los campos fechaInicio ,fechafinal y estadoPoliza son obligatorios.
+            //if (fechaInicio.IsNullOrWhiteSpace() == false && fechaFinal.IsNullOrWhiteSpace() == false && estadoPoliza.IsNullOrWhiteSpace() == false)
+            //{
+            //    fechaInicio = fechaInicio.Trim();
+            //    fechaInicioPoliza = DateTime.Parse(fechaInicio, CultureInfo.GetCultureInfo("es-ES"));
+            //    fechaFinal = fechaFinal.Trim();
+            //    fechaFinalPoliza = DateTime.Parse(fechaFinal, CultureInfo.GetCultureInfo("es-ES"));
+            //    estadoPoliza = estadoPoliza.Trim();
+            //    estadoPolizaInt = int.Parse(estadoPoliza, CultureInfo.GetCultureInfo("es-ES"));
+            //}
+            //else
+            //{
+            //    TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosBuscar(Poliza.GetNombreModelo());
+            //    return RedirectToAction("Index");
+            //}
 
             // Búsqueda por parámetros
             // Filtra por los parámetros que no están vacíos , 
@@ -128,291 +141,299 @@ namespace ProyectoSegurosFpDaw.Controllers
             // Crea una lista de gestion pólizas coincidentes (la última creada de cada póliza coincidente )
             // Envía la lista a la acción Index.
 
-            var ultimaGestionLista = new List<GestionPoliza>();
+            //var ultimaGestionLista = new List<GestionPoliza>();
 
-            try
-            {
-                // Fecha Alta + Estado  (resto de campos vacíos).
-                if (contadorParametrosVacios == 4)
-                {
-                    // Estado Póliza Todos. 
-                    if (estadoPolizaInt == 2)
-                    {
-                        // Obtiene el id de las pólizas que coinciden con el rango de fecha de Alta.
-                        var polizasCoincidentes =
-                             from gestiones in context.GestionPoliza
-                             join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
-                             where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
-                             select new { Poliza = polizas.polizaId };
+            //try
+            //{
+            //    // Fecha Alta + Estado  (resto de campos vacíos).
+            //    if (contadorParametrosVacios == 4)
+            //    {
+            //        // Estado Póliza Todos. 
+            //        if (estadoPolizaInt == 2)
+            //        {
 
-                        // Si hay resultados coincidentes
-                        if (polizasCoincidentes.Any())
-                        {
-                            // Recorre la query (obviando las pólizas repetidas (distinct)) 
-                            foreach (var item in polizasCoincidentes.Distinct())
-                            {
-                                // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º)
-                                var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
-                                    .Where(c => c.polizaId == item.Poliza)
-                                    .OrderByDescending(c => c.gestionPolizaId)
-                                    .FirstOrDefault();
+            //            //ultimaGestionLista = unitOfWork.GestionPoliza.GetLastGestionPolizaWithPolizaByDate(fechaInicioPoliza, fechaFinalPoliza).ToList();
+            //            ultimaGestionLista = gestionPolizaBLL.resultsTemp(fechaInicioPoliza,fechaFinalPoliza).ToList();
 
-                                // Añade a la lista 
-                                ultimaGestionLista.Add(ultimaGestion);
-                            }
-                            TempData["polizasCoincidentes"] = ultimaGestionLista;
-                            return RedirectToAction("Index");
-                        }
-                    }
-                    else
-                    {
-                        // Obtiene el id de las pólizas que coinciden con 
-                        // el rango de fecha de Alta + estado Póliza (activo/No activo).
-                        var polizasCoincidentes =
-                             from gestiones in context.GestionPoliza
-                             join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
-                             where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
-                                && polizas.activo == estadoPolizaInt
-                             select new { Poliza = polizas.polizaId };
+            //            TempData["polizasCoincidentes"] = ultimaGestionLista;
+            //            return RedirectToAction("Index");
 
-                        // Si hay resultados coincidentes.
-                        if (polizasCoincidentes.Any())
-                        {
-                            // Recorre la query (obviando las pólizas repetidas (distinct)). 
-                            foreach (var item in polizasCoincidentes.Distinct())
-                            {
-                                // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
-                                var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
-                                    .Where(c => c.polizaId == item.Poliza)
-                                    .OrderByDescending(c => c.gestionPolizaId)
-                                    .FirstOrDefault();
 
-                                // Añade a la lista.
-                                ultimaGestionLista.Add(ultimaGestion);
-                            }
-                            TempData["polizasCoincidentes"] = ultimaGestionLista;
-                            return RedirectToAction("Index");
-                        }
-                    }
-                }
-                // Si se ha introducido datos solo en 1 de los campos.          
-                else if (contadorParametrosVacios == 3)
-                {
-                    // Póliza Id 
-                    if (polizaId != null)
-                    {
-                        var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
-                                    .Where(c => c.polizaId == polizaId)
-                                    .OrderByDescending(c => c.gestionPolizaId)
-                                    .FirstOrDefault();
-                        if (ultimaGestion != null)
-                        {
-                            ultimaGestionLista.Add(ultimaGestion);
-                            TempData["polizasCoincidentes"] = ultimaGestionLista;
-                            return RedirectToAction("Index");
-                        }
-                    }
-                    // Fecha Alta + Estado + Matrícula que aparezca en cualquiera de sus gestionPoliza.
-                    else if (matricula.IsEmpty() == false)
-                    {
-                        // Estado Póliza Todos 
-                        if (estadoPolizaInt == 2)
-                        {
-                            // Obtiene el id de las pólizas que coinciden con el rango de fecha de Alta + matrícula
-                            var polizasCoincidentes =
-                                 from gestiones in context.GestionPoliza
-                                 join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
-                                 where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
-                                    && gestiones.matricula == matricula
-                                 select new { Poliza = polizas.polizaId };
+            //            //// Obtiene el id de las pólizas que coinciden con el rango de fecha de Alta.
+            //            //var polizasCoincidentes =
+            //            //     from gestiones in context.GestionPoliza
+            //            //     join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
+            //            //     where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
+            //            //     select new { Poliza = polizas.polizaId };
 
-                            // Si hay resultados coincidentes.
-                            if (polizasCoincidentes.Any())
-                            {
-                                // Recorre la query (obviando las pólizas repetidas (distinct)). 
-                                foreach (var item in polizasCoincidentes.Distinct())
-                                {
-                                    // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
-                                    var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
-                                        .Where(c => c.polizaId == item.Poliza)
-                                        .OrderByDescending(c => c.gestionPolizaId)
-                                        .FirstOrDefault();
+            //            //// Si hay resultados coincidentes
+            //            //if (polizasCoincidentes.Any())
+            //            //{
+            //            //    // Recorre la query (obviando las pólizas repetidas (distinct)) 
+            //            //    foreach (var item in polizasCoincidentes.Distinct())
+            //            //    {
+            //            //        // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º)
+            //            //        var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
+            //            //            .Where(c => c.polizaId == item.Poliza)
+            //            //            .OrderByDescending(c => c.gestionPolizaId)
+            //            //            .FirstOrDefault();
 
-                                    // Añade a la lista 
-                                    ultimaGestionLista.Add(ultimaGestion);
-                                }
-                                TempData["polizasCoincidentes"] = ultimaGestionLista;
-                                return RedirectToAction("Index");
-                            }
-                        }
-                        else
-                        {
-                            // Obtiene id de las pólizas que coinciden con 
-                            // el rango de fecha de Alta + estado Póliza (activo/No activo) + matrícula.                     
-                            var polizasCoincidentes =
-                                 from gestiones in context.GestionPoliza
-                                 join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
-                                 where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
-                                    && polizas.activo == estadoPolizaInt && gestiones.matricula == matricula
-                                 select new { Poliza = polizas.polizaId };
+            //            //        // Añade a la lista 
+            //            //        ultimaGestionLista.Add(ultimaGestion);
+            //            //    }
+            //            //    TempData["polizasCoincidentes"] = ultimaGestionLista;
+            //            //    return RedirectToAction("Index");
+            //            //}
+            //        }   
+            //        else
+            //        {
+            //            // Obtiene el id de las pólizas que coinciden con 
+            //            // el rango de fecha de Alta + estado Póliza (activo/No activo).
+            //            var polizasCoincidentes =
+            //                 from gestiones in context.GestionPoliza
+            //                 join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
+            //                 where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
+            //                    && polizas.activo == estadoPolizaInt
+            //                 select new { Poliza = polizas.polizaId };
 
-                            // Si hay resultados coincidentes
-                            if (polizasCoincidentes.Any())
-                            {
-                                // Recorre la query (obviando las pólizas repetidas (distinct)).
-                                foreach (var item in polizasCoincidentes.Distinct())
-                                {
-                                    // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º)
-                                    var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
-                                        .Where(c => c.polizaId == item.Poliza)
-                                        .OrderByDescending(c => c.gestionPolizaId)
-                                        .FirstOrDefault();
-                                    // Añade a la lista.
-                                    ultimaGestionLista.Add(ultimaGestion);
-                                }
-                                TempData["polizasCoincidentes"] = ultimaGestionLista;
-                                return RedirectToAction("Index");
-                            }
-                        }
-                    }
-                    // Fecha Alta + Estado + NIF / NIE.
-                    else if (dniCliente.IsEmpty() == false)
-                    {
-                        // Estado Póliza Todos.
-                        if (estadoPolizaInt == 2)
-                        {
-                            // Obtiene id de las pólizas que coinciden con el rango de fecha de Alta + NIF / NIE.
-                            var polizasCoincidentes =
-                                 from gestiones in context.GestionPoliza
-                                 join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
-                                 where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
-                                    && polizas.Cliente.dniCliente == dniCliente
-                                 select new { Poliza = polizas.polizaId };
+            //            // Si hay resultados coincidentes.
+            //            if (polizasCoincidentes.Any())
+            //            {
+            //                // Recorre la query (obviando las pólizas repetidas (distinct)). 
+            //                foreach (var item in polizasCoincidentes.Distinct())
+            //                {
+            //                    // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
+            //                    var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
+            //                        .Where(c => c.polizaId == item.Poliza)
+            //                        .OrderByDescending(c => c.gestionPolizaId)
+            //                        .FirstOrDefault();
 
-                            // Si hay resultados coincidentes.
-                            if (polizasCoincidentes.Any())
-                            {
-                                // Recorre la query (obviando las pólizas repetidas (distinct)).
-                                foreach (var item in polizasCoincidentes.Distinct())
-                                {
-                                    // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
-                                    var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
-                                        .Where(c => c.polizaId == item.Poliza)
-                                        .OrderByDescending(c => c.gestionPolizaId)
-                                        .FirstOrDefault();
+            //                    // Añade a la lista.
+            //                    ultimaGestionLista.Add(ultimaGestion);
+            //                }
+            //                TempData["polizasCoincidentes"] = ultimaGestionLista;
+            //                return RedirectToAction("Index");
+            //            }
+            //        }
+            //    }
+            //    // Si se ha introducido datos solo en 1 de los campos.          
+            //    else if (contadorParametrosVacios == 3)
+            //    {
+            //        // Póliza Id 
+            //        if (polizaId != null)
+            //        {
+            //            var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
+            //                        .Where(c => c.polizaId == polizaId)
+            //                        .OrderByDescending(c => c.gestionPolizaId)
+            //                        .FirstOrDefault();
+            //            if (ultimaGestion != null)
+            //            {
+            //                ultimaGestionLista.Add(ultimaGestion);
+            //                TempData["polizasCoincidentes"] = ultimaGestionLista;
+            //                return RedirectToAction("Index");
+            //            }
+            //        }
+            //        // Fecha Alta + Estado + Matrícula que aparezca en cualquiera de sus gestionPoliza.
+            //        else if (matricula.IsEmpty() == false)
+            //        {
+            //            // Estado Póliza Todos 
+            //            if (estadoPolizaInt == 2)
+            //            {
+            //                // Obtiene el id de las pólizas que coinciden con el rango de fecha de Alta + matrícula
+            //                var polizasCoincidentes =
+            //                     from gestiones in context.GestionPoliza
+            //                     join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
+            //                     where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
+            //                        && gestiones.matricula == matricula
+            //                     select new { Poliza = polizas.polizaId };
 
-                                    // Añade a la lista.
-                                    ultimaGestionLista.Add(ultimaGestion);
-                                }
-                                TempData["polizasCoincidentes"] = ultimaGestionLista;
-                                return RedirectToAction("Index");
-                            }
-                        }
-                        else
-                        {
-                            // Obtiene el id de las pólizas que coinciden con 
-                            // el rango de fecha de Alta + estado Póliza (activo/No activo) + matrícula.                  
-                            var polizasCoincidentes =
-                                 from gestiones in context.GestionPoliza
-                                 join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
-                                 where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
-                                    && polizas.activo == estadoPolizaInt && polizas.Cliente.dniCliente == dniCliente
-                                 select new { Poliza = polizas.polizaId };
-                            // Si hay resultados coincidentes.
-                            if (polizasCoincidentes.Any())
-                            {
-                                // Recorre la query (obviando las pólizas repetidas (distinct)).
-                                foreach (var item in polizasCoincidentes.Distinct())
-                                {
-                                    // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
-                                    var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
-                                        .Where(c => c.polizaId == item.Poliza)
-                                        .OrderByDescending(c => c.gestionPolizaId)
-                                        .FirstOrDefault();
-                                    // Añade a la lista .
-                                    ultimaGestionLista.Add(ultimaGestion);
-                                }
-                                TempData["polizasCoincidentes"] = ultimaGestionLista;
-                                return RedirectToAction("Index");
-                            }
-                        }
-                    }
-                    // Fecha Alta + Estado + Teléfono.
-                    else if (telefonoCliente.IsEmpty() == false)
-                    {
-                        // Estado Póliza Todos.
-                        if (estadoPolizaInt == 2)
-                        {
-                            // Obtiene el id de las pólizas que coinciden con el rango de fecha de Alta + teléfono.
-                            var polizasCoincidentes =
-                                 from gestiones in context.GestionPoliza
-                                 join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
-                                 where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
-                                    && polizas.Cliente.telefonoCliente == telefonoCliente
-                                 select new { Poliza = polizas.polizaId };
-                            // Si hay resultados coincidentes.
-                            if (polizasCoincidentes.Any())
-                            {
-                                // Recorre la query (obviando las pólizas repetidas (distinct)).
-                                foreach (var item in polizasCoincidentes.Distinct())
-                                {
-                                    // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
-                                    var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
-                                        .Where(c => c.polizaId == item.Poliza)
-                                        .OrderByDescending(c => c.gestionPolizaId)
-                                        .FirstOrDefault();
-                                    // Añade a la lista.
-                                    ultimaGestionLista.Add(ultimaGestion);
-                                }
-                                TempData["polizasCoincidentes"] = ultimaGestionLista;
-                                return RedirectToAction("Index");
-                            }
-                        }
-                        else
-                        {
-                            // Obtiene el id de las pólizas que coinciden
-                            // con el rango de fecha de Alta + estado Póliza (activo/No activo) + matrícula.                    
-                            var polizasCoincidentes =
-                                 from gestiones in context.GestionPoliza
-                                 join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
-                                 where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
-                                    && polizas.activo == estadoPolizaInt && polizas.Cliente.telefonoCliente == telefonoCliente
-                                 select new { Poliza = polizas.polizaId };
+            //                // Si hay resultados coincidentes.
+            //                if (polizasCoincidentes.Any())
+            //                {
+            //                    // Recorre la query (obviando las pólizas repetidas (distinct)). 
+            //                    foreach (var item in polizasCoincidentes.Distinct())
+            //                    {
+            //                        // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
+            //                        var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
+            //                            .Where(c => c.polizaId == item.Poliza)
+            //                            .OrderByDescending(c => c.gestionPolizaId)
+            //                            .FirstOrDefault();
 
-                            // Si hay resultados coincidentes.
-                            if (polizasCoincidentes.Any())
-                            {
-                                // Recorre la query (obviando las pólizas repetidas (distinct)).
-                                foreach (var item in polizasCoincidentes.Distinct())
-                                {
-                                    // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
-                                    var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
-                                        .Where(c => c.polizaId == item.Poliza)
-                                        .OrderByDescending(c => c.gestionPolizaId)
-                                        .FirstOrDefault();
-                                    // Añade a la lista 
-                                    ultimaGestionLista.Add(ultimaGestion);
-                                }
-                                TempData["polizasCoincidentes"] = ultimaGestionLista;
-                                return RedirectToAction("Index");
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosBuscar(Poliza.GetNombreModelo());
-                    return RedirectToAction("Index");
-                }
-                // Si no hay ningún resultado coincidente, devuelve una lista vacía.
-                TempData["polizasCoincidentes"] = ultimaGestionLista;
-                return RedirectToAction("Index");
-            }
-            catch (Exception ex)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorExcepcionBuscar(Poliza.GetNombreModelo(), ex.GetType().ToString());
-                return RedirectToAction("Index");
-            }
+            //                        // Añade a la lista 
+            //                        ultimaGestionLista.Add(ultimaGestion);
+            //                    }
+            //                    TempData["polizasCoincidentes"] = ultimaGestionLista;
+            //                    return RedirectToAction("Index");
+            //                }
+            //            }
+            //            else
+            //            {
+            //                // Obtiene id de las pólizas que coinciden con 
+            //                // el rango de fecha de Alta + estado Póliza (activo/No activo) + matrícula.                     
+            //                var polizasCoincidentes =
+            //                     from gestiones in context.GestionPoliza
+            //                     join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
+            //                     where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
+            //                        && polizas.activo == estadoPolizaInt && gestiones.matricula == matricula
+            //                     select new { Poliza = polizas.polizaId };
+
+            //                // Si hay resultados coincidentes
+            //                if (polizasCoincidentes.Any())
+            //                {
+            //                    // Recorre la query (obviando las pólizas repetidas (distinct)).
+            //                    foreach (var item in polizasCoincidentes.Distinct())
+            //                    {
+            //                        // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º)
+            //                        var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
+            //                            .Where(c => c.polizaId == item.Poliza)
+            //                            .OrderByDescending(c => c.gestionPolizaId)
+            //                            .FirstOrDefault();
+            //                        // Añade a la lista.
+            //                        ultimaGestionLista.Add(ultimaGestion);
+            //                    }
+            //                    TempData["polizasCoincidentes"] = ultimaGestionLista;
+            //                    return RedirectToAction("Index");
+            //                }
+            //            }
+            //        }
+            //        // Fecha Alta + Estado + NIF / NIE.
+            //        else if (dniCliente.IsEmpty() == false)
+            //        {
+            //            // Estado Póliza Todos.
+            //            if (estadoPolizaInt == 2)
+            //            {
+            //                // Obtiene id de las pólizas que coinciden con el rango de fecha de Alta + NIF / NIE.
+            //                var polizasCoincidentes =
+            //                     from gestiones in context.GestionPoliza
+            //                     join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
+            //                     where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
+            //                        && polizas.Cliente.dniCliente == dniCliente
+            //                     select new { Poliza = polizas.polizaId };
+
+            //                // Si hay resultados coincidentes.
+            //                if (polizasCoincidentes.Any())
+            //                {
+            //                    // Recorre la query (obviando las pólizas repetidas (distinct)).
+            //                    foreach (var item in polizasCoincidentes.Distinct())
+            //                    {
+            //                        // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
+            //                        var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
+            //                            .Where(c => c.polizaId == item.Poliza)
+            //                            .OrderByDescending(c => c.gestionPolizaId)
+            //                            .FirstOrDefault();
+
+            //                        // Añade a la lista.
+            //                        ultimaGestionLista.Add(ultimaGestion);
+            //                    }
+            //                    TempData["polizasCoincidentes"] = ultimaGestionLista;
+            //                    return RedirectToAction("Index");
+            //                }
+            //            }
+            //            else
+            //            {
+            //                // Obtiene el id de las pólizas que coinciden con 
+            //                // el rango de fecha de Alta + estado Póliza (activo/No activo) + matrícula.                  
+            //                var polizasCoincidentes =
+            //                     from gestiones in context.GestionPoliza
+            //                     join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
+            //                     where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
+            //                        && polizas.activo == estadoPolizaInt && polizas.Cliente.dniCliente == dniCliente
+            //                     select new { Poliza = polizas.polizaId };
+            //                // Si hay resultados coincidentes.
+            //                if (polizasCoincidentes.Any())
+            //                {
+            //                    // Recorre la query (obviando las pólizas repetidas (distinct)).
+            //                    foreach (var item in polizasCoincidentes.Distinct())
+            //                    {
+            //                        // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
+            //                        var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
+            //                            .Where(c => c.polizaId == item.Poliza)
+            //                            .OrderByDescending(c => c.gestionPolizaId)
+            //                            .FirstOrDefault();
+            //                        // Añade a la lista .
+            //                        ultimaGestionLista.Add(ultimaGestion);
+            //                    }
+            //                    TempData["polizasCoincidentes"] = ultimaGestionLista;
+            //                    return RedirectToAction("Index");
+            //                }
+            //            }
+            //        }
+            //        // Fecha Alta + Estado + Teléfono.
+            //        else if (telefonoCliente.IsEmpty() == false)
+            //        {
+            //            // Estado Póliza Todos.
+            //            if (estadoPolizaInt == 2)
+            //            {
+            //                // Obtiene el id de las pólizas que coinciden con el rango de fecha de Alta + teléfono.
+            //                var polizasCoincidentes =
+            //                     from gestiones in context.GestionPoliza
+            //                     join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
+            //                     where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
+            //                        && polizas.Cliente.telefonoCliente == telefonoCliente
+            //                     select new { Poliza = polizas.polizaId };
+            //                // Si hay resultados coincidentes.
+            //                if (polizasCoincidentes.Any())
+            //                {
+            //                    // Recorre la query (obviando las pólizas repetidas (distinct)).
+            //                    foreach (var item in polizasCoincidentes.Distinct())
+            //                    {
+            //                        // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
+            //                        var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
+            //                            .Where(c => c.polizaId == item.Poliza)
+            //                            .OrderByDescending(c => c.gestionPolizaId)
+            //                            .FirstOrDefault();
+            //                        // Añade a la lista.
+            //                        ultimaGestionLista.Add(ultimaGestion);
+            //                    }
+            //                    TempData["polizasCoincidentes"] = ultimaGestionLista;
+            //                    return RedirectToAction("Index");
+            //                }
+            //            }
+            //            else
+            //            {
+            //                // Obtiene el id de las pólizas que coinciden
+            //                // con el rango de fecha de Alta + estado Póliza (activo/No activo) + matrícula.                    
+            //                var polizasCoincidentes =
+            //                     from gestiones in context.GestionPoliza
+            //                     join polizas in context.Poliza on gestiones.polizaId equals polizas.polizaId
+            //                     where gestiones.fechaInicio < fechaFinalPoliza && gestiones.fechaInicio > fechaInicioPoliza
+            //                        && polizas.activo == estadoPolizaInt && polizas.Cliente.telefonoCliente == telefonoCliente
+            //                     select new { Poliza = polizas.polizaId };
+
+            //                // Si hay resultados coincidentes.
+            //                if (polizasCoincidentes.Any())
+            //                {
+            //                    // Recorre la query (obviando las pólizas repetidas (distinct)).
+            //                    foreach (var item in polizasCoincidentes.Distinct())
+            //                    {
+            //                        // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º).
+            //                        var ultimaGestion = context.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
+            //                            .Where(c => c.polizaId == item.Poliza)
+            //                            .OrderByDescending(c => c.gestionPolizaId)
+            //                            .FirstOrDefault();
+            //                        // Añade a la lista 
+            //                        ultimaGestionLista.Add(ultimaGestion);
+            //                    }
+            //                    TempData["polizasCoincidentes"] = ultimaGestionLista;
+            //                    return RedirectToAction("Index");
+            //                }
+            //            }
+            //        }
+            //    }
+            //    else
+            //    {
+            //        TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosBuscar(Poliza.GetNombreModelo());
+            //        return RedirectToAction("Index");
+            //    }
+            //    // Si no hay ningún resultado coincidente, devuelve una lista vacía.
+            //    TempData["polizasCoincidentes"] = ultimaGestionLista;
+            //    return RedirectToAction("Index");
+            //}
+            //catch (Exception ex)
+            //{
+            //    TempData["mensaje"] = ItemMensaje.ErrorExcepcionBuscar(Poliza.GetNombreModelo(), ex.GetType().ToString());
+            //    return RedirectToAction("Index");
+            //}
         }
        
         [AutorizarUsuario(permisoId: 15)]
@@ -506,7 +527,6 @@ namespace ProyectoSegurosFpDaw.Controllers
                 return RedirectToAction("Index");
             }
             Cliente cliente = unitOfWork.Cliente.Get(int.Parse(clienteId));
-
             if (gestionPolizaBLL.ValidarFormatoMatricula(gestionPoliza.matricula) == false)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorValidarFormatoMatricula(Poliza.GetNombreModelo());
@@ -515,12 +535,6 @@ namespace ProyectoSegurosFpDaw.Controllers
             if (gestionPolizaBLL.ExistMatriculaInPolizasActivas(gestionPoliza.matricula) == true)
             {
                 TempData["mensaje"] = ItemMensaje.ErrorValidarMatriculaDuplicada(Poliza.GetNombreModelo(), gestionPoliza.matricula);
-                return RedirectToAction("Index");
-            }
-            var usuario = GetUsuarioLogado();
-            if (usuario == null)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosCrear(Poliza.GetNombreModelo());
                 return RedirectToAction("Index");
             }
             // Validaciones de rangos de fecha.
@@ -542,6 +556,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             try
             {
+                var usuario = GetUsuarioLogado();
                 Poliza polizaCreada = gestionPolizaBLL.CreatePolizaAndFirstGestionPoliza(gestionPoliza, usuario, cliente);               
                 TempData["mensaje"] = ItemMensaje.SuccessCrear(Poliza.GetNombreModelo(), polizaCreada.polizaId.ToString(CultureInfo.GetCultureInfo("es-ES")));
                 return RedirectToAction("Index");
@@ -611,15 +626,10 @@ namespace ProyectoSegurosFpDaw.Controllers
             {
                 TempData["mensaje"] = ItemMensaje.ErrorValidarMatriculaDuplicada(Poliza.GetNombreModelo(), gestionPoliza.matricula);
                 return RedirectToAction("Details", new { id = gestionPoliza.gestionPolizaId });
-            }
-            Usuario usuarioLogado = GetUsuarioLogado();
-            if (usuarioLogado == null)
-            {
-                TempData["mensaje"] = ItemMensaje.ErrorDatosNoValidosEditar(Poliza.GetNombreModelo());
-                return RedirectToAction("Index");
-            }
+            }            
             try
             {
+                Usuario usuarioLogado = GetUsuarioLogado();
                 gestionPolizaBLL.UpdateGestionPoliza(gestionPoliza, usuarioLogado);
                 TempData["mensaje"] = ItemMensaje.SuccessEditar(Poliza.GetNombreModelo(), gestionPoliza.polizaId.ToString(CultureInfo.GetCultureInfo("es-ES")));
                 return RedirectToAction("Index");
