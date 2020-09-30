@@ -155,6 +155,16 @@ namespace ProyectoSegurosFpDaw.BLL
             return output;
         }
 
+        /// <summary>        
+        /// Búsqueda por parámetros.
+        /// Filtra por los parámetros que no están vacíos , 
+        /// busca coincidencias por: 
+        /// Parámetro 
+        /// + estado Póliza ( 0=> no activa , 1 => activa ,  2=> todos) 
+        /// + fecha de Alta de la póliza (rango de fechas comprendido entre FechaInicio/FechaFinal)        
+        /// </summary>
+        /// <param name="searchingFields"></param>
+        /// <returns>Lista de gestion pólizas coincidentes (la última creada de cada póliza coincidente ) </returns>
         public List<GestionPoliza> SearchPolizas(PolizaSearching searchingFields)
         {
             List<GestionPoliza> output = new List<GestionPoliza>();           
@@ -198,11 +208,7 @@ namespace ProyectoSegurosFpDaw.BLL
             // Si no hay ningún resultado coincidente, devuelve una lista vacía.
             return output;
         }
-
-        //public IEnumerable<GestionPoliza> resultsTemp(DateTime fechaInicioPoliza,DateTime fechaFinalPoliza)
-        //{
-        //    return unitOfWork.GestionPoliza.GetLastGestionPolizaWithPolizaByDate(fechaInicioPoliza, fechaFinalPoliza);
-        //}
+        
 
 
 
