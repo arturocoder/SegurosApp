@@ -61,59 +61,28 @@ namespace ProyectoSegurosFpDaw.Controllers
             return View();
         }
 
-        /// <summary>
-        /// GET : busca en la BBDD Clientes que coincidan con los parámetros introducidos.
-        /// </summary>
-        /// <param name="clienteId">cliente Id</param>
-        /// <param name="dniCliente">NIF/NIE Cliente</param>
-        /// <param name="emailCliente">email Cliente</param>
-        /// <param name="telefonoCliente">teléfono Cliente</param>
-        /// <returns>
-        /// Hay coincidencias de clientes activos => envía una lista Cliente de coincidencias y redirecciona al Index para mostrarlos.
-        /// Hay coincidencias de clientes no activos => envía un mensaje de información y redirecciona al Index.
-        /// Sin coincidencias => envía una lista Cliente vacía y redirecciona a Index .
-        /// Error => redirecciona a Index con mensaje de error.
-        /// </returns>
         [AutorizarUsuario(permisoId: 19)]
         [HttpGet]
         public ActionResult BuscarClientes(string clienteId, string dniCliente, string emailCliente, string telefonoCliente)
         {
-            ClienteParam searchingField = clienteBll.GetSearchingField(clienteId, dniCliente, emailCliente, telefonoCliente);
+            try
+            {
+                ClienteSearchingFields searchingField = clienteBll.GetSearchingField(clienteId, dniCliente, emailCliente, telefonoCliente);
+                List<Cliente> clienteMatches = clienteBll.SearchClientes(searchingField);
 
-            List<Cliente> clienteMatches = new List<Cliente>();
-
-            if (searchingField == ClienteParam.id)
-            {
-                clienteMatches = clienteBll.SearchClientes(ClienteParam.id, clienteId);
-                // Si cliente ha sido eliminado
-                if (clienteMatches.Any(c => c.activo == 0))
+                if (clienteMatches.Any() && clienteMatches.FirstOrDefault().activo == 0)
                 {
-                    TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Cliente.GetNombreModelo(), clienteMatches.FirstOrDefault().clienteId);
+                    var clienteNoActivo = clienteMatches.FirstOrDefault();
+                    TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Usuario.GetNombreModelo(), clienteNoActivo.clienteId);
                 }
+                TempData["clientesCoincidentes"] = clienteMatches;
+                return RedirectToAction("Index");
             }
-            if (searchingField == ClienteParam.dni)
+            catch (Exception ex)
             {
-                clienteMatches = clienteBll.SearchClientes(ClienteParam.dni, dniCliente);
-                if (clienteMatches.Any(c => c.activo == 0))
-                {
-                    TempData["mensaje"] = ItemMensaje.ErrorBuscarRegistroEliminado(Cliente.GetNombreModelo(), clienteMatches.FirstOrDefault().clienteId);
-                }
-            }
-            if (searchingField == ClienteParam.email)
-            {
-                clienteMatches = clienteBll.SearchClientes(ClienteParam.email, emailCliente);
-            }
-            if (searchingField == ClienteParam.telefono)
-            {
-                clienteMatches = clienteBll.SearchClientes(ClienteParam.telefono, telefonoCliente);
-            }
-            // Si todos los campos vacíos, devuelve todos los clientes activos.           
-            if (searchingField == ClienteParam.empty)
-            {
-                clienteMatches = clienteBll.SearchClientes(ClienteParam.empty, string.Empty);
-            }
-            TempData["clientesCoincidentes"] = clienteMatches;
-            return RedirectToAction("Index");
+                TempData["mensaje"] = ItemMensaje.ErrorExcepcionBuscar(Cliente.GetNombreModelo(), ex.GetType().ToString());
+                return RedirectToAction("Index");
+            }          
         }
 
 
@@ -121,7 +90,6 @@ namespace ProyectoSegurosFpDaw.Controllers
         [HttpGet]
         public ActionResult Details(int id)
         {
-
             if (TempData.ContainsKey("mensaje"))
             {
                 ViewBag.mensaje = TempData["mensaje"];
@@ -151,7 +119,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             return View();
         }
-        
+
         [AutorizarUsuario(permisoId: 6)]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -181,7 +149,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
 
         }
-      
+
         [AutorizarUsuario(permisoId: 7)]
         [HttpGet]
         public ActionResult Edit(int id)
@@ -194,7 +162,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             }
             return View(cliente);
         }
-      
+
         [AutorizarUsuario(permisoId: 7)]
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
@@ -261,7 +229,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             else
             {
                 try
-                {                   
+                {
                     clienteBll.DeleteCliente(cliente);
                     TempData["mensaje"] = ItemMensaje.SuccessDesactivar(Cliente.GetNombreModelo(), cliente.apellido1Cliente);
                     return RedirectToAction("Index");

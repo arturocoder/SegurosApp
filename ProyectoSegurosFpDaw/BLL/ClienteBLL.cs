@@ -9,14 +9,7 @@ using static ProyectoSegurosFpDaw.Controllers.ClientesController;
 
 namespace ProyectoSegurosFpDaw.BLL
 {
-    public enum ClienteParam
-    {
-        id,
-        dni,
-        telefono,
-        email,
-        empty
-    }
+   
     public class ClienteBLL
     {
         private UnitOfWork unitOfWork;
@@ -80,44 +73,60 @@ namespace ProyectoSegurosFpDaw.BLL
             unitOfWork.SaveChanges();
         }
 
-        public ClienteParam GetSearchingField(string clienteId, string dniCliente, string email, string telefonoCliente)
+       
+        public ClienteSearchingFields GetSearchingField(string clienteId, string dniCliente, string email, string telefonoCliente)
         {
+            ClienteSearchingFields output = new ClienteSearchingFields()
+            {
+                SearchingParam= ClienteSearchingParam.empty,                
+            };
+            if (clienteId.IsNullOrWhiteSpace() == false)
+            {
+                output.SearchingParam = ClienteSearchingParam.id;
+                output.ValueId = int.Parse(clienteId);
+                
+            }
+            if (dniCliente.IsNullOrWhiteSpace() == false) 
+            {
+                output.SearchingParam = ClienteSearchingParam.dni;
+                output.Value = dniCliente.Trim().ToUpperInvariant();
+            }
+            if (email.IsNullOrWhiteSpace() == false) 
+            {
+                output.SearchingParam = ClienteSearchingParam.email;
+                output.Value = email.Trim().ToUpperInvariant();
+            }
+            if (telefonoCliente.IsNullOrWhiteSpace() == false)
+            {
+                output.SearchingParam = ClienteSearchingParam.telefono;
+                output.Value = telefonoCliente.Trim().ToUpperInvariant();
+            }
+            return output;
 
-            if (clienteId.IsNullOrWhiteSpace() == false) { return ClienteParam.id; }
-            if (dniCliente.IsNullOrWhiteSpace() == false) { return ClienteParam.dni; }
-            if (email.IsNullOrWhiteSpace() == false) { return ClienteParam.email; }
-            if (telefonoCliente.IsNullOrWhiteSpace() == false) { return ClienteParam.telefono; }
-            return ClienteParam.empty;
+        }       
 
-        }
 
-        public List<Cliente> SearchClientes(ClienteParam parameter, string searchingValue)
+        public List<Cliente> SearchClientes(ClienteSearchingFields searchingFields)
         {
-            var output = new List<Cliente>();
-            searchingValue = searchingValue.Trim().ToUpperInvariant();
+            var output = new List<Cliente>();            
 
-            if (parameter == ClienteParam.id)
-            {
-                bool success = Int32.TryParse(searchingValue, out int clienteId);
-                if (success == false)
-                {
-                    return output;
-                }
-                output = unitOfWork.Cliente.Where(c => c.clienteId == clienteId).ToList();
+            if (searchingFields.SearchingParam == ClienteSearchingParam.id)
+            {                
+                output = unitOfWork.Cliente.Where(c => c.clienteId == searchingFields.ValueId).ToList();
             }
-            if (parameter == ClienteParam.dni)
+            if (searchingFields.SearchingParam == ClienteSearchingParam.dni)
             {
-                output = unitOfWork.Cliente.Where(c => c.dniCliente == searchingValue).ToList();
+                output = unitOfWork.Cliente.Where(c => c.dniCliente == searchingFields.Value).ToList();
             }
-            if (parameter == ClienteParam.email)
+            if (searchingFields.SearchingParam == ClienteSearchingParam.email)
             {
-                output = unitOfWork.Cliente.Where(c => c.emailCliente == searchingValue).ToList();
+                output = unitOfWork.Cliente.Where(c => c.emailCliente == searchingFields.Value).ToList();
             }
-            if (parameter == ClienteParam.telefono)
+            if (searchingFields.SearchingParam == ClienteSearchingParam.telefono)
             {
-                output = unitOfWork.Cliente.Where(c => c.telefonoCliente == searchingValue).ToList();
+                output = unitOfWork.Cliente.Where(c => c.telefonoCliente == searchingFields.Value).ToList();
             }
-            if (parameter == ClienteParam.empty)
+            if (searchingFields.SearchingParam == ClienteSearchingParam.empty)
             {
                 output = unitOfWork.Cliente.Where(c => c.activo == 1).ToList();
             }

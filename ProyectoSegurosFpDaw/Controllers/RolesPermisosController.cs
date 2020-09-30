@@ -18,11 +18,7 @@ namespace ProyectoSegurosFpDaw.Controllers
             unitOfWork = new UnitOfWork(context);
         }
         #region Actions
-
-        /// <summary>
-        /// GET :  Muestra lista de Roles / Permisos.
-        /// </summary>
-        /// <returns>Vista con la lista de roles/permisos</returns>
+              
         [AutorizarUsuario(permisoId: 11)]
         [HttpGet]
         public ActionResult Index()

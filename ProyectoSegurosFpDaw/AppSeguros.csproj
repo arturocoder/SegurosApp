@@ -152,6 +152,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="BLL\AccesoBLL.cs" />
     <Compile Include="BLL\ClienteBLL.cs" />
+    <Compile Include="BLL\ClienteSearchingFields.cs" />
     <Compile Include="BLL\CondicionadoPolizaBLL.cs" />
     <Compile Include="BLL\Encriptacion.cs" />
     <Compile Include="BLL\GestionPolizaBLL.cs" />
