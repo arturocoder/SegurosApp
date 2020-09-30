@@ -19,7 +19,7 @@ namespace ProyectoSegurosFpDaw.Controllers
 {
     [RequireHttps]
     public class GestionPolizasController : Controller
-    {        
+    {
         private ProyectoSegurosDbEntities context;
         private UnitOfWork unitOfWork;
         private GestionPolizaBLL gestionPolizaBLL;
@@ -179,12 +179,7 @@ namespace ProyectoSegurosFpDaw.Controllers
 
         /// <summary>
         /// POST : crea una nueva póliza, y la primera gestionPoliza asociada a esa póliza.
-        /// </summary>
-        /// <param name="gestionPoliza"> gestión póliza con: matricula,marca,modelo,fecha Inicio, fecha fin
-        /// precio, observaciones y condicionado</param>
-        /// <param name="clienteId"> id de cliente</param>
-        /// Ok => Guarda registro en BBDD (póliza y gestión póliza) y redirecciona a Index con mensaje de success.
-        /// Error => redirecciona a Index / Create con mensaje de error.
+        /// </summary>    
         [AutorizarUsuario(permisoId: 12)]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -260,13 +255,9 @@ namespace ProyectoSegurosFpDaw.Controllers
         }
 
         /// <summary>
-        /// Modifica una póliza =>  crea una nueva gestión póliza.
+        /// POST: Crea una nueva gestión póliza asociada a la póliza con las modificaciones realizadas
         /// </summary>
-        /// <param name="id">polizaId</param>
-        /// <returns>
-        ///  Ok => crea nueva gestionPoliza  en BBDD asociada a la póliza y redirecciona a Index con mensaje de success.
-        /// Error => redirecciona a Index / Details con mensaje de error.
-        /// </returns>
+        /// <param name="id">polizaId</param>             
         [AutorizarUsuario(permisoId: 13)]
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
@@ -317,12 +308,8 @@ namespace ProyectoSegurosFpDaw.Controllers
 
         /// <summary>
         /// POST : cancela una póliza, modificando su estado activo a 0, 
-        /// y creando una nueva gestión póliza modificando su fecha de fin.
-        /// </summary>
-        /// <param name="gestionPolizaId">gestionPoliza Id</param>
-        /// <param name="motivoClx">motivo de cancelación</param>
-        /// Ok => Modifica póliza en BBDD, crea nueva gestiónPóliza, y redirecciona a Index con mensaje de success.
-        /// Error => redirecciona a Index .
+        /// y crea una nueva gestión póliza modificando su fecha de fin.
+        /// </summary>      
         [AutorizarUsuario(permisoId: 14)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
