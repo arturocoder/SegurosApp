@@ -231,7 +231,6 @@ namespace ProyectoSegurosFpDaw.Controllers
                 TempData["mensaje"] = ItemMensaje.ErrorExcepcionCrear(Poliza.GetNombreModelo(), ex.GetType().ToString());
                 return RedirectToAction("Create", new { clienteDni = cliente.dniCliente });
             }
-
         }
 
         /// <summary>

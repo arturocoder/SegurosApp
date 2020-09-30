@@ -14,19 +14,16 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
         public ClienteRepository(ProyectoSegurosDbEntities context) : base(context)
         {
         }
-
         public ProyectoSegurosDbEntities ProyectoSegurosContext
         {
             get { return Context as ProyectoSegurosDbEntities; }
         }
-
         public Cliente GetClienteActivo(int clienteId)
         {
             return ProyectoSegurosContext.Cliente
                            .Where(c => c.activo == 1 && c.clienteId == clienteId)
                            .SingleOrDefault();
         }
-
         public IEnumerable<Cliente> GetClientesActivosWhere(Expression<Func<Cliente, bool>> predicate)
         {
             return ProyectoSegurosContext.Cliente                          

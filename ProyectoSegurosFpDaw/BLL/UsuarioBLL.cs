@@ -50,8 +50,6 @@ namespace ProyectoSegurosFpDaw.BLL
             }
             return false;
         }
-
-
         public bool AnyUsuarioWithEmail(string email)
         {
             return unitOfWork.Usuario.Any(c => c.emailUsuario == email);
@@ -74,7 +72,6 @@ namespace ProyectoSegurosFpDaw.BLL
             usuario.password = usuario.password.Trim();
             return true;
         }
-
         private bool IsValidFormat(Usuario usuario)
         {
             if (usuario == null)
@@ -88,9 +85,7 @@ namespace ProyectoSegurosFpDaw.BLL
                 return false;
             }
             return true;
-
         }
-
         public UsuarioSearchingFields GetSearchingField(string nombre, string apellido1, string dni, string email, string rolId)
         {
             UsuarioSearchingFields output = new UsuarioSearchingFields
@@ -134,8 +129,6 @@ namespace ProyectoSegurosFpDaw.BLL
             }
             return output;
         }
-
-
         public List<Usuario> SearchUsuarios(UsuarioSearchingFields searchingFields)
         {
             var output = new List<Usuario>();

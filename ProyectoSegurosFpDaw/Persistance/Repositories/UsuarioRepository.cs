@@ -18,29 +18,24 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
         public UsuarioRepository(ProyectoSegurosDbEntities context) : base(context)
         {
         }
-
         public Usuario GetUsuarioActivo(int usuarioId)
         {
             return ProyectoSegurosContext.Usuario
-                          .Where(c => c.activo == 1 && c.usuarioId==usuarioId)                  
+                          .Where(c => c.activo == 1 && c.usuarioId == usuarioId)
                           .SingleOrDefault();
         }
-
         public IEnumerable<Usuario> GetUsuariosActivosWithRoles()
         {
-
             return ProyectoSegurosContext.Usuario
                       .Include(c => c.Rol)
                       .Where(c => c.activo == 1)
                       .ToList();
         }
-        
-
         public IEnumerable<Usuario> GetUsuariosActivosWithRolesWhere(Expression<Func<Usuario, bool>> predicate)
         {
             return ProyectoSegurosContext.Usuario
                           .Include(c => c.Rol)
-                          .Where(c => c.activo==1)
+                          .Where(c => c.activo == 1)
                           .Where(predicate)
                           .ToList();
         }
@@ -52,6 +47,5 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
                           .Where(predicate)
                           .ToList();
         }
-
     }
 }

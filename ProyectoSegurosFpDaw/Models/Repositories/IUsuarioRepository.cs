@@ -10,7 +10,6 @@ namespace ProyectoSegurosFpDaw.Models.Repositories
     public interface IUsuarioRepository:IRepository<Usuario>
     {
         Usuario GetUsuarioActivo(int usuarioId);
-
         IEnumerable<Usuario> GetUsuariosActivosWithRoles();
         IEnumerable<Usuario> GetUsuariosActivosWithRolesWhere(Expression<Func<Usuario, bool>> predicate);
         IEnumerable<Usuario> GetUsuariosNoActivosWithRolesWhere(Expression<Func<Usuario, bool>> predicate);

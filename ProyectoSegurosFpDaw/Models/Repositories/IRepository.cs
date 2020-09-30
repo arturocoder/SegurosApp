@@ -11,19 +11,13 @@ namespace ProyectoSegurosFpDaw.Models.Repositories
     {
         TEntity Get(int id);
         IEnumerable<TEntity> GetAll();
-
         IEnumerable<TEntity> Where(Expression<Func<TEntity, bool>> predicate);    
-
-
         TEntity SingleOrDefault(Expression<Func<TEntity, bool>> predicate);
         TEntity SingleOrDefaultNoTracking(Expression<Func<TEntity, bool>> predicate);
 
-
         void Add(TEntity entity);
         void AddRange(IEnumerable<TEntity> entities);
-
         bool Any(Expression<Func<TEntity, bool>> predicate);
-
         void Remove(TEntity entity);
         void RemoveRange(IEnumerable<TEntity> entities);
         void Update(TEntity entity);

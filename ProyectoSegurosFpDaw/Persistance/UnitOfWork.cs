@@ -34,7 +34,5 @@ namespace ProyectoSegurosFpDaw.Persistance
         {
             return _context.SaveChanges();
         }
-
-
     }
 }

@@ -16,8 +16,6 @@ namespace ProyectoSegurosFpDaw.BLL
         {
             this.unitOfWork =  unitOfWork;
         }
-
-
         public bool AnyCondicionadoWithTipoCondicionado(string tipoCondicionado)
         {
             return unitOfWork.CondicionadoPoliza.Any(c => c.tipoCondicionado == tipoCondicionado);
@@ -50,6 +48,30 @@ namespace ProyectoSegurosFpDaw.BLL
             condicionadoPoliza.activo = 1;
             unitOfWork.CondicionadoPoliza.Add(condicionadoPoliza);
             unitOfWork.SaveChanges();
+        }
+
+        public void DeleteCondicionado(CondicionadoPoliza condicionadoPoliza)
+        {
+            condicionadoPoliza.fechaDesactivado = DateTime.Now;
+            condicionadoPoliza.activo = 0;
+            unitOfWork.CondicionadoPoliza.Update(condicionadoPoliza);
+            unitOfWork.SaveChanges();
+        }
+        public void UnDeleteCondicionado(CondicionadoPoliza condicionadoPoliza)
+        {
+            condicionadoPoliza.fechaDesactivado = null;
+            condicionadoPoliza.activo = 1;
+            unitOfWork.CondicionadoPoliza.Update(condicionadoPoliza);
+            unitOfWork.SaveChanges();
+        }
+        public bool AnyPolizaActivaWithThisCondicionado(CondicionadoPoliza condicionadoPoliza)
+        {
+            return unitOfWork.GestionPoliza.ExistCondicionadoInPolizasActivas(condicionadoPoliza.condicionadoPolizaId);
+        }
+        public List<int> GetPolizasActivasIdWithThisCondicionado(CondicionadoPoliza condicionadoPoliza)
+        {            
+            List<int> output = unitOfWork.GestionPoliza.GetLastGestionesPolizaActivasByCondicionadoPoliza(condicionadoPoliza).Select(c => c.polizaId).ToList();
+            return output;            
         }
     }
 }

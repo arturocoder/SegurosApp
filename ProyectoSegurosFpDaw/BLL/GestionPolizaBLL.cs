@@ -23,25 +23,20 @@ namespace ProyectoSegurosFpDaw.BLL
         /// <summary>
         /// GET: lista con histórico de todas las gestiones pólizas de una póliza
         /// ordenadas por fecha
-        /// </summary>
-        /// <param name="id">póliza Id</param>
-        /// <returns>lista de gestionPolizas</returns>
+        /// </summary>        
         public List<GestionPoliza> GetHistoricoPoliza(int polizaId)
         {
             return unitOfWork.GestionPoliza.GetGestionesPolizaWithClienteCondicionadoTipoGestionWhere(c => c.polizaId == polizaId)
                 .OrderBy(c => c.fechaGestion)
                 .ToList();
         }
-
         public GestionPoliza GetLastGestionPoliza(int polizaId)
         {
             return unitOfWork.GestionPoliza
                 .GetGestionesPolizaWithClienteCondicionadoTipoGestionWhere(c => c.polizaId == polizaId)
                 .OrderByDescending(c => c.gestionPolizaId)
                 .FirstOrDefault();
-
         }
-
         public bool FieldsFormatCreate(GestionPoliza gestionPoliza, string clienteId)
         {
             if (IsValidFormatCreate(gestionPoliza, clienteId) == false)
@@ -54,7 +49,6 @@ namespace ProyectoSegurosFpDaw.BLL
             gestionPoliza.observaciones = gestionPoliza.observaciones.Trim();
             return true;
         }
-
         private bool IsValidFormatCreate(GestionPoliza gestionPoliza, string clienteId)
         {
             if (gestionPoliza == null || clienteId.IsNullOrWhiteSpace())
@@ -76,8 +70,6 @@ namespace ProyectoSegurosFpDaw.BLL
             return true;
 
         }
-
-
         public bool FieldsFormatEdit(GestionPoliza gestionPoliza)
         {
             if (IsValidFormatEdit(gestionPoliza) == false)
@@ -90,7 +82,6 @@ namespace ProyectoSegurosFpDaw.BLL
             gestionPoliza.observaciones = gestionPoliza.observaciones.Trim();
             return true;
         }
-
         private bool IsValidFormatEdit(GestionPoliza gestionPoliza)
         {
             if (gestionPoliza == null)
@@ -108,7 +99,6 @@ namespace ProyectoSegurosFpDaw.BLL
             }
             return true;
         }
-
         public bool IsValidSearching(string fechaInicio, string fechaFinal, string estadoPoliza)
         {
             if (fechaInicio.IsNullOrWhiteSpace() == false && fechaFinal.IsNullOrWhiteSpace() == false && estadoPoliza.IsNullOrWhiteSpace() == false)
@@ -118,7 +108,6 @@ namespace ProyectoSegurosFpDaw.BLL
             return false;
 
         }
-        
         public PolizaSearchingFields GetSearchingFields(int? polizaId, string matricula, string dniCliente, string telefonoCliente, string fechaInicio, string fechaFinal, string estadoPoliza)
         {
             PolizaSearchingFields output = new PolizaSearchingFields()
@@ -167,11 +156,11 @@ namespace ProyectoSegurosFpDaw.BLL
         /// <returns>Lista de gestion pólizas coincidentes (la última creada de cada póliza coincidente ) </returns>
         public List<GestionPoliza> SearchPolizas(PolizaSearchingFields searchingFields)
         {
-            List<GestionPoliza> output = new List<GestionPoliza>();           
+            List<GestionPoliza> output = new List<GestionPoliza>();
 
             // Fecha Alta + Estado  (resto de campos vacíos).
             if (searchingFields.SearchingParam == PolizaSearchingParam.empty)
-            {                
+            {
                 output = unitOfWork.GestionPoliza.GetLastGestionesPolizaWithCliente(searchingFields.FechaInicio, searchingFields.FechaFinal, (int)searchingFields.EstadoPoliza).ToList();
                 return output;
 
@@ -179,7 +168,7 @@ namespace ProyectoSegurosFpDaw.BLL
 
             // Póliza Id 
             if (searchingFields.SearchingParam == PolizaSearchingParam.polizaId)
-            {               
+            {
                 GestionPoliza gestionPoliza = unitOfWork.GestionPoliza.GetLastGestionPolizaWithClienteBy(searchingFields.PolizaId);
                 if (gestionPoliza != null)
                 {
@@ -190,7 +179,7 @@ namespace ProyectoSegurosFpDaw.BLL
             // Fecha Alta + Estado + Matrícula que aparezca en cualquiera de sus gestionPoliza.
             if (searchingFields.SearchingParam == PolizaSearchingParam.matricula)
             {
-                output = unitOfWork.GestionPoliza.GetLastGestionesPolizaWithClienteByMatricula(searchingFields.FechaInicio, searchingFields.FechaFinal, (int)searchingFields.EstadoPoliza,searchingFields.Value).ToList();
+                output = unitOfWork.GestionPoliza.GetLastGestionesPolizaWithClienteByMatricula(searchingFields.FechaInicio, searchingFields.FechaFinal, (int)searchingFields.EstadoPoliza, searchingFields.Value).ToList();
                 return output;
             }
             // Fecha Alta + Estado + NIF / NIE.
@@ -208,9 +197,6 @@ namespace ProyectoSegurosFpDaw.BLL
             // Si no hay ningún resultado coincidente, devuelve una lista vacía.
             return output;
         }
-        
-
-
 
         /// <summary>
         /// Validación de formato de la matrícula mediante expresión regular .
@@ -269,7 +255,6 @@ namespace ProyectoSegurosFpDaw.BLL
 
         private void CreateGestionPoliza(GestionPoliza gestionPoliza, Cliente cliente)
         {
-
             // Recupera la póliza creada.
             var polizaIdCreada = unitOfWork.Poliza.Where(c => c.clienteId == cliente.clienteId && c.activo == -1).Select(s => s.polizaId).FirstOrDefault();
             // Crea la gestiónPóliza Inicial de Alta.
@@ -308,9 +293,6 @@ namespace ProyectoSegurosFpDaw.BLL
             }
         }
 
-
-
-
         public void UpdateGestionPoliza(GestionPoliza gestionPoliza, Usuario usuarioLogado)
         {
             gestionPoliza.usuarioId = usuarioLogado.usuarioId;
@@ -318,7 +300,6 @@ namespace ProyectoSegurosFpDaw.BLL
             // 3 => MODIFICACIÓN 
             gestionPoliza.tipoGestionId = 3;
             unitOfWork.GestionPoliza.Add(gestionPoliza);
-
             unitOfWork.SaveChanges();
         }
 
@@ -337,7 +318,6 @@ namespace ProyectoSegurosFpDaw.BLL
                 gestionPoliza.fechaFin = DateTime.Today;
 
             }
-
             // Tipo de gestión:
             // 2 => BAJA 
             gestionPoliza.tipoGestionId = 2;

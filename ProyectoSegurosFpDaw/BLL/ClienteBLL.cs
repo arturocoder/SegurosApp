@@ -9,7 +9,7 @@ using static ProyectoSegurosFpDaw.Controllers.ClientesController;
 
 namespace ProyectoSegurosFpDaw.BLL
 {
-   
+
     public class ClienteBLL
     {
         private UnitOfWork unitOfWork;
@@ -18,7 +18,6 @@ namespace ProyectoSegurosFpDaw.BLL
         {
             this.unitOfWork = unitOfWork;
         }
-
 
         public bool FieldsFormat(Cliente cliente)
         {
@@ -34,7 +33,6 @@ namespace ProyectoSegurosFpDaw.BLL
             cliente.telefonoCliente = cliente.telefonoCliente.Trim();
             return true;
         }
-
         private bool IsValidFormat(Cliente cliente)
         {
             if (cliente == null)
@@ -50,12 +48,10 @@ namespace ProyectoSegurosFpDaw.BLL
             return true;
 
         }
-
         public bool AnyClienteWithDni(string dni)
         {
             return unitOfWork.Cliente.Any(c => c.dniCliente == dni);
         }
-
         public void CreateNewCliente(Cliente cliente)
         {
             cliente.activo = 1;
@@ -72,26 +68,24 @@ namespace ProyectoSegurosFpDaw.BLL
             cliente.activo = 0;
             unitOfWork.SaveChanges();
         }
-
-       
         public ClienteSearchingFields GetSearchingField(string clienteId, string dniCliente, string email, string telefonoCliente)
         {
             ClienteSearchingFields output = new ClienteSearchingFields()
             {
-                SearchingParam= ClienteSearchingParam.empty,                
+                SearchingParam = ClienteSearchingParam.empty,
             };
             if (clienteId.IsNullOrWhiteSpace() == false)
             {
                 output.SearchingParam = ClienteSearchingParam.id;
                 output.ValueId = int.Parse(clienteId);
-                
+
             }
-            if (dniCliente.IsNullOrWhiteSpace() == false) 
+            if (dniCliente.IsNullOrWhiteSpace() == false)
             {
                 output.SearchingParam = ClienteSearchingParam.dni;
                 output.Value = dniCliente.Trim().ToUpperInvariant();
             }
-            if (email.IsNullOrWhiteSpace() == false) 
+            if (email.IsNullOrWhiteSpace() == false)
             {
                 output.SearchingParam = ClienteSearchingParam.email;
                 output.Value = email.Trim().ToUpperInvariant();
@@ -103,15 +97,13 @@ namespace ProyectoSegurosFpDaw.BLL
             }
             return output;
 
-        }       
-
-
+        }
         public List<Cliente> SearchClientes(ClienteSearchingFields searchingFields)
         {
-            var output = new List<Cliente>();            
+            var output = new List<Cliente>();
 
             if (searchingFields.SearchingParam == ClienteSearchingParam.id)
-            {                
+            {
                 output = unitOfWork.Cliente.Where(c => c.clienteId == searchingFields.ValueId).ToList();
             }
             if (searchingFields.SearchingParam == ClienteSearchingParam.dni)
@@ -133,15 +125,5 @@ namespace ProyectoSegurosFpDaw.BLL
 
             return output;
         }
-
-
-
-
-
-
-
-
-
-
     }
 }

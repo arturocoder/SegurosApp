@@ -20,7 +20,6 @@ namespace ProyectoSegurosFpDaw.BLL
             this.unitOfWork = unitOfWork;
         }
 
-
         public Usuario GetAuthenticatedUsuario(string email, string password)
         {
             var passwordEncrypted = Encriptacion.GetSHA256(password);

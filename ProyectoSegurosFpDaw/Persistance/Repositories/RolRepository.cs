@@ -10,28 +10,18 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
 {
     public class RolRepository : Repository<Rol>, IRolRepository
     {
-
         public ProyectoSegurosDbEntities ProyectoSegurosContext
         {
             get { return Context as ProyectoSegurosDbEntities; }
         }
-
         public RolRepository(ProyectoSegurosDbEntities context) : base(context)
         {
         }
-
         public IEnumerable<Rol> GetRolesWithRolesPermisos()
         {
              return ProyectoSegurosContext.Rol
                 .Include(r => r.RolPermiso)
                 .ToList();
-        }
-
-        public IEnumerable<Rol> GetRolesOrderByName()
-        {
-            return ProyectoSegurosContext.Rol
-                .OrderBy(c => c.nombreRol)
-                .ToList();
-        }
+        }       
     }
 }

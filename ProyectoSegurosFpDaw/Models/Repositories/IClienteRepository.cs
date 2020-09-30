@@ -11,7 +11,5 @@ namespace ProyectoSegurosFpDaw.Models.Repositories
     {
         Cliente GetClienteActivo(int clienteId);
         IEnumerable<Cliente> GetClientesActivosWhere(Expression<Func<Cliente, bool>> predicate);
-
-
     }
 }

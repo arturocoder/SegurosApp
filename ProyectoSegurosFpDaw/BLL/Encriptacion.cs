@@ -5,8 +5,7 @@ using System.Text;
 namespace ProyectoSegurosFpDaw.BLL
 {
     public static class Encriptacion
-    {   
-        
+    {           
         public static string GetSHA256(string password)
         {
             using (SHA256 sha256 = SHA256Managed.Create())
