@@ -15,12 +15,13 @@ namespace ProyectoSegurosFpDaw.Models.Repositories
 
         bool ExistMatriculaInPolizasActivas(string matricula);
 
-        IEnumerable<GestionPoliza> GetLastGestionPolizaWithPolizaByDate(DateTime fechaInicio, DateTime fechaFinal);
-        IEnumerable<GestionPoliza> GetLastGestionPolizaWithPolizaByDate(DateTime fechaInicio, DateTime fechaFinal,int estadoPoliza);
 
-
-
-
+        GestionPoliza GetLastGestionPolizaWithClienteBy(int polizaId);     
+                
+        IEnumerable<GestionPoliza> GetLastGestionesPolizaWithCliente(DateTime fechaInicio, DateTime fechaFinal,int estadoPoliza);
+        IEnumerable<GestionPoliza> GetLastGestionesPolizaWithClienteByMatricula(DateTime fechaInicio, DateTime fechaFinal, int estadoPoliza,string matricula);
+        IEnumerable<GestionPoliza> GetLastGestionesPolizaWithClienteByDni(DateTime fechaInicio, DateTime fechaFinal, int estadoPoliza,string dni);
+        IEnumerable<GestionPoliza> GetLastGestionesPolizaWithClienteByTelefono(DateTime fechaInicio, DateTime fechaFinal, int estadoPoliza,string telefono);
 
 
     }

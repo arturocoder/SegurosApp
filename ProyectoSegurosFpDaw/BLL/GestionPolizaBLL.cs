@@ -119,7 +119,7 @@ namespace ProyectoSegurosFpDaw.BLL
 
         }
 
-        public PolizaSearching GetSearchingField(int? polizaId, string matricula, string dniCliente, string telefonoCliente, string fechaInicio, string fechaFinal, string estadoPoliza)
+        public PolizaSearching GetSearchingFields(int? polizaId, string matricula, string dniCliente, string telefonoCliente, string fechaInicio, string fechaFinal, string estadoPoliza)
         {
             PolizaSearching output = new PolizaSearching()
             {
@@ -161,25 +161,16 @@ namespace ProyectoSegurosFpDaw.BLL
 
             // Fecha Alta + Estado  (resto de campos vacíos).
             if (searchingFields.SearchingParam == PolizaSearchingParam.empty)
-            {
-                // Estado Póliza Todos. 
-                if (searchingFields.EstadoPoliza == EstadoPolizaParam.todos)
-                {
-                    output = unitOfWork.GestionPoliza.GetLastGestionPolizaWithPolizaByDate(searchingFields.FechaInicio, searchingFields.FechaFinal).ToList();
-                    return output;
-                }
-                output = unitOfWork.GestionPoliza.GetLastGestionPolizaWithPolizaByDate(searchingFields.FechaInicio, searchingFields.FechaFinal, (int)searchingFields.EstadoPoliza).ToList();
+            {                
+                output = unitOfWork.GestionPoliza.GetLastGestionesPolizaWithCliente(searchingFields.FechaInicio, searchingFields.FechaFinal, (int)searchingFields.EstadoPoliza).ToList();
                 return output;
 
             }
 
             // Póliza Id 
             if (searchingFields.SearchingParam == PolizaSearchingParam.polizaId)
-            {
-                GestionPoliza gestionPoliza = unitOfWork.GestionPoliza
-                    .GetGestionesPolizaWithClienteCondicionadoTipoGestionWhere(c => c.polizaId == searchingFields.PolizaId)
-                    .OrderByDescending(c => c.gestionPolizaId)
-                    .FirstOrDefault();
+            {               
+                GestionPoliza gestionPoliza = unitOfWork.GestionPoliza.GetLastGestionPolizaWithClienteBy(searchingFields.PolizaId);
                 if (gestionPoliza != null)
                 {
                     output.Add(gestionPoliza);
@@ -189,40 +180,20 @@ namespace ProyectoSegurosFpDaw.BLL
             // Fecha Alta + Estado + Matrícula que aparezca en cualquiera de sus gestionPoliza.
             if (searchingFields.SearchingParam == PolizaSearchingParam.matricula)
             {
-                // Estado Póliza Todos 
-                if (searchingFields.EstadoPoliza == EstadoPolizaParam.todos)
-                {
-
-                }
-                else
-                {
-
-                }
+                output = unitOfWork.GestionPoliza.GetLastGestionesPolizaWithClienteByMatricula(searchingFields.FechaInicio, searchingFields.FechaFinal, (int)searchingFields.EstadoPoliza,searchingFields.Value).ToList();
+                return output;
             }
             // Fecha Alta + Estado + NIF / NIE.
             if (searchingFields.SearchingParam == PolizaSearchingParam.dniCliente)
             {
-                // Estado Póliza Todos.
-                if (searchingFields.EstadoPoliza == EstadoPolizaParam.todos)
-                {
-                }
-                else
-                {
-
-                }
+                output = unitOfWork.GestionPoliza.GetLastGestionesPolizaWithClienteByDni(searchingFields.FechaInicio, searchingFields.FechaFinal, (int)searchingFields.EstadoPoliza, searchingFields.Value).ToList();
+                return output;
             }
             // Fecha Alta + Estado + Teléfono.
             if (searchingFields.SearchingParam == PolizaSearchingParam.telefonoCliente)
             {
-                // Estado Póliza Todos.
-                if (searchingFields.EstadoPoliza == EstadoPolizaParam.todos)
-                {
-
-                }
-                else
-                {
-
-                }
+                output = unitOfWork.GestionPoliza.GetLastGestionesPolizaWithClienteByTelefono(searchingFields.FechaInicio, searchingFields.FechaFinal, (int)searchingFields.EstadoPoliza, searchingFields.Value).ToList();
+                return output;
             }
             // Si no hay ningún resultado coincidente, devuelve una lista vacía.
             return output;

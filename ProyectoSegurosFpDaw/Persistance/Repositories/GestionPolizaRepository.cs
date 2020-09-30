@@ -64,16 +64,32 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
 
         }
 
-        public IEnumerable<GestionPoliza> GetLastGestionPolizaWithPolizaByDate(DateTime fechaInicio, DateTime fechaFinal)
+        public GestionPoliza GetLastGestionPolizaWithClienteBy(int polizaId)
+        {
+            return ProyectoSegurosContext.GestionPoliza
+                                    .Include(c => c.Poliza.Cliente)
+                                    .Where(c => c.polizaId == polizaId)
+                                    .OrderByDescending(c => c.gestionPolizaId)
+                                    .FirstOrDefault();
+        }
+
+
+
+        public IEnumerable<GestionPoliza> GetLastGestionesPolizaWithCliente(DateTime fechaInicio, DateTime fechaFinal, int estadoPoliza)
         {
             var output = new List<GestionPoliza>();
 
-            // Obtiene el id de las pólizas que coinciden con el rango de fecha de Alta.
+            // Obtiene el id de las pólizas que coinciden con 
+            // el rango de fecha de Alta + estado Póliza (activo/No activo/ todos).
             var polizasCoincidentes =
                  from gestiones in ProyectoSegurosContext.GestionPoliza
                  join polizas in ProyectoSegurosContext.Poliza on gestiones.polizaId equals polizas.polizaId
-                 where gestiones.fechaInicio < fechaFinal && gestiones.fechaInicio > fechaInicio
-                 select new { Poliza = polizas.polizaId };
+                 where gestiones.fechaInicio <= fechaFinal && gestiones.fechaInicio >= fechaInicio                    
+                 select polizas;
+            if (estadoPoliza != 2)
+            {
+                polizasCoincidentes = polizasCoincidentes.Where(c => c.activo == estadoPoliza);
+            }
 
             // Si hay resultados coincidentes
             if (polizasCoincidentes.Any())
@@ -82,8 +98,9 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
                 foreach (var item in polizasCoincidentes.Distinct())
                 {
                     // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º)
-                    var ultimaGestion = ProyectoSegurosContext.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
-                        .Where(c => c.polizaId == item.Poliza)
+                    var ultimaGestion = ProyectoSegurosContext.GestionPoliza
+                        .Include(c => c.Poliza.Cliente)
+                        .Where(c => c.polizaId == item.polizaId)
                         .OrderByDescending(c => c.gestionPolizaId)
                         .FirstOrDefault();
 
@@ -95,18 +112,22 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
             return output;
         }
 
-        public IEnumerable<GestionPoliza> GetLastGestionPolizaWithPolizaByDate(DateTime fechaInicio, DateTime fechaFinal, int estadoPoliza)
+        public IEnumerable<GestionPoliza> GetLastGestionesPolizaWithClienteByMatricula(DateTime fechaInicio, DateTime fechaFinal, int estadoPoliza, string matricula)
         {
             var output = new List<GestionPoliza>();
 
             // Obtiene el id de las pólizas que coinciden con 
-            // el rango de fecha de Alta + estado Póliza (activo/No activo).
+            // el rango de fecha de Alta + estado Póliza (activo/No activo/ todos).
             var polizasCoincidentes =
                  from gestiones in ProyectoSegurosContext.GestionPoliza
                  join polizas in ProyectoSegurosContext.Poliza on gestiones.polizaId equals polizas.polizaId
-                 where gestiones.fechaInicio < fechaFinal && gestiones.fechaInicio > fechaInicio
-                     && polizas.activo == estadoPoliza
-                 select new { Poliza = polizas.polizaId };
+                 where gestiones.fechaInicio <= fechaFinal && gestiones.fechaInicio >= fechaInicio
+                 && gestiones.matricula == matricula
+                 select polizas;
+            if (estadoPoliza != 2)
+            {
+                polizasCoincidentes = polizasCoincidentes.Where(c => c.activo == estadoPoliza);
+            }
 
             // Si hay resultados coincidentes
             if (polizasCoincidentes.Any())
@@ -115,8 +136,85 @@ namespace ProyectoSegurosFpDaw.Persistance.Repositories
                 foreach (var item in polizasCoincidentes.Distinct())
                 {
                     // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º)
-                    var ultimaGestion = ProyectoSegurosContext.GestionPoliza.Include(c => c.Poliza).Include(c => c.Poliza.Cliente)
-                        .Where(c => c.polizaId == item.Poliza)
+                    var ultimaGestion = ProyectoSegurosContext.GestionPoliza
+                        .Include(c => c.Poliza.Cliente)
+                        .Where(c => c.polizaId == item.polizaId)
+                        .OrderByDescending(c => c.gestionPolizaId)
+                        .FirstOrDefault();
+
+                    // Añade a la lista 
+                    output.Add(ultimaGestion);
+                }
+
+            }
+            return output;
+        }
+
+        public IEnumerable<GestionPoliza> GetLastGestionesPolizaWithClienteByDni(DateTime fechaInicio, DateTime fechaFinal, int estadoPoliza, string dni)
+        {
+            var output = new List<GestionPoliza>();
+
+            // Obtiene el id de las pólizas que coinciden con 
+            // el rango de fecha de Alta + estado Póliza (activo/No activo/ todos).
+            var polizasCoincidentes =
+                 from gestiones in ProyectoSegurosContext.GestionPoliza
+                 join polizas in ProyectoSegurosContext.Poliza on gestiones.polizaId equals polizas.polizaId
+                 where gestiones.fechaInicio <= fechaFinal && gestiones.fechaInicio >= fechaInicio
+                  && polizas.Cliente.dniCliente == dni
+                 select polizas;
+            if (estadoPoliza != 2)
+            {
+                polizasCoincidentes = polizasCoincidentes.Where(c => c.activo == estadoPoliza);
+            }
+
+            // Si hay resultados coincidentes
+            if (polizasCoincidentes.Any())
+            {
+                // Recorre la query (obviando las pólizas repetidas (distinct)) 
+                foreach (var item in polizasCoincidentes.Distinct())
+                {
+                    // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º)
+                    var ultimaGestion = ProyectoSegurosContext.GestionPoliza
+                        .Include(c => c.Poliza.Cliente)
+                        .Where(c => c.polizaId == item.polizaId)
+                        .OrderByDescending(c => c.gestionPolizaId)
+                        .FirstOrDefault();
+
+                    // Añade a la lista 
+                    output.Add(ultimaGestion);
+                }
+
+            }
+            return output;
+        }
+
+        public IEnumerable<GestionPoliza> GetLastGestionesPolizaWithClienteByTelefono(DateTime fechaInicio, DateTime fechaFinal, int estadoPoliza, string telefono)
+        {
+            var output = new List<GestionPoliza>();
+
+            // Obtiene el id de las pólizas que coinciden con 
+            // el rango de fecha de Alta + estado Póliza (activo/No activo/ todos).
+            var polizasCoincidentes =
+                 from gestiones in ProyectoSegurosContext.GestionPoliza
+                 join polizas in ProyectoSegurosContext.Poliza on gestiones.polizaId equals polizas.polizaId
+                 where gestiones.fechaInicio <= fechaFinal && gestiones.fechaInicio >= fechaInicio
+                  && polizas.Cliente.telefonoCliente == telefono
+                 select polizas;
+            if (estadoPoliza != 2)
+            {
+                polizasCoincidentes = polizasCoincidentes.Where(c => c.activo == estadoPoliza);
+            }
+
+            // Si hay resultados coincidentes
+            if (polizasCoincidentes.Any())
+            {
+                // Recorre la query (obviando las pólizas repetidas (distinct)) 
+                foreach (var item in polizasCoincidentes.Distinct())
+                {
+                    // Selecciona la última gestión de cada póliza (orden descendente => selecciona la 1º)
+                    var ultimaGestion = ProyectoSegurosContext.GestionPoliza
+                        .Include(c => c.Poliza.Cliente)
+                        .Where(c => c.polizaId == item.polizaId)
                         .OrderByDescending(c => c.gestionPolizaId)
                         .FirstOrDefault();
 
