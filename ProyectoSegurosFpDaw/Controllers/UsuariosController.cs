@@ -69,7 +69,7 @@ namespace ProyectoSegurosFpDaw.Controllers
         {
             try
             {
-                UsuarioSearching searchingFields = usuarioBll.GetSearchingField(nombreUsuario, apellido1Usuario, dniUsuario, emailUsuario, rolId);
+                UsuarioSearchingFields searchingFields = usuarioBll.GetSearchingField(nombreUsuario, apellido1Usuario, dniUsuario, emailUsuario, rolId);
                 List<Usuario> usuariosMatches = usuarioBll.SearchUsuarios(searchingFields);
 
                 if (usuariosMatches.Any() && usuariosMatches.FirstOrDefault().activo == 0)

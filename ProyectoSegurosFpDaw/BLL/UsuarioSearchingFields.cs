@@ -14,15 +14,15 @@ namespace ProyectoSegurosFpDaw.BLL
         email,
         empty
     }
-    public enum UsuarioSearchingRolParam
+    public enum RolParam
     {
         allRoles,
         rolId
     }
-    public class UsuarioSearching
+    public class UsuarioSearchingFields
     {
         public UsuarioSearchingParam SearchingParam { get; set; }
-        public UsuarioSearchingRolParam SearchingRol { get; set; }
+        public RolParam SearchingRol { get; set; }
         public List<string> SearchingValue { get; set; } = new List<string>();
         public int SearchingValueRol { get; set; }
     }

@@ -91,17 +91,17 @@ namespace ProyectoSegurosFpDaw.BLL
 
         }
 
-        public UsuarioSearching GetSearchingField(string nombre, string apellido1, string dni, string email, string rolId)
+        public UsuarioSearchingFields GetSearchingField(string nombre, string apellido1, string dni, string email, string rolId)
         {
-            UsuarioSearching output = new UsuarioSearching
+            UsuarioSearchingFields output = new UsuarioSearchingFields
             {
                 SearchingParam = UsuarioSearchingParam.empty,
-                SearchingRol = UsuarioSearchingRolParam.allRoles
+                SearchingRol = RolParam.allRoles
             };
 
             if (rolId.IsNullOrWhiteSpace() == false && rolId != "0")
             {
-                output.SearchingRol = UsuarioSearchingRolParam.rolId;
+                output.SearchingRol = RolParam.rolId;
                 output.SearchingValueRol = int.Parse(rolId);
             }
 
@@ -136,14 +136,14 @@ namespace ProyectoSegurosFpDaw.BLL
         }
 
 
-        public List<Usuario> SearchUsuarios(UsuarioSearching searchingFields)
+        public List<Usuario> SearchUsuarios(UsuarioSearchingFields searchingFields)
         {
             var output = new List<Usuario>();
 
             // Rol (resto de campos vacíos).            
             if (searchingFields.SearchingParam == UsuarioSearchingParam.empty)
             {                               
-                if (searchingFields.SearchingRol == UsuarioSearchingRolParam.allRoles)
+                if (searchingFields.SearchingRol == RolParam.allRoles)
                 {
                     output = unitOfWork.Usuario.GetUsuariosActivosWithRoles().ToList();
                 }
@@ -159,7 +159,7 @@ namespace ProyectoSegurosFpDaw.BLL
                 var nombre = searchingFields.SearchingValue[0];
                 var apellido1 = searchingFields.SearchingValue[1];
                 
-                if (searchingFields.SearchingRol == UsuarioSearchingRolParam.allRoles)
+                if (searchingFields.SearchingRol == RolParam.allRoles)
                 {
                     output = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.nombreUsuario == nombre && c.apellido1Usuario == apellido1).ToList();
                 }
@@ -173,7 +173,7 @@ namespace ProyectoSegurosFpDaw.BLL
             {
                 var nombre = searchingFields.SearchingValue[0];
                 
-                if (searchingFields.SearchingRol == UsuarioSearchingRolParam.allRoles)
+                if (searchingFields.SearchingRol == RolParam.allRoles)
                 {
                     output = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.nombreUsuario == nombre).ToList();
                 }
@@ -187,7 +187,7 @@ namespace ProyectoSegurosFpDaw.BLL
             {
                 var apellido1 = searchingFields.SearchingValue[0];
                 
-                if (searchingFields.SearchingRol == UsuarioSearchingRolParam.allRoles)
+                if (searchingFields.SearchingRol == RolParam.allRoles)
                 {
                     output = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.apellido1Usuario == apellido1).ToList();
                 }
@@ -201,7 +201,7 @@ namespace ProyectoSegurosFpDaw.BLL
             {
                 var dni = searchingFields.SearchingValue[0];
                
-                if (searchingFields.SearchingRol == UsuarioSearchingRolParam.allRoles)
+                if (searchingFields.SearchingRol == RolParam.allRoles)
                 {
                     var usuariosCoincidentes = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.dniUsuario == dni).ToList();
 
@@ -222,7 +222,7 @@ namespace ProyectoSegurosFpDaw.BLL
             {
                 var email = searchingFields.SearchingValue[0];
                 
-                if (searchingFields.SearchingRol == UsuarioSearchingRolParam.allRoles)
+                if (searchingFields.SearchingRol == RolParam.allRoles)
                 {
                     var usuariosCoincidentes = unitOfWork.Usuario.GetUsuariosActivosWithRolesWhere(c => c.emailUsuario == email);
                     if (usuariosCoincidentes.Any() == false)

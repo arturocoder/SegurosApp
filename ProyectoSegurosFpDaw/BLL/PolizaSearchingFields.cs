@@ -19,7 +19,7 @@ namespace ProyectoSegurosFpDaw.BLL
         activo,
         todos
     }
-    public class PolizaSearching
+    public class PolizaSearchingFields
     {
         public int PolizaId { get; set; }
         public string Value { get; set; }

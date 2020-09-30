@@ -88,7 +88,7 @@ namespace ProyectoSegurosFpDaw.Controllers
 
             try
             {
-                PolizaSearching searchingFields = gestionPolizaBLL.GetSearchingFields(polizaId, matricula, dniCliente, telefonoCliente, fechaInicio, fechaFinal, estadoPoliza);
+                PolizaSearchingFields searchingFields = gestionPolizaBLL.GetSearchingFields(polizaId, matricula, dniCliente, telefonoCliente, fechaInicio, fechaFinal, estadoPoliza);
 
                 List<GestionPoliza> results = gestionPolizaBLL.SearchPolizas(searchingFields);
 

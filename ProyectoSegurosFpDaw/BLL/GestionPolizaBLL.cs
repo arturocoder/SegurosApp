@@ -118,10 +118,10 @@ namespace ProyectoSegurosFpDaw.BLL
             return false;
 
         }
-
-        public PolizaSearching GetSearchingFields(int? polizaId, string matricula, string dniCliente, string telefonoCliente, string fechaInicio, string fechaFinal, string estadoPoliza)
+        
+        public PolizaSearchingFields GetSearchingFields(int? polizaId, string matricula, string dniCliente, string telefonoCliente, string fechaInicio, string fechaFinal, string estadoPoliza)
         {
-            PolizaSearching output = new PolizaSearching()
+            PolizaSearchingFields output = new PolizaSearchingFields()
             {
                 FechaInicio = DateTime.Parse(fechaInicio.Trim(), CultureInfo.GetCultureInfo("es-ES")),
                 FechaFinal = DateTime.Parse(fechaFinal.Trim(), CultureInfo.GetCultureInfo("es-ES")),
@@ -165,7 +165,7 @@ namespace ProyectoSegurosFpDaw.BLL
         /// </summary>
         /// <param name="searchingFields"></param>
         /// <returns>Lista de gestion pólizas coincidentes (la última creada de cada póliza coincidente ) </returns>
-        public List<GestionPoliza> SearchPolizas(PolizaSearching searchingFields)
+        public List<GestionPoliza> SearchPolizas(PolizaSearchingFields searchingFields)
         {
             List<GestionPoliza> output = new List<GestionPoliza>();           
 
