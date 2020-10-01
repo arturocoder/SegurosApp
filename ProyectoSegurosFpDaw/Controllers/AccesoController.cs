@@ -48,9 +48,9 @@ namespace ProyectoSegurosFpDaw.Controllers
                
                 return RedirectToAction("Index", "GestionPolizas");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                ViewBag.Error = ex.Message;
+                ViewBag.Error = "Error inesperado al intentar autenticar al usuario";
                 return View();
             }
         }
