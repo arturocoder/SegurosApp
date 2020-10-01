@@ -28,7 +28,7 @@ Los objetivos específicos se enmarcan dentro de cuatro áreas:
 - C#
 - MVC 5
 - Microsoft Sql Server
-- Entity Framework EF6 
+- Entity Framework EF6 (Database First)
 - LINQ
 - HTML5 / CSS3 / Javascript
 - JQuery
@@ -49,7 +49,7 @@ Los objetivos específicos se enmarcan dentro de cuatro áreas:
 
 
 #### Version 1.0 Branch 
-Versión final que fue entregada como proyecto.
+Versión inicial que fue entregada como proyecto.
 #### Master Branch 
 Actualmente en estado de refactorización, aplicando repository pattern / unit of work, y creando una capa BLL.
 
