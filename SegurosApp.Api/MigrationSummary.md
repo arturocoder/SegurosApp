@@ -23,6 +23,18 @@
 9. **Improved design-time factory to search for config**
 10. **Attempted migrations and provided troubleshooting**
 
+## Next Steps
+1. **Define API Contracts:**
+   - Create DTOs and controllers in SegurosApp.Api for each business entity and operation you want to expose.
+2. **Move Business Logic:**
+   - Refactor your BLL and repository code from SegurosApp into SegurosApp.Api, adapting for dependency injection and stateless API patterns.
+3. **Update SegurosApp Frontend:**
+   - Change your controllers and views in SegurosApp to call the new API endpoints (using HttpClient or AJAX).
+4. **Test End-to-End:**
+   - Ensure the SegurosApp frontend works correctly with the new API backend.
+5. **(Optional) Add Authentication:**
+   - If needed, implement authentication/authorization in the API and update the frontend to handle tokens/cookies.
+
 ## Outstanding Issues
 - EF Core migration still fails to load `appsettings.json` (likely due to working directory or file path issues)
 - Next step: Run migration from the correct directory or further improve config path resolution
