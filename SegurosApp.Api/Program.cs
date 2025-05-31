@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SegurosApp.Api.Models;
+using SegurosApp.Api.Models.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,9 @@ builder.Services.AddSwaggerGen();
 // Add EF Core DbContext with SQL Server (update connection string as needed)
 builder.Services.AddDbContext<SegurosDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register ClienteRepository for DI
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 
 var app = builder.Build();
 
