@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SegurosApp.Domain\SegurosApp.Domain.csproj" />
+    <ProjectReference Include="..\SegurosApp.Infrastructure\SegurosApp.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

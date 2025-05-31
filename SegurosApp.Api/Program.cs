@@ -1,16 +1,16 @@
 using Microsoft.EntityFrameworkCore;
-using SegurosApp.Api.Models;
-using SegurosApp.Api.Models.Repositories;
+using SegurosApp.Infrastructure;
+using SegurosApp.Infrastructure.Repositories;
 using SegurosApp.Domain.Repositories;
+using SegurosApp.Domain.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add EF Core DbContext with SQL Server (update connection string as needed)
+// Add EF Core DbContext with SQL Server
 builder.Services.AddDbContext<SegurosDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -19,7 +19,6 @@ builder.Services.AddScoped<IClienteRepository<Cliente>, ClienteRepository>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
