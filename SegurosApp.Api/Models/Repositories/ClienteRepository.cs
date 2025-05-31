@@ -1,1 +1,0 @@
-// Eliminado: ClienteRepository se ha movido a SegurosApp.Infrastructure.Repositories

@@ -1,1 +1,0 @@
-// (Archivo eliminado, la interfaz ahora está en SegurosApp.Domain)

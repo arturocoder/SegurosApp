@@ -1,6 +1,1 @@
-﻿namespace SegurosApp.Infrastructure;
-
-public class Class1
-{
-
-}
+﻿// Este archivo es un placeholder. Puedes eliminarlo si no es necesario.

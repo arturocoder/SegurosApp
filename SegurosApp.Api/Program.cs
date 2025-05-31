@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using SegurosApp.Infrastructure;
+using SegurosApp.Infrastructure.Data;
 using SegurosApp.Infrastructure.Repositories;
 using SegurosApp.Domain.Repositories;
 using SegurosApp.Domain.Entities;
