@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SegurosApp.Api.Models;
 using SegurosApp.Api.Models.Repositories;
+using SegurosApp.Domain.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,8 +14,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<SegurosDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Register ClienteRepository for DI
-builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+// Register ClienteRepository for DI (using Domain interface)
+builder.Services.AddScoped<IClienteRepository<Cliente>, ClienteRepository>();
 
 var app = builder.Build();
 

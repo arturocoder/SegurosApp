@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using SegurosApp.Api.Models;
+using SegurosApp.Domain.Repositories;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SegurosApp.Api.Models.Repositories
 {
-    public class ClienteRepository : IClienteRepository
+    public class ClienteRepository : IClienteRepository<Cliente>
     {
         private readonly SegurosDbContext _context;
         public ClienteRepository(SegurosDbContext context)
